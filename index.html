@@ -32,27 +32,41 @@
     <!-- Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
     <style>
-      :root { color-scheme: dark; }
-      html, body { height: 100%; }
-      body{
-        margin:0;
+      :root {
+        color-scheme: dark;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
         font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-        background:
-          radial-gradient(1200px 600px at 70% 10%, rgba(199, 163, 92, 0.12), transparent 60%),
-          radial-gradient(900px 500px at 20% 40%, rgba(255, 255, 255, 0.06), transparent 60%),
-          #07070a;
-        color:#f5efe6;
+        background: radial-gradient(1200px 600px at 70% 10%, rgba(199, 163, 92, 0.12), transparent 60%),
+          radial-gradient(900px 500px at 20% 40%, rgba(255, 255, 255, 0.06), transparent 60%), #07070a;
+        color: #f5efe6;
       }
-      ::selection { background: rgba(199,163,92,0.35); }
-      .divine-noise{
-        position:fixed; inset:0; pointer-events:none; opacity:.05;
-        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+      ::selection {
+        background: rgba(199, 163, 92, 0.35);
       }
-      .line-clamp-2{
-        display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+      .divine-noise {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.05;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+      }
+      .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
       }
     </style>
 
@@ -78,40 +92,54 @@
       const React = window.React;
       const { useEffect, useMemo, useRef, useState } = React;
 
-      // ---- Framer Motion fallback (para que NUNCA rompa si el CDN falla)
+      // ---------- Framer Motion fallback (nunca rompe si CDN falla)
       const FM = window.framerMotion || {};
 
       function stripMotionProps(props = {}) {
         const clean = { ...props };
         [
-          "initial","animate","exit","transition","whileHover","whileInView",
-          "viewport","layout","variants"
+          "initial",
+          "animate",
+          "exit",
+          "transition",
+          "whileHover",
+          "whileInView",
+          "viewport",
+          "layout",
+          "variants",
         ].forEach((k) => delete clean[k]);
         return clean;
       }
 
       function createMotionFallback() {
-        return new Proxy({}, {
-          get: (_, tag) => (props) => {
-            const { children, ...rest } = props || {};
-            return React.createElement(tag, stripMotionProps(rest), children);
+        return new Proxy(
+          {},
+          {
+            get: (_, tag) => (props) => {
+              const { children, ...rest } = props || {};
+              return React.createElement(tag, stripMotionProps(rest), children);
+            },
           }
-        });
+        );
       }
 
       const motion = FM.motion || createMotionFallback();
       const AnimatePresence =
-        FM.AnimatePresence || (({ children }) => React.createElement(React.Fragment, null, children));
+        FM.AnimatePresence ||
+        (({ children }) => React.createElement(React.Fragment, null, children));
 
-      // ---- Utils
-      const money = (n) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
+      // ---------- Utils
+      const money = (n) =>
+        new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
 
       function useLockBodyScroll(locked) {
         useEffect(() => {
           if (!locked) return;
           const prev = document.body.style.overflow;
           document.body.style.overflow = "hidden";
-          return () => { document.body.style.overflow = prev; };
+          return () => {
+            document.body.style.overflow = prev;
+          };
         }, [locked]);
       }
 
@@ -124,7 +152,7 @@
         }, [handler, active]);
       }
 
-      // ---- Data
+      // ---------- Data
       const burgers = [
         {
           id: "divine-truffle",
@@ -219,7 +247,7 @@
         },
       ];
 
-      // ---- UI Components
+      // ---------- UI
       function Header({ onNavigate, onOpenCart, cartCount }) {
         return (
           <div className="fixed left-0 top-0 z-40 w-full">
@@ -349,7 +377,7 @@
         );
       }
 
-      // ---- 3D Viewer (sin OrbitControls, no se rompe en Pages)
+      // ---------- 3D Viewer (sin OrbitControls)
       function ThreeBurgerViewer() {
         const mountRef = useRef(null);
         const burgerRef = useRef(null);
@@ -369,7 +397,6 @@
           const mount = mountRef.current;
           if (!mount) return;
 
-          // tamaño inicial (robusto)
           const getSize = () => {
             const r = mount.getBoundingClientRect();
             const w = Math.max(1, Math.floor(r.width));
@@ -399,7 +426,6 @@
           camera.position.set(0, 1.25, 3.4);
           cameraRef.current = camera;
 
-          // luces premium
           scene.add(new THREE.HemisphereLight(0xf5efe6, 0x07070a, 0.55));
 
           const key = new THREE.DirectionalLight(0xffffff, 1.1);
@@ -418,7 +444,6 @@
           rim.position.set(-4.5, 2.0, -2.5);
           scene.add(rim);
 
-          // suelo
           const ground = new THREE.Mesh(
             new THREE.PlaneGeometry(30, 30),
             new THREE.ShadowMaterial({ opacity: 0.22 })
@@ -428,7 +453,6 @@
           ground.receiveShadow = true;
           scene.add(ground);
 
-          // burger placeholder
           const burger = new THREE.Group();
           burger.position.set(0, -0.35, 0);
 
@@ -450,10 +474,9 @@
           layer(new THREE.CylinderGeometry(0.92, 0.86, 0.35, 56), matBun, 1.0);
           layer(new THREE.CylinderGeometry(0.98, 0.98, 0.08, 56), matCheese, 0.72);
           layer(new THREE.CylinderGeometry(1.0, 1.0, 0.26, 56), matMeat, 0.53);
-          layer(new THREE.CylinderGeometry(1.02, 1.02, 0.07, 56), matCheese, 0.32);
-
-          const lettuce = layer(new THREE.TorusGeometry(0.78, 0.12, 14, 80), matLettuce, 0.16);
+          const lettuce = layer(new THREE.TorusGeometry(0.78, 0.12, 14, 80), matLettuce, 0.22);
           lettuce.rotation.x = Math.PI / 2;
+          layer(new THREE.CylinderGeometry(1.02, 1.02, 0.07, 56), matCheese, 0.32);
 
           for (let i = 0; i < 3; i++) {
             const t = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.06, 40), matTomato);
@@ -468,13 +491,12 @@
           scene.add(burger);
           burgerRef.current = burger;
 
-          // Controles propios: drag para rotar + wheel para zoom
           const el = renderer.domElement;
 
           const onDown = (e) => {
             draggingRef.current = true;
             lastRef.current = { x: e.clientX, y: e.clientY };
-            el.setPointerCapture?.(e.pointerId);
+            if (el.setPointerCapture) el.setPointerCapture(e.pointerId);
           };
 
           const onMove = (e) => {
@@ -482,7 +504,6 @@
             const dx = e.clientX - lastRef.current.x;
             const dy = e.clientY - lastRef.current.y;
             lastRef.current = { x: e.clientX, y: e.clientY };
-
             yawRef.current += dx * 0.007;
             pitchRef.current += dy * 0.007;
             pitchRef.current = Math.max(-1.15, Math.min(1.15, pitchRef.current));
@@ -533,7 +554,7 @@
             el.removeEventListener("wheel", onWheel);
 
             renderer.dispose();
-            mount.removeChild(renderer.domElement);
+            if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
           };
         }, [autoRotate, roll]);
 
@@ -576,8 +597,11 @@
               </div>
             </div>
 
-            <!-- altura explícita para evitar canvas 0px -->
-            <div ref={mountRef} className="h-[340px] md:h-[420px] lg:h-[560px] w-full bg-gradient-to-b from-black/0 to-black/35"></div>
+            {/* Altura explícita para evitar canvas 0px */}
+            <div
+              ref={mountRef}
+              className="h-[340px] md:h-[420px] lg:h-[560px] w-full bg-gradient-to-b from-black/0 to-black/35"
+            ></div>
           </div>
         );
       }
@@ -585,7 +609,6 @@
       function ProductModal({ product, onClose, onAdd }) {
         useLockBodyScroll(true);
         useEscape(onClose, true);
-
         const [showIngredients, setShowIngredients] = useState(true);
 
         return (
@@ -707,7 +730,9 @@
           >
             <div className="flex items-center gap-3">
               <div className="text-xs tracking-[0.28em] text-divineCream/75">CARRITO</div>
-              <div className="rounded-full bg-divineGold px-2 py-1 text-xs font-semibold text-black">{cartCount}</div>
+              <div className="rounded-full bg-divineGold px-2 py-1 text-xs font-semibold text-black">
+                {cartCount}
+              </div>
             </div>
           </button>
         );
@@ -718,7 +743,14 @@
         useEscape(onClose, true);
 
         return (
-          <motion.div className="fixed inset-0 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} aria-modal="true" role="dialog">
+          <motion.div
+            className="fixed inset-0 z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            aria-modal="true"
+            role="dialog"
+          >
             <button className="absolute inset-0 bg-black/70" onClick={onClose} aria-label="Cerrar carrito" />
             <motion.aside
               initial={{ x: 24, opacity: 0 }}
@@ -733,14 +765,19 @@
                   <h3 className="mt-2 text-xl font-semibold">Carrito</h3>
                   <p className="mt-1 text-sm text-divineCream/60">Revisa y ajusta cantidades.</p>
                 </div>
-                <button onClick={onClose} className="rounded-xl border border-divineLine bg-black/20 px-3 py-2 text-xs tracking-[0.22em] text-divineCream/75 hover:text-divineGold transition">
+                <button
+                  onClick={onClose}
+                  className="rounded-xl border border-divineLine bg-black/20 px-3 py-2 text-xs tracking-[0.22em] text-divineCream/75 hover:text-divineGold transition"
+                >
                   CERRAR
                 </button>
               </div>
 
               <div className="mt-6 space-y-3">
                 {items.length === 0 ? (
-                  <div className="rounded-2xl border border-divineLine bg-divinePanel p-4 text-sm text-divineCream/70">Tu carrito está vacío.</div>
+                  <div className="rounded-2xl border border-divineLine bg-divinePanel p-4 text-sm text-divineCream/70">
+                    Tu carrito está vacío.
+                  </div>
                 ) : (
                   items.map((it) => (
                     <div key={it.id} className="rounded-2xl border border-divineLine bg-divinePanel p-4">
@@ -760,16 +797,27 @@
                             </div>
                           )}
                         </div>
-
                         <div className="text-sm font-semibold text-divineGold">{money(it.price * it.qty)}</div>
                       </div>
 
                       <div className="mt-3 flex items-center gap-2">
-                        <button className="rounded-xl border border-divineLine bg-black/20 px-3 py-2 text-xs tracking-[0.22em] text-divineCream/75" onClick={() => onQty(it.id, it.qty - 1)}>−</button>
+                        <button
+                          className="rounded-xl border border-divineLine bg-black/20 px-3 py-2 text-xs tracking-[0.22em] text-divineCream/75"
+                          onClick={() => onQty(it.id, it.qty - 1)}
+                        >
+                          −
+                        </button>
                         <div className="min-w-10 text-center text-sm">{it.qty}</div>
-                        <button className="rounded-xl border border-divineLine bg-black/20 px-3 py-2 text-xs tracking-[0.22em] text-divineCream/75" onClick={() => onQty(it.id, it.qty + 1)}>+</button>
-
-                        <button className="ml-auto rounded-xl border border-divineLine bg-black/20 px-3 py-2 text-xs tracking-[0.22em] text-divineCream/75 hover:text-divineGold transition" onClick={() => onQty(it.id, 0)}>
+                        <button
+                          className="rounded-xl border border-divineLine bg-black/20 px-3 py-2 text-xs tracking-[0.22em] text-divineCream/75"
+                          onClick={() => onQty(it.id, it.qty + 1)}
+                        >
+                          +
+                        </button>
+                        <button
+                          className="ml-auto rounded-xl border border-divineLine bg-black/20 px-3 py-2 text-xs tracking-[0.22em] text-divineCream/75 hover:text-divineGold transition"
+                          onClick={() => onQty(it.id, 0)}
+                        >
                           ELIMINAR
                         </button>
                       </div>
@@ -783,7 +831,10 @@
                   <span className="text-sm text-divineCream/70">Total</span>
                   <span className="text-lg font-semibold text-divineGold">{money(total)}</span>
                 </div>
-                <button className="mt-4 w-full rounded-2xl border border-divineGold/40 bg-divineGold py-3 text-xs tracking-[0.22em] font-semibold text-black hover:brightness-110 transition disabled:opacity-60" disabled={items.length === 0}>
+                <button
+                  className="mt-4 w-full rounded-2xl border border-divineGold/40 bg-divineGold py-3 text-xs tracking-[0.22em] font-semibold text-black hover:brightness-110 transition disabled:opacity-60"
+                  disabled={items.length === 0}
+                >
                   PAGAR (placeholder)
                 </button>
               </div>
@@ -792,7 +843,7 @@
         );
       }
 
-      // ---- Builders (Burger + Yogurt) (en español)
+      // ---------- Builders
       const BURGER_OPTIONS = {
         pan: [
           { id: "brioche", label: "Brioche", price: 1.75 },
@@ -1045,7 +1096,6 @@
         const price = useMemo(() => {
           const pick = (id, opts) => (opts.find((x) => x.id === id)?.price ?? 0);
           const sum = (arr, opts) => arr.reduce((acc, id) => acc + (opts.find((x) => x.id === id)?.price ?? 0), 0);
-
           return (
             pick(tamano, YOGURT_OPTIONS.tamano) +
             pick(sabor, YOGURT_OPTIONS.sabor) +
@@ -1076,23 +1126,16 @@
         function addToCart() {
           const id = `yogurt:${tamano}:${sabor}:${[...salsas].sort().join(",")}:${[...crunch].sort().join(",")}:${[...fruta].sort().join(",")}:${[...luxe].sort().join(",")}`;
           onAddToCart?.({ id, name: "Yogurt Griego (Máquina)", price, meta: resumen });
-
-          setStep(0);
-          setTamano("clasico");
-          setSabor("griego");
-          setSalsas([]);
-          setCrunch([]);
-          setFruta([]);
-          setLuxe([]);
+          setStep(0); setTamano("clasico"); setSabor("griego"); setSalsas([]); setCrunch([]); setFruta([]); setLuxe([]);
         }
 
         const steps = [
           { label: "TAMAÑO", render: () => <OptionGrid title="Elige tamaño" options={YOGURT_OPTIONS.tamano} value={tamano} onChange={setTamano} single /> },
           { label: "SABOR", render: () => <OptionGrid title="Elige sabor" options={YOGURT_OPTIONS.sabor} value={sabor} onChange={setSabor} single /> },
-          { label: "SALSAS", render: () => <OptionGrid title="Salsas (multi)" options={YOGURT_OPTIONS.salsas} value={salsas} onChange={(id)=>toggle(id,setSalsas)} single={false} /> },
-          { label: "CRUNCH", render: () => <OptionGrid title="Crunch (multi)" options={YOGURT_OPTIONS.crunch} value={crunch} onChange={(id)=>toggle(id,setCrunch)} single={false} /> },
-          { label: "FRUTA", render: () => <OptionGrid title="Fruta (multi)" options={YOGURT_OPTIONS.fruta} value={fruta} onChange={(id)=>toggle(id,setFruta)} single={false} /> },
-          { label: "LUXE", render: () => <OptionGrid title="Toques luxe (multi)" options={YOGURT_OPTIONS.luxe} value={luxe} onChange={(id)=>toggle(id,setLuxe)} single={false} /> },
+          { label: "SALSAS", render: () => <OptionGrid title="Salsas (multi)" options={YOGURT_OPTIONS.salsas} value={salsas} onChange={(id) => toggle(id, setSalsas)} single={false} /> },
+          { label: "CRUNCH", render: () => <OptionGrid title="Crunch (multi)" options={YOGURT_OPTIONS.crunch} value={crunch} onChange={(id) => toggle(id, setCrunch)} single={false} /> },
+          { label: "FRUTA", render: () => <OptionGrid title="Fruta (multi)" options={YOGURT_OPTIONS.fruta} value={fruta} onChange={(id) => toggle(id, setFruta)} single={false} /> },
+          { label: "LUXE", render: () => <OptionGrid title="Toques luxe (multi)" options={YOGURT_OPTIONS.luxe} value={luxe} onChange={(id) => toggle(id, setLuxe)} single={false} /> },
         ];
 
         return (
@@ -1134,11 +1177,9 @@
                 <button onClick={() => setStep((s) => Math.max(0, s - 1))} className="rounded-2xl border border-divineLine bg-black/20 px-4 py-3 text-xs tracking-[0.22em] text-divineCream/75 hover:text-divineGold transition">
                   ATRÁS
                 </button>
-
                 <button onClick={() => setStep((s) => Math.min(steps.length - 1, s + 1))} className="rounded-2xl border border-divineLine bg-black/20 px-4 py-3 text-xs tracking-[0.22em] text-divineCream/75 hover:text-divineGold transition">
                   SIGUIENTE
                 </button>
-
                 <button onClick={addToCart} className="ml-auto rounded-2xl border border-divineGold/40 bg-divineGold px-5 py-3 text-xs tracking-[0.22em] font-semibold text-black hover:brightness-110 transition">
                   AÑADIR YOGURT
                 </button>
@@ -1186,7 +1227,7 @@
         );
       }
 
-      // ---- App
+      // ---------- App
       function App() {
         const refs = {
           burgers: useRef(null),
