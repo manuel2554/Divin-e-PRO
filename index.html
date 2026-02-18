@@ -98,10 +98,42 @@
       const { useEffect, useMemo, useRef, useState } = React;
 
       // Framer Motion globals (compat)
-      const FM = window.framerMotion || window.Motion || {};
-      const motion = FM.motion || (({ children }) => children);
-      const AnimatePresence = FM.AnimatePresence || (({ children }) => children);
+      const FM = window.framerMotion || {};
 
+function stripMotionProps(props = {}) {
+  const clean = { ...props };
+  [
+    "initial",
+    "animate",
+    "exit",
+    "transition",
+    "whileHover",
+    "whileInView",
+    "viewport",
+    "layout",
+    "variants",
+  ].forEach((k) => delete clean[k]);
+  return clean;
+}
+
+// Crea motion.div / motion.section / motion.button, etc aunque Framer no haya cargado
+function createMotionFallback() {
+  return new Proxy(
+    {},
+    {
+      get: (_, tag) => {
+        return (props) => {
+          const { children, ...rest } = props || {};
+          return React.createElement(tag, stripMotionProps(rest), children);
+        };
+      },
+    }
+  );
+}
+
+const motion = FM.motion || createMotionFallback();
+const AnimatePresence =
+  FM.AnimatePresence || (({ children }) => React.createElement(React.Fragment, null, children));
       const money = (n) =>
         new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
 
@@ -1485,4 +1517,5 @@
       Si lo abres con doble click y algo no carga, úsalo con un server local (ej: VSCode Live Server).
     -->
   </body>
+
 </html>
