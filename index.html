@@ -1,0 +1,1488 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Divine — SPA Preview</title>
+
+    <!-- Tailwind (CDN) -->
+    <script>
+      tailwind = {
+        config: {
+          theme: {
+            extend: {
+              colors: {
+                divineBg: "#07070A",
+                divineCream: "#F5EFE6",
+                divineGold: "#C7A35C",
+                divinePanel: "rgba(255,255,255,0.06)",
+                divineLine: "rgba(255,255,255,0.10)",
+              },
+              boxShadow: {
+                divine: "0 30px 80px rgba(0,0,0,0.60)",
+              },
+              letterSpacing: {
+                luxe: "0.18em",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+        background:
+          radial-gradient(1200px 600px at 70% 10%, rgba(199, 163, 92, 0.12), transparent 60%),
+          radial-gradient(900px 500px at 20% 40%, rgba(255, 255, 255, 0.06), transparent 60%),
+          #07070a;
+        color: #f5efe6;
+      }
+      ::selection {
+        background: rgba(199, 163, 92, 0.35);
+      }
+      .divine-noise {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.05;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+      }
+      .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+    </style>
+
+    <!-- React + ReactDOM (UMD) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+    <!-- Framer Motion (UMD) -->
+    <script src="https://unpkg.com/framer-motion@11.0.0/dist/framer-motion.umd.js"></script>
+
+    <!-- Three.js (UMD) + OrbitControls (non-module attaches to THREE) -->
+    <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+
+    <!-- Babel (para JSX en el navegador) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+
+  <body>
+    <div class="divine-noise"></div>
+    <div id="root"></div>
+
+    <script type="text/babel" data-presets="env,react">
+      const React = window.React;
+      const { useEffect, useMemo, useRef, useState } = React;
+
+      // Framer Motion globals (compat)
+      const FM = window.framerMotion || window.Motion || {};
+      const motion = FM.motion || (({ children }) => children);
+      const AnimatePresence = FM.AnimatePresence || (({ children }) => children);
+
+      const money = (n) =>
+        new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
+
+      const burgers = [
+        {
+          id: "divine-truffle",
+          name: "Divine Truffle",
+          description: "Angus premium, truffle crema, arugula y brioche toasted.",
+          price: 16.9,
+          grams: 320,
+          img: "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=1600&q=80",
+          ingredients: ["Brioche bun", "Angus 180g", "Gruyère", "Truffle crema", "Arugula", "Divine aioli"],
+          nutrition: { kcal: 780, protein_g: 42, carbs_g: 48, fat_g: 46, sodium_mg: 980 },
+        },
+        {
+          id: "golden-smash",
+          name: "Golden Smash",
+          description: "Double smash, aged cheddar, caramelized onion, pickles.",
+          price: 15.5,
+          grams: 340,
+          img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1600&q=80",
+          ingredients: ["Potato roll", "Double smash", "Aged cheddar", "Caramelized onion", "Pickles", "Divine sauce"],
+          nutrition: { kcal: 860, protein_g: 48, carbs_g: 52, fat_g: 52, sodium_mg: 1120 },
+        },
+        {
+          id: "noir-pepper",
+          name: "Noir Pepper",
+          description: "Black pepper crust, blue cheese, crispy onions, demi-glace.",
+          price: 17.25,
+          grams: 330,
+          img: "https://images.unsplash.com/photo-1550317138-10000687a72b?auto=format&fit=crop&w=1600&q=80",
+          ingredients: ["Sesame bun", "Pepper crust beef", "Blue cheese", "Crispy onions", "Demi-glace", "Lettuce"],
+          nutrition: { kcal: 820, protein_g: 45, carbs_g: 44, fat_g: 50, sodium_mg: 1040 },
+        },
+        {
+          id: "saffron-wagyu",
+          name: "Saffron Wagyu",
+          description: "Wagyu blend, saffron aioli, tomato confit, gold touch.",
+          price: 21.9,
+          grams: 310,
+          img: "https://images.unsplash.com/photo-1551782450-a2132b4ba21d?auto=format&fit=crop&w=1600&q=80",
+          ingredients: ["Brioche bun", "Wagyu blend", "White cheddar", "Saffron aioli", "Tomato confit", "Microgreens"],
+          nutrition: { kcal: 790, protein_g: 41, carbs_g: 46, fat_g: 47, sodium_mg: 960 },
+        },
+        {
+          id: "midnight-umami",
+          name: "Midnight Umami",
+          description: "Mushroom duxelles, soy glaze, swiss, roasted garlic.",
+          price: 18.4,
+          grams: 335,
+          img: "https://images.unsplash.com/photo-1596662951482-0c4ba74a6df6?auto=format&fit=crop&w=1600&q=80",
+          ingredients: ["Potato roll", "Beef patty", "Swiss", "Mushroom duxelles", "Roasted garlic", "Soy glaze"],
+          nutrition: { kcal: 805, protein_g: 44, carbs_g: 50, fat_g: 48, sodium_mg: 1090 },
+        },
+        {
+          id: "velvet-chicken",
+          name: "Velvet Chicken",
+          description: "Crispy chicken, honey-gold, slaw, bright citrus finish.",
+          price: 14.75,
+          grams: 360,
+          img: "https://images.unsplash.com/photo-1606755962773-d324e0a13086?auto=format&fit=crop&w=1600&q=80",
+          ingredients: ["Brioche bun", "Crispy chicken", "Honey-gold glaze", "Slaw", "Pickles", "Lemon aioli"],
+          nutrition: { kcal: 740, protein_g: 39, carbs_g: 58, fat_g: 38, sodium_mg: 980 },
+        },
+      ];
+
+      const desserts = [
+        {
+          id: "noir-cheesecake",
+          name: "Noir Cheesecake",
+          description: "Silky cheesecake with dark cacao and hazelnut crumble.",
+          price: 9.5,
+          img: "https://images.unsplash.com/photo-1541781408260-3c7b8d7a5b61?auto=format&fit=crop&w=1600&q=80",
+        },
+        {
+          id: "gold-mousse",
+          name: "Gold Mousse",
+          description: "Madagascar vanilla mousse with a soft golden sheen.",
+          price: 10.25,
+          img: "https://images.unsplash.com/photo-1601972602237-8c79241e468b?auto=format&fit=crop&w=1600&q=80",
+        },
+        {
+          id: "creme-brulee-tart",
+          name: "Crème Brûlée Tart",
+          description: "Torch-cracked caramel top, custard core, butter crust.",
+          price: 10.75,
+          img: "https://images.unsplash.com/photo-1608198093002-ad4e005484ec?auto=format&fit=crop&w=1600&q=80",
+        },
+        {
+          id: "pistachio-opera",
+          name: "Pistachio Opera",
+          description: "Layered pistachio cake with espresso notes and satin glaze.",
+          price: 11.5,
+          img: "https://images.unsplash.com/photo-1589308078059-be1415eab4c3?auto=format&fit=crop&w=1600&q=80",
+        },
+      ];
+
+      function useLockBodyScroll(locked) {
+        useEffect(() => {
+          if (!locked) return;
+          const prev = document.body.style.overflow;
+          document.body.style.overflow = "hidden";
+          return () => {
+            document.body.style.overflow = prev;
+          };
+        }, [locked]);
+      }
+
+      function useEscape(handler, active = true) {
+        useEffect(() => {
+          if (!active) return;
+          const onKeyDown = (e) => e.key === "Escape" && handler?.();
+          window.addEventListener("keydown", onKeyDown);
+          return () => window.removeEventListener("keydown", onKeyDown);
+        }, [handler, active]);
+      }
+
+      function Header({ onNavigate, onOpenCart, cartCount }) {
+        return (
+          <div className="fixed left-0 top-0 z-40 w-full">
+            <div className="mx-auto max-w-6xl px-4 md:px-6">
+              <div className="mt-3 rounded-2xl border border-divineLine bg-divinePanel backdrop-blur-xl shadow-divine">
+                <div className="grid grid-cols-3 items-center px-4 py-3 md:px-6">
+                  <nav className="hidden gap-4 text-xs tracking-[0.22em] text-divineCream/80 md:flex">
+                    <button onClick={() => onNavigate("burgers")} className="hover:text-divineGold transition">
+                      BURGERS
+                    </button>
+                    <button onClick={() => onNavigate("desserts")} className="hover:text-divineGold transition">
+                      DESSERTS
+                    </button>
+                    <button onClick={() => onNavigate("yogurt")} className="hover:text-divineGold transition">
+                      YOGURT
+                    </button>
+                    <button onClick={() => onNavigate("atelier")} className="hover:text-divineGold transition">
+                      ATELIER
+                    </button>
+                  </nav>
+
+                  <div className="flex items-center justify-center select-none">
+                    <div className="text-center">
+                      <div className="text-xs tracking-luxe text-divineGold/95">DIVINE</div>
+                      <div className="text-[10px] tracking-[0.35em] text-divineCream/55">GOURMET</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      onClick={onOpenCart}
+                      className="relative rounded-xl border border-divineLine bg-black/20 px-3 py-2 text-xs tracking-[0.22em] text-divineCream/85 hover:border-divineGold/60 hover:text-divineGold transition"
+                    >
+                      CART
+                      {cartCount > 0 && (
+                        <span className="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-divineGold px-1.5 py-0.5 text-[10px] font-semibold text-black">
+                          {cartCount}
+                        </span>
+                      )}
+                    </button>
+
+                    <div className="flex md:hidden">
+                      <button
+                        onClick={() => onNavigate("burgers")}
+                        className="rounded-xl border border-divineLine bg-black/20 px-3 py-2 text-xs tracking-[0.22em] text-divineCream/85"
+                      >
+                        MENU
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex md:hidden gap-2 px-4 pb-3">
+                  {[
+                    ["BURGERS", "burgers"],
+                    ["DESSERTS", "desserts"],
+                    ["YOGURT", "yogurt"],
+                    ["ATELIER", "atelier"],
+                  ].map(([label, key]) => (
+                    <button
+                      key={key}
+                      onClick={() => onNavigate(key)}
+                      className="flex-1 rounded-xl border border-divineLine bg-black/20 py-2 text-[11px] tracking-[0.22em] text-divineCream/75 hover:text-divineGold transition"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      function SectionShell({ eyebrow, title, subtitle, children }) {
+        return (
+          <div className="mb-12 md:mb-16">
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ amount: 0.25, once: true }}
+              transition={{ duration: 0.7, ease: [0.2, 0.8, 0.2, 1] }}
+              className="mb-5 md:mb-7"
+            >
+              <div className="mb-2 text-xs tracking-[0.35em] text-divineGold/90">{eyebrow}</div>
+              <h2 className="text-2xl font-semibold md:text-4xl">{title}</h2>
+              <p className="mt-2 max-w-2xl text-sm text-divineCream/70 md:text-base">{subtitle}</p>
+            </motion.div>
+            {children}
+          </div>
+        );
+      }
+
+      function ProductCard({ product, badge, onClick, onAdd }) {
+        return (
+          <motion.div
+            whileHover={{ y: -4 }}
+            transition={{ type: "spring", stiffness: 260, damping: 22 }}
+            className="group overflow-hidden rounded-2xl border border-divineLine bg-divinePanel shadow-divine"
+          >
+            <button onClick={onClick} className="block w-full text-left">
+              <div className="relative aspect-[4/3] overflow-hidden">
+                <img
+                  src={product.img}
+                  alt={product.name}
+                  className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.05]"
+                  loading="lazy"
+                />
+                <div className="absolute left-3 top-3 rounded-full border border-divineLine bg-black/30 px-3 py-1 text-[10px] tracking-[0.28em] text-divineCream/80 backdrop-blur">
+                  {badge}
+                </div>
+              </div>
+
+              <div className="p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-base font-semibold">{product.name}</div>
+                    <div className="mt-1 text-sm text-divineCream/70 line-clamp-2">{product.description}</div>
+                  </div>
+                  <div className="text-sm font-semibold text-divineGold">{money(product.price)}</div>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between gap-3">
+                  <span className="text-xs tracking-[0.22em] text-divineCream/55">DIVINE</span>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onAdd?.();
+                    }}
+                    className="rounded-xl border border-divineLine bg-black/20 px-3 py-2 text-xs tracking-[0.22em] text-divineCream/80 hover:border-divineGold/60 hover:text-divineGold transition"
+                  >
+                    ADD
+                  </button>
+                </div>
+              </div>
+            </button>
+          </motion.div>
+        );
+      }
+
+      // ----------- Three.js viewer (placeholder burger) -----------
+      function ThreeBurgerViewer() {
+        const mountRef = useRef(null);
+        const controlsRef = useRef(null);
+        const burgerRef = useRef(null);
+        const rafRef = useRef(null);
+
+        const [autoRotate, setAutoRotate] = useState(true);
+        const [roll, setRoll] = useState(0); // Z rotation
+
+        useEffect(() => {
+          const mount = mountRef.current;
+          if (!mount) return;
+
+          const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+          renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+          renderer.setSize(mount.clientWidth, mount.clientHeight);
+          renderer.shadowMap.enabled = true;
+          renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+          mount.appendChild(renderer.domElement);
+
+          const scene = new THREE.Scene();
+          scene.fog = new THREE.Fog(0x0a0a0f, 9, 18);
+
+          const camera = new THREE.PerspectiveCamera(45, mount.clientWidth / mount.clientHeight, 0.1, 100);
+          camera.position.set(0, 1.25, 3.4);
+
+          // Lights (lux-like)
+          const hemi = new THREE.HemisphereLight(0xf5efe6, 0x07070a, 0.55);
+          scene.add(hemi);
+
+          const key = new THREE.DirectionalLight(0xffffff, 1.1);
+          key.position.set(3.5, 5.2, 2.8);
+          key.castShadow = true;
+          key.shadow.mapSize.set(1024, 1024);
+          key.shadow.camera.near = 0.5;
+          key.shadow.camera.far = 20;
+          key.shadow.camera.left = -4;
+          key.shadow.camera.right = 4;
+          key.shadow.camera.top = 4;
+          key.shadow.camera.bottom = -4;
+          scene.add(key);
+
+          const rim = new THREE.DirectionalLight(0xc7a35c, 0.65);
+          rim.position.set(-4.5, 2.0, -2.5);
+          scene.add(rim);
+
+          // Ground
+          const ground = new THREE.Mesh(
+            new THREE.PlaneGeometry(30, 30),
+            new THREE.ShadowMaterial({ opacity: 0.22 })
+          );
+          ground.rotation.x = -Math.PI / 2;
+          ground.position.y = -1.1;
+          ground.receiveShadow = true;
+          scene.add(ground);
+
+          // Burger placeholder (layered cylinders + accents)
+          const burger = new THREE.Group();
+          burger.position.set(0, -0.35, 0);
+
+          const matBun = new THREE.MeshStandardMaterial({ color: 0xc7a35c, roughness: 0.55, metalness: 0.08 });
+          const matMeat = new THREE.MeshStandardMaterial({ color: 0x3b2016, roughness: 0.85, metalness: 0.02 });
+          const matCheese = new THREE.MeshStandardMaterial({ color: 0xf2c24f, roughness: 0.4, metalness: 0.05 });
+          const matLettuce = new THREE.MeshStandardMaterial({ color: 0x3f8f5a, roughness: 0.75 });
+          const matTomato = new THREE.MeshStandardMaterial({ color: 0xb33b2e, roughness: 0.65 });
+
+          function layer(geo, mat, y) {
+            const m = new THREE.Mesh(geo, mat);
+            m.position.y = y;
+            m.castShadow = true;
+            m.receiveShadow = true;
+            burger.add(m);
+            return m;
+          }
+
+          layer(new THREE.CylinderGeometry(0.92, 0.86, 0.35, 56), matBun, 1.0); // top bun
+          layer(new THREE.CylinderGeometry(0.98, 0.98, 0.08, 56), matCheese, 0.72);
+          layer(new THREE.CylinderGeometry(1.0, 1.0, 0.26, 56), matMeat, 0.53);
+          layer(new THREE.CylinderGeometry(1.02, 1.02, 0.07, 56), matCheese, 0.32);
+
+          // Lettuce ring
+          const lettuce = layer(new THREE.TorusGeometry(0.78, 0.12, 14, 80), matLettuce, 0.16);
+          lettuce.rotation.x = Math.PI / 2;
+
+          // Tomato slices
+          for (let i = 0; i < 3; i++) {
+            const t = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.06, 40), matTomato);
+            t.position.set(Math.cos(i * 2.2) * 0.45, 0.12, Math.sin(i * 2.2) * 0.45);
+            t.rotation.x = Math.PI / 2;
+            t.castShadow = true;
+            burger.add(t);
+          }
+
+          layer(new THREE.CylinderGeometry(0.9, 0.96, 0.22, 56), matBun, -0.02); // bottom bun
+
+          scene.add(burger);
+          burgerRef.current = burger;
+
+          // Controls
+          const controls = new THREE.OrbitControls(camera, renderer.domElement);
+          controls.enableDamping = true;
+          controls.dampingFactor = 0.08;
+          controls.enablePan = false;
+          controls.minDistance = 2.2;
+          controls.maxDistance = 5.2;
+          controls.minPolarAngle = 0.12;
+          controls.maxPolarAngle = Math.PI - 0.12;
+          controls.autoRotate = true;
+          controls.autoRotateSpeed = 0.9;
+          controlsRef.current = controls;
+
+          const onResize = () => {
+            if (!mount) return;
+            const w = mount.clientWidth;
+            const h = mount.clientHeight;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+          };
+
+          const animate = () => {
+            rafRef.current = requestAnimationFrame(animate);
+            if (controlsRef.current) {
+              controlsRef.current.autoRotate = autoRotate;
+              controlsRef.current.update();
+            }
+            if (burgerRef.current) {
+              burgerRef.current.rotation.z = roll;
+            }
+            renderer.render(scene, camera);
+          };
+
+          window.addEventListener("resize", onResize);
+          animate();
+
+          return () => {
+            window.removeEventListener("resize", onResize);
+            cancelAnimationFrame(rafRef.current);
+            controls.dispose();
+            renderer.dispose();
+            mount.removeChild(renderer.domElement);
+          };
+        }, []); // init once
+
+        return (
+          <div className="relative h-full w-full">
+            <div className="absolute left-4 top-4 z-10 rounded-full border border-divineLine bg-black/30 px-3 py-1 text-[10px] tracking-[0.28em] text-divineCream/80 backdrop-blur">
+              360° CANVAS
+            </div>
+
+            <div className="absolute bottom-4 left-4 right-4 z-10 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setAutoRotate((s) => !s)}
+                  className="rounded-xl border border-divineLine bg-black/30 px-3 py-2 text-[11px] tracking-[0.22em] text-divineCream/75 backdrop-blur hover:text-divineGold transition"
+                >
+                  {autoRotate ? "PAUSE" : "AUTO"}
+                </button>
+                <button
+                  onClick={() => setRoll(0)}
+                  className="rounded-xl border border-divineLine bg-black/30 px-3 py-2 text-[11px] tracking-[0.22em] text-divineCream/75 backdrop-blur hover:text-divineGold transition"
+                >
+                  RESET
+                </button>
+                <div className="hidden md:flex rounded-xl border border-divineLine bg-black/30 px-3 py-2 text-[11px] tracking-[0.22em] text-divineCream/55 backdrop-blur">
+                  DRAG • ZOOM
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 rounded-2xl border border-divineLine bg-black/30 px-3 py-2 backdrop-blur">
+                <div className="text-[10px] tracking-[0.28em] text-divineCream/60">ROLL (Z)</div>
+                <input
+                  type="range"
+                  min={-3.1416}
+                  max={3.1416}
+                  step={0.01}
+                  value={roll}
+                  onChange={(e) => setRoll(parseFloat(e.target.value))}
+                  className="w-44 accent-[#C7A35C]"
+                />
+              </div>
+            </div>
+
+            <div ref={mountRef} className="h-full w-full bg-gradient-to-b from-black/0 to-black/35" />
+          </div>
+        );
+      }
+
+      function ProductModal({ product, onClose, onAdd }) {
+        useLockBodyScroll(true);
+        useEscape(onClose, true);
+
+        const [showIngredients, setShowIngredients] = useState(true);
+
+        return (
+          <motion.div
+            className="fixed inset-0 z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            aria-modal="true"
+            role="dialog"
+          >
+            <button className="absolute inset-0 bg-black/70" onClick={onClose} aria-label="Close" />
+
+            <motion.div
+              initial={{ y: 26, opacity: 0, scale: 0.98 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 18, opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}
+              className="absolute left-1/2 top-1/2 w-[92vw] max-w-5xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-3xl border border-divineLine bg-[#0A0A0F] shadow-divine"
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-2">
+                <div className="relative min-h-[340px] lg:min-h-[560px]">
+                  <ThreeBurgerViewer />
+                </div>
+
+                <div className="p-5 lg:p-7">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="text-xs tracking-[0.35em] text-divineGold/90">DIVINE COLLECTION</div>
+                      <h3 className="mt-2 text-2xl font-semibold">{product.name}</h3>
+                      <p className="mt-2 text-sm text-divineCream/70">{product.description}</p>
+                    </div>
+
+                    <button
+                      onClick={onClose}
+                      className="rounded-xl border border-divineLine bg-black/20 px-3 py-2 text-xs tracking-[0.22em] text-divineCream/75 hover:text-divineGold transition"
+                    >
+                      CLOSE
+                    </button>
+                  </div>
+
+                  <div className="mt-5 flex flex-wrap items-center gap-3">
+                    <span className="rounded-full border border-divineLine bg-divinePanel px-3 py-1 text-xs text-divineCream/75">
+                      Weight: <span className="text-divineCream">{product.grams}g</span>
+                    </span>
+                    <span className="rounded-full border border-divineLine bg-divinePanel px-3 py-1 text-xs text-divineCream/75">
+                      Price: <span className="text-divineGold font-semibold">{money(product.price)}</span>
+                    </span>
+
+                    <button
+                      onClick={onAdd}
+                      className="ml-auto rounded-xl border border-divineGold/40 bg-divineGold px-4 py-2 text-xs tracking-[0.22em] font-semibold text-black hover:brightness-110 transition"
+                    >
+                      ADD TO CART
+                    </button>
+                  </div>
+
+                  <div className="mt-6">
+                    <button
+                      onClick={() => setShowIngredients((s) => !s)}
+                      className="flex w-full items-center justify-between rounded-2xl border border-divineLine bg-divinePanel px-4 py-3 text-left"
+                    >
+                      <div>
+                        <div className="text-xs tracking-[0.28em] text-divineCream/60">DETAILS</div>
+                        <div className="mt-1 text-sm font-semibold">Ingredients</div>
+                      </div>
+                      <span className="text-xs tracking-[0.22em] text-divineGold">
+                        {showIngredients ? "HIDE" : "SHOW"}
+                      </span>
+                    </button>
+
+                    <AnimatePresence initial={false}>
+                      {showIngredients && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.25 }}
+                          className="overflow-hidden"
+                        >
+                          <ul className="mt-3 space-y-2 rounded-2xl border border-divineLine bg-black/20 p-4 text-sm text-divineCream/75">
+                            {product.ingredients?.map((ing) => (
+                              <li key={ing} className="flex items-center justify-between">
+                                <span>{ing}</span>
+                                <span className="text-divineGold/60">•</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  <div className="mt-6 rounded-2xl border border-divineLine bg-black/20 p-4">
+                    <div className="text-xs tracking-[0.28em] text-divineCream/60">NUTRITION</div>
+                    <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                      {Object.entries(product.nutrition || {}).map(([k, v]) => (
+                        <div
+                          key={k}
+                          className="flex items-center justify-between rounded-xl border border-divineLine bg-divinePanel px-3 py-2"
+                        >
+                          <span className="text-divineCream/70">{String(k).toUpperCase()}</span>
+                          <span className="font-semibold text-divineCream">{v}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="mt-3 text-xs text-divineCream/50">Approx values (placeholder).</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        );
+      }
+
+      function CartButton({ cartCount, onClick }) {
+        return (
+          <button
+            onClick={onClick}
+            className="fixed bottom-6 right-6 z-40 rounded-2xl border border-divineLine bg-divinePanel px-4 py-3 shadow-divine backdrop-blur hover:border-divineGold/60 transition"
+            aria-label="Open cart"
+          >
+            <div className="flex items-center gap-3">
+              <div className="text-xs tracking-[0.28em] text-divineCream/75">CART</div>
+              <div className="rounded-full bg-divineGold px-2 py-1 text-xs font-semibold text-black">
+                {cartCount}
+              </div>
+            </div>
+          </button>
+        );
+      }
+
+      function CartDrawer({ items, total, onClose, onQty }) {
+        useLockBodyScroll(true);
+        useEscape(onClose, true);
+
+        return (
+          <motion.div
+            className="fixed inset-0 z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            aria-modal="true"
+            role="dialog"
+          >
+            <button className="absolute inset-0 bg-black/70" onClick={onClose} aria-label="Close cart" />
+            <motion.aside
+              initial={{ x: 24, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: 24, opacity: 0 }}
+              transition={{ duration: 0.28, ease: [0.2, 0.8, 0.2, 1] }}
+              className="absolute right-0 top-0 h-full w-[92vw] max-w-md border-l border-divineLine bg-[#0A0A0F] p-5 shadow-divine"
+            >
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="text-xs tracking-[0.35em] text-divineGold/90">DIVINE</div>
+                  <h3 className="mt-2 text-xl font-semibold">Cart</h3>
+                  <p className="mt-1 text-sm text-divineCream/60">Review and adjust quantities.</p>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="rounded-xl border border-divineLine bg-black/20 px-3 py-2 text-xs tracking-[0.22em] text-divineCream/75 hover:text-divineGold transition"
+                >
+                  CLOSE
+                </button>
+              </div>
+
+              <div className="mt-6 space-y-3">
+                {items.length === 0 ? (
+                  <div className="rounded-2xl border border-divineLine bg-divinePanel p-4 text-sm text-divineCream/70">
+                    Your cart is empty.
+                  </div>
+                ) : (
+                  items.map((it) => (
+                    <div key={it.id} className="rounded-2xl border border-divineLine bg-divinePanel p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="font-semibold">{it.name}</div>
+                          <div className="mt-1 text-sm text-divineCream/70">{money(it.price)}</div>
+
+                          {it.meta && (
+                            <div className="mt-2 text-xs text-divineCream/55">
+                              {Object.entries(it.meta).map(([k, v]) => (
+                                <div key={k}>
+                                  <span className="text-divineGold/80">{k}:</span>{" "}
+                                  <span>{Array.isArray(v) ? v.join(", ") : String(v)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="text-sm font-semibold text-divineGold">{money(it.price * it.qty)}</div>
+                      </div>
+
+                      <div className="mt-3 flex items-center gap-2">
+                        <button
+                          className="rounded-xl border border-divineLine bg-black/20 px-3 py-2 text-xs tracking-[0.22em] text-divineCream/75"
+                          onClick={() => onQty(it.id, it.qty - 1)}
+                        >
+                          −
+                        </button>
+                        <div className="min-w-10 text-center text-sm">{it.qty}</div>
+                        <button
+                          className="rounded-xl border border-divineLine bg-black/20 px-3 py-2 text-xs tracking-[0.22em] text-divineCream/75"
+                          onClick={() => onQty(it.id, it.qty + 1)}
+                        >
+                          +
+                        </button>
+
+                        <button
+                          className="ml-auto rounded-xl border border-divineLine bg-black/20 px-3 py-2 text-xs tracking-[0.22em] text-divineCream/75 hover:text-divineGold transition"
+                          onClick={() => onQty(it.id, 0)}
+                        >
+                          REMOVE
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="mt-6 rounded-2xl border border-divineLine bg-black/20 p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-divineCream/70">Total</span>
+                  <span className="text-lg font-semibold text-divineGold">{money(total)}</span>
+                </div>
+                <button
+                  className="mt-4 w-full rounded-2xl border border-divineGold/40 bg-divineGold py-3 text-xs tracking-[0.22em] font-semibold text-black hover:brightness-110 transition disabled:opacity-60"
+                  disabled={items.length === 0}
+                >
+                  CHECKOUT (placeholder)
+                </button>
+              </div>
+            </motion.aside>
+          </motion.div>
+        );
+      }
+
+      // ----------- Burger Builder (Atelier) -----------
+      const BURGER_OPTIONS = {
+        bun: [
+          { id: "brioche", label: "Brioche", price: 1.75 },
+          { id: "potato", label: "Potato Roll", price: 1.5 },
+          { id: "sesame", label: "Sesame", price: 1.25 },
+        ],
+        protein: [
+          { id: "angus", label: "Angus 180g", price: 7.25 },
+          { id: "smash-double", label: "Double Smash", price: 7.9 },
+          { id: "chicken", label: "Crispy Chicken", price: 6.9 },
+          { id: "plant", label: "Plant-based", price: 7.1 },
+        ],
+        cheese: [
+          { id: "cheddar", label: "Aged Cheddar", price: 1.35 },
+          { id: "gruyere", label: "Gruyère", price: 1.75 },
+          { id: "blue", label: "Soft Blue", price: 1.95 },
+          { id: "none", label: "No cheese", price: 0 },
+        ],
+        toppings: [
+          { id: "truffle", label: "Truffle", price: 2.4 },
+          { id: "caramel-onion", label: "Caramelized Onion", price: 1.1 },
+          { id: "pickles", label: "Pickles", price: 0.7 },
+          { id: "bacon", label: "Premium Bacon", price: 2.0 },
+          { id: "arugula", label: "Arugula", price: 0.85 },
+          { id: "divine-sauce", label: "Divine Sauce", price: 1.0 },
+        ],
+      };
+      const BURGER_BASE = 2.95;
+
+      function SummaryRow({ label, value }) {
+        return (
+          <div className="flex items-center justify-between rounded-2xl border border-divineLine bg-divinePanel px-4 py-3">
+            <span className="text-divineCream/70">{label}</span>
+            <span className="font-semibold text-divineCream">{value}</span>
+          </div>
+        );
+      }
+
+      function OptionGrid({ title, options, value, onChange, single }) {
+        return (
+          <div>
+            <div className="mb-3 text-xs tracking-[0.28em] text-divineCream/55">{title.toUpperCase()}</div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {options.map((opt) => {
+                const active = single ? value === opt.id : (value || []).includes(opt.id);
+                return (
+                  <button
+                    key={opt.id}
+                    onClick={() => onChange(opt.id)}
+                    className={[
+                      "rounded-2xl border p-4 text-left transition",
+                      active
+                        ? "border-divineGold/60 bg-black/35"
+                        : "border-divineLine bg-black/20 hover:border-divineGold/40",
+                    ].join(" ")}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="font-semibold">{opt.label}</div>
+                        <div className="mt-1 text-sm text-divineCream/65">+ {money(opt.price)}</div>
+                      </div>
+                      <div
+                        className={[
+                          "mt-1 h-3 w-3 rounded-full border",
+                          active ? "border-divineGold bg-divineGold" : "border-divineLine bg-transparent",
+                        ].join(" ")}
+                      />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      }
+
+      function BurgerBuilder({ onAddToCart }) {
+        const [step, setStep] = useState(0);
+        const [bun, setBun] = useState(null);
+        const [protein, setProtein] = useState(null);
+        const [cheese, setCheese] = useState("none");
+        const [toppings, setToppings] = useState([]);
+
+        const valid = useMemo(() => !!bun && !!protein && !!cheese, [bun, protein, cheese]);
+
+        const price = useMemo(() => {
+          const bunP = BURGER_OPTIONS.bun.find((x) => x.id === bun)?.price ?? 0;
+          const proteinP = BURGER_OPTIONS.protein.find((x) => x.id === protein)?.price ?? 0;
+          const cheeseP = BURGER_OPTIONS.cheese.find((x) => x.id === cheese)?.price ?? 0;
+          const toppingsP = toppings.reduce(
+            (acc, id) => acc + (BURGER_OPTIONS.toppings.find((x) => x.id === id)?.price ?? 0),
+            0
+          );
+          return BURGER_BASE + bunP + proteinP + cheeseP + toppingsP;
+        }, [bun, protein, cheese, toppings]);
+
+        const summary = useMemo(() => {
+          const bunL = BURGER_OPTIONS.bun.find((x) => x.id === bun)?.label;
+          const proteinL = BURGER_OPTIONS.protein.find((x) => x.id === protein)?.label;
+          const cheeseL = BURGER_OPTIONS.cheese.find((x) => x.id === cheese)?.label;
+          const topL = toppings
+            .map((id) => BURGER_OPTIONS.toppings.find((x) => x.id === id)?.label)
+            .filter(Boolean);
+          return { bunL, proteinL, cheeseL, topL };
+        }, [bun, protein, cheese, toppings]);
+
+        function toggleTopping(id) {
+          setToppings((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]));
+        }
+
+        function addCustom() {
+          if (!valid) return;
+          const id = `custom-burger:${bun}:${protein}:${cheese}:${toppings.slice().sort().join(",")}`;
+          const meta = {
+            bun: summary.bunL,
+            protein: summary.proteinL,
+            cheese: summary.cheeseL,
+            toppings: summary.topL,
+          };
+          onAddToCart?.({ id, name: "Divine Custom Burger", price, meta });
+          setStep(0);
+          setBun(null);
+          setProtein(null);
+          setCheese("none");
+          setToppings([]);
+        }
+
+        return (
+          <div className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
+            <div className="rounded-3xl border border-divineLine bg-divinePanel p-4 md:p-6 shadow-divine">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="text-xs tracking-[0.35em] text-divineGold/90">STEP-BY-STEP</div>
+                  <h3 className="mt-2 text-xl font-semibold md:text-2xl">Atelier Burger</h3>
+                  <p className="mt-1 text-sm text-divineCream/65">Choose components. Price updates instantly.</p>
+                </div>
+
+                <div className="rounded-2xl border border-divineLine bg-black/20 px-4 py-3">
+                  <div className="text-[10px] tracking-[0.28em] text-divineCream/55">PRICE</div>
+                  <div className="mt-1 text-lg font-semibold text-divineGold">{money(price)}</div>
+                </div>
+              </div>
+
+              <div className="mt-5 grid grid-cols-4 gap-2">
+                {["BUN", "PROTEIN", "CHEESE", "TOPPINGS"].map((label, i) => (
+                  <button
+                    key={label}
+                    onClick={() => setStep(i)}
+                    className={[
+                      "rounded-2xl border px-3 py-2 text-[11px] tracking-[0.22em] transition",
+                      step === i
+                        ? "border-divineGold/60 bg-black/35 text-divineGold"
+                        : "border-divineLine bg-black/20 text-divineCream/70 hover:text-divineGold",
+                    ].join(" ")}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              <motion.div
+                key={step}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25 }}
+                className="mt-5"
+              >
+                {step === 0 && (
+                  <OptionGrid title="Choose your bun" options={BURGER_OPTIONS.bun} value={bun} onChange={setBun} single />
+                )}
+                {step === 1 && (
+                  <OptionGrid
+                    title="Choose your protein"
+                    options={BURGER_OPTIONS.protein}
+                    value={protein}
+                    onChange={setProtein}
+                    single
+                  />
+                )}
+                {step === 2 && (
+                  <OptionGrid
+                    title="Choose your cheese"
+                    options={BURGER_OPTIONS.cheese}
+                    value={cheese}
+                    onChange={setCheese}
+                    single
+                  />
+                )}
+                {step === 3 && (
+                  <OptionGrid
+                    title="Toppings (multi)"
+                    options={BURGER_OPTIONS.toppings}
+                    value={toppings}
+                    onChange={toggleTopping}
+                    single={false}
+                  />
+                )}
+              </motion.div>
+
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                <button
+                  onClick={() => setStep((s) => Math.max(0, s - 1))}
+                  className="rounded-2xl border border-divineLine bg-black/20 px-4 py-3 text-xs tracking-[0.22em] text-divineCream/75 hover:text-divineGold transition"
+                >
+                  BACK
+                </button>
+
+                <button
+                  onClick={() => setStep((s) => Math.min(3, s + 1))}
+                  className="rounded-2xl border border-divineLine bg-black/20 px-4 py-3 text-xs tracking-[0.22em] text-divineCream/75 hover:text-divineGold transition"
+                >
+                  NEXT
+                </button>
+
+                <button
+                  onClick={addCustom}
+                  disabled={!valid}
+                  className="ml-auto rounded-2xl border border-divineGold/40 bg-divineGold px-5 py-3 text-xs tracking-[0.22em] font-semibold text-black hover:brightness-110 transition disabled:opacity-60 disabled:hover:brightness-100"
+                >
+                  BUILD BURGER
+                </button>
+              </div>
+
+              {!valid && (
+                <p className="mt-3 text-xs text-divineCream/55">
+                  Complete <span className="text-divineGold">bun</span>, <span className="text-divineGold">protein</span>{" "}
+                  and <span className="text-divineGold">cheese</span> to enable “Build Burger”.
+                </p>
+              )}
+            </div>
+
+            <div className="rounded-3xl border border-divineLine bg-black/20 p-4 md:p-6 shadow-divine">
+              <div className="text-xs tracking-[0.35em] text-divineGold/90">SUMMARY</div>
+              <h4 className="mt-2 text-lg font-semibold">Your order</h4>
+
+              <div className="mt-4 space-y-3 text-sm">
+                <SummaryRow label="Bun" value={summary.bunL || "—"} />
+                <SummaryRow label="Protein" value={summary.proteinL || "—"} />
+                <SummaryRow label="Cheese" value={summary.cheeseL || "—"} />
+
+                <div className="rounded-2xl border border-divineLine bg-divinePanel p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-divineCream/70">Toppings</span>
+                    <span className="text-xs tracking-[0.22em] text-divineCream/55">{summary.topL?.length || 0}</span>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {summary.topL?.length ? (
+                      summary.topL.map((t) => (
+                        <span
+                          key={t}
+                          className="rounded-full border border-divineLine bg-black/20 px-3 py-1 text-xs text-divineCream/75"
+                        >
+                          {t}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-divineCream/55">—</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between rounded-2xl border border-divineLine bg-divinePanel px-4 py-3">
+                  <span className="text-divineCream/70">Estimated total</span>
+                  <span className="font-semibold text-divineGold">{money(price)}</span>
+                </div>
+              </div>
+
+              <p className="mt-4 text-xs text-divineCream/50">
+                Next: we can add allergens, calories per option, and premium upgrades.
+              </p>
+            </div>
+          </div>
+        );
+      }
+
+      // ----------- Yogurt Machine Builder -----------
+      const YOGURT_OPTIONS = {
+        size: [
+          { id: "mini", label: "Mini", price: 4.95 },
+          { id: "classic", label: "Classic", price: 6.5 },
+          { id: "grand", label: "Grand", price: 7.95 },
+        ],
+        flavor: [
+          { id: "classic-greek", label: "Classic Greek", price: 0 },
+          { id: "vanilla-bean", label: "Vanilla Bean", price: 0.5 },
+          { id: "strawberry-rose", label: "Strawberry Rose", price: 0.75 },
+        ],
+        sauces: [
+          { id: "honey-gold", label: "Honey Gold", price: 0.9 },
+          { id: "dark-chocolate", label: "Dark Chocolate", price: 1.1 },
+          { id: "berry-coulis", label: "Berry Coulis", price: 1.0 },
+          { id: "salted-caramel", label: "Salted Caramel", price: 1.1 },
+        ],
+        crunch: [
+          { id: "granola", label: "Granola", price: 0.85 },
+          { id: "cocoa-nibs", label: "Cocoa Nibs", price: 0.95 },
+          { id: "pistachio", label: "Pistachio", price: 1.25 },
+          { id: "almond-brittle", label: "Almond Brittle", price: 1.15 },
+        ],
+        fruit: [
+          { id: "blueberries", label: "Blueberries", price: 0.95 },
+          { id: "strawberries", label: "Strawberries", price: 1.0 },
+          { id: "mango", label: "Mango", price: 1.05 },
+          { id: "banana", label: "Banana", price: 0.75 },
+        ],
+        luxe: [
+          { id: "sea-salt", label: "Sea Salt Flakes", price: 0.35 },
+          { id: "espresso-dust", label: "Espresso Dust", price: 0.55 },
+          { id: "gold-dust", label: "Edible Gold Dust", price: 1.5 },
+        ],
+      };
+
+      function YogurtMachineBuilder({ onAddToCart }) {
+        const [step, setStep] = useState(0); // 0 size, 1 flavor, 2 sauces, 3 crunch, 4 fruit, 5 luxe
+        const [size, setSize] = useState("classic");
+        const [flavor, setFlavor] = useState("classic-greek");
+        const [sauces, setSauces] = useState([]);
+        const [crunch, setCrunch] = useState([]);
+        const [fruit, setFruit] = useState([]);
+        const [luxe, setLuxe] = useState([]);
+
+        const price = useMemo(() => {
+          const sizeP = YOGURT_OPTIONS.size.find((x) => x.id === size)?.price ?? 0;
+          const flavorP = YOGURT_OPTIONS.flavor.find((x) => x.id === flavor)?.price ?? 0;
+          const sum = (arr, opts) =>
+            arr.reduce((acc, id) => acc + (opts.find((x) => x.id === id)?.price ?? 0), 0);
+
+          return (
+            sizeP +
+            flavorP +
+            sum(sauces, YOGURT_OPTIONS.sauces) +
+            sum(crunch, YOGURT_OPTIONS.crunch) +
+            sum(fruit, YOGURT_OPTIONS.fruit) +
+            sum(luxe, YOGURT_OPTIONS.luxe)
+          );
+        }, [size, flavor, sauces, crunch, fruit, luxe]);
+
+        const summary = useMemo(() => {
+          const pick = (id, opts) => opts.find((x) => x.id === id)?.label;
+          const picks = (arr, opts) => arr.map((id) => pick(id, opts)).filter(Boolean);
+
+          return {
+            size: pick(size, YOGURT_OPTIONS.size),
+            flavor: pick(flavor, YOGURT_OPTIONS.flavor),
+            sauces: picks(sauces, YOGURT_OPTIONS.sauces),
+            crunch: picks(crunch, YOGURT_OPTIONS.crunch),
+            fruit: picks(fruit, YOGURT_OPTIONS.fruit),
+            luxe: picks(luxe, YOGURT_OPTIONS.luxe),
+          };
+        }, [size, flavor, sauces, crunch, fruit, luxe]);
+
+        function toggle(id, setter) {
+          setter((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+        }
+
+        function addToCart() {
+          const id = `yogurt:${size}:${flavor}:${[...sauces].sort().join(",")}:${[...crunch].sort().join(",")}:${[...fruit]
+            .sort()
+            .join(",")}:${[...luxe].sort().join(",")}`;
+
+          onAddToCart?.({
+            id,
+            name: "Greek Yogurt (Machine)",
+            price,
+            meta: summary,
+          });
+
+          setStep(0);
+          setSize("classic");
+          setFlavor("classic-greek");
+          setSauces([]);
+          setCrunch([]);
+          setFruit([]);
+          setLuxe([]);
+        }
+
+        const steps = [
+          { label: "SIZE", render: () => <OptionGrid title="Choose size" options={YOGURT_OPTIONS.size} value={size} onChange={setSize} single /> },
+          { label: "FLAVOR", render: () => <OptionGrid title="Choose flavor" options={YOGURT_OPTIONS.flavor} value={flavor} onChange={setFlavor} single /> },
+          {
+            label: "SAUCES",
+            render: () => (
+              <OptionGrid
+                title="Sauces (multi)"
+                options={YOGURT_OPTIONS.sauces}
+                value={sauces}
+                onChange={(id) => toggle(id, setSauces)}
+                single={false}
+              />
+            ),
+          },
+          {
+            label: "CRUNCH",
+            render: () => (
+              <OptionGrid
+                title="Crunch (multi)"
+                options={YOGURT_OPTIONS.crunch}
+                value={crunch}
+                onChange={(id) => toggle(id, setCrunch)}
+                single={false}
+              />
+            ),
+          },
+          {
+            label: "FRUIT",
+            render: () => (
+              <OptionGrid
+                title="Fruit (multi)"
+                options={YOGURT_OPTIONS.fruit}
+                value={fruit}
+                onChange={(id) => toggle(id, setFruit)}
+                single={false}
+              />
+            ),
+          },
+          {
+            label: "LUXE",
+            render: () => (
+              <OptionGrid
+                title="Luxe touches (multi)"
+                options={YOGURT_OPTIONS.luxe}
+                value={luxe}
+                onChange={(id) => toggle(id, setLuxe)}
+                single={false}
+              />
+            ),
+          },
+        ];
+
+        return (
+          <div className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
+            <div className="rounded-3xl border border-divineLine bg-divinePanel p-4 md:p-6 shadow-divine">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="text-xs tracking-[0.35em] text-divineGold/90">MACHINE BAR</div>
+                  <h3 className="mt-2 text-xl font-semibold md:text-2xl">Greek Yogurt</h3>
+                  <p className="mt-1 text-sm text-divineCream/65">Choose size, flavor and toppings with live pricing.</p>
+                </div>
+
+                <div className="rounded-2xl border border-divineLine bg-black/20 px-4 py-3">
+                  <div className="text-[10px] tracking-[0.28em] text-divineCream/55">PRICE</div>
+                  <div className="mt-1 text-lg font-semibold text-divineGold">{money(price)}</div>
+                </div>
+              </div>
+
+              <div className="mt-5 grid grid-cols-3 gap-2 md:grid-cols-6">
+                {steps.map((s, i) => (
+                  <button
+                    key={s.label}
+                    onClick={() => setStep(i)}
+                    className={[
+                      "rounded-2xl border px-3 py-2 text-[11px] tracking-[0.22em] transition",
+                      step === i
+                        ? "border-divineGold/60 bg-black/35 text-divineGold"
+                        : "border-divineLine bg-black/20 text-divineCream/70 hover:text-divineGold",
+                    ].join(" ")}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+
+              <motion.div
+                key={step}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25 }}
+                className="mt-5"
+              >
+                {steps[step].render()}
+              </motion.div>
+
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                <button
+                  onClick={() => setStep((s) => Math.max(0, s - 1))}
+                  className="rounded-2xl border border-divineLine bg-black/20 px-4 py-3 text-xs tracking-[0.22em] text-divineCream/75 hover:text-divineGold transition"
+                >
+                  BACK
+                </button>
+
+                <button
+                  onClick={() => setStep((s) => Math.min(steps.length - 1, s + 1))}
+                  className="rounded-2xl border border-divineLine bg-black/20 px-4 py-3 text-xs tracking-[0.22em] text-divineCream/75 hover:text-divineGold transition"
+                >
+                  NEXT
+                </button>
+
+                <button
+                  onClick={addToCart}
+                  className="ml-auto rounded-2xl border border-divineGold/40 bg-divineGold px-5 py-3 text-xs tracking-[0.22em] font-semibold text-black hover:brightness-110 transition"
+                >
+                  ADD YOGURT
+                </button>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-divineLine bg-black/20 p-4 md:p-6 shadow-divine">
+              <div className="text-xs tracking-[0.35em] text-divineGold/90">SUMMARY</div>
+              <h4 className="mt-2 text-lg font-semibold">Your yogurt</h4>
+
+              <div className="mt-4 space-y-3 text-sm">
+                <SummaryRow label="Size" value={summary.size || "—"} />
+                <SummaryRow label="Flavor" value={summary.flavor || "—"} />
+
+                {[
+                  ["Sauces", summary.sauces],
+                  ["Crunch", summary.crunch],
+                  ["Fruit", summary.fruit],
+                  ["Luxe", summary.luxe],
+                ].map(([label, arr]) => (
+                  <div key={label} className="rounded-2xl border border-divineLine bg-divinePanel p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-divineCream/70">{label}</span>
+                      <span className="text-xs tracking-[0.22em] text-divineCream/55">{arr?.length || 0}</span>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {arr?.length ? (
+                        arr.map((t) => (
+                          <span
+                            key={t}
+                            className="rounded-full border border-divineLine bg-black/20 px-3 py-1 text-xs text-divineCream/75"
+                          >
+                            {t}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-divineCream/55">—</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                <div className="flex items-center justify-between rounded-2xl border border-divineLine bg-divinePanel px-4 py-3">
+                  <span className="text-divineCream/70">Estimated total</span>
+                  <span className="font-semibold text-divineGold">{money(price)}</span>
+                </div>
+              </div>
+
+              <p className="mt-4 text-xs text-divineCream/50">
+                Next: we can enforce topping limits by size and add allergy tags.
+              </p>
+            </div>
+          </div>
+        );
+      }
+
+      // ----------- App -----------
+      function App() {
+        const refs = {
+          burgers: useRef(null),
+          desserts: useRef(null),
+          yogurt: useRef(null),
+          atelier: useRef(null),
+        };
+
+        const [activeBurger, setActiveBurger] = useState(null);
+        const [cartOpen, setCartOpen] = useState(false);
+        const [cartItems, setCartItems] = useState([]); // {id,name,price,qty,meta?}
+
+        const cartCount = useMemo(() => cartItems.reduce((acc, it) => acc + it.qty, 0), [cartItems]);
+        const cartTotal = useMemo(() => cartItems.reduce((acc, it) => acc + it.price * it.qty, 0), [cartItems]);
+
+        function scrollTo(key) {
+          refs[key]?.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+
+        function addToCart(item) {
+          setCartItems((prev) => {
+            const idx = prev.findIndex((p) => p.id === item.id);
+            if (idx >= 0) {
+              const copy = [...prev];
+              copy[idx] = { ...copy[idx], qty: copy[idx].qty + 1 };
+              return copy;
+            }
+            return [...prev, { ...item, qty: 1 }];
+          });
+        }
+
+        function updateQty(id, qty) {
+          setCartItems((prev) => prev.map((p) => (p.id === id ? { ...p, qty } : p)).filter((p) => p.qty > 0));
+        }
+
+        return (
+          <div className="min-h-screen">
+            <Header onNavigate={scrollTo} onOpenCart={() => setCartOpen(true)} cartCount={cartCount} />
+
+            <main className="mx-auto max-w-6xl px-4 pb-24 pt-24 md:px-6">
+              <motion.section
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, ease: [0.2, 0.8, 0.2, 1] }}
+                className="mb-10 md:mb-14"
+              >
+                <p className="mb-3 text-xs tracking-[0.35em] text-divineGold/90">DIVINE • GOURMET BAR</p>
+                <h1 className="text-balance text-3xl font-semibold leading-tight md:text-5xl">
+                  Luxury fast-casual — burgers, desserts, and Greek yogurt.
+                </h1>
+                <p className="mt-4 max-w-2xl text-sm text-divineCream/75 md:text-base">
+                  Open each burger in a cinematic 360° canvas. Build your burger and yogurt with real-time pricing.
+                </p>
+              </motion.section>
+
+              <section ref={refs.burgers} className="scroll-mt-28">
+                <SectionShell
+                  eyebrow="THE DIVINE COLLECTION"
+                  title="Burgers"
+                  subtitle="Premium ingredients, umami-forward profiles, and a luxury finish."
+                >
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {burgers.map((p) => (
+                      <ProductCard
+                        key={p.id}
+                        product={p}
+                        badge="360° VIEW"
+                        onClick={() => setActiveBurger(p)}
+                        onAdd={() => addToCart({ id: p.id, name: p.name, price: p.price })}
+                      />
+                    ))}
+                  </div>
+                </SectionShell>
+              </section>
+
+              <section ref={refs.desserts} className="scroll-mt-28">
+                <SectionShell
+                  eyebrow="EXQUISITE DESSERTS"
+                  title="Desserts"
+                  subtitle="Fine patisserie aesthetics — contrast, texture, and an elegant finale."
+                >
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {desserts.map((p) => (
+                      <ProductCard
+                        key={p.id}
+                        product={p}
+                        badge="PATISSERIE"
+                        onClick={() => addToCart({ id: p.id, name: p.name, price: p.price })}
+                        onAdd={() => addToCart({ id: p.id, name: p.name, price: p.price })}
+                      />
+                    ))}
+                  </div>
+                </SectionShell>
+              </section>
+
+              <section ref={refs.yogurt} className="scroll-mt-28">
+                <SectionShell
+                  eyebrow="GREEK YOGURT MACHINE"
+                  title="Yogurt"
+                  subtitle="Soft-serve Greek yogurt: choose your size, flavor and toppings like a luxury bar."
+                >
+                  <YogurtMachineBuilder onAddToCart={addToCart} />
+                </SectionShell>
+              </section>
+
+              <section ref={refs.atelier} className="scroll-mt-28">
+                <SectionShell
+                  eyebrow="ATELIER"
+                  title="Build Your Burger"
+                  subtitle="Step-by-step configurator with premium pricing logic and live summary."
+                >
+                  <BurgerBuilder onAddToCart={addToCart} />
+                </SectionShell>
+              </section>
+            </main>
+
+            <CartButton cartCount={cartCount} onClick={() => setCartOpen(true)} />
+
+            <AnimatePresence>
+              {cartOpen && (
+                <CartDrawer items={cartItems} total={cartTotal} onClose={() => setCartOpen(false)} onQty={updateQty} />
+              )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+              {!!activeBurger && (
+                <ProductModal
+                  product={activeBurger}
+                  onClose={() => setActiveBurger(null)}
+                  onAdd={() => addToCart({ id: activeBurger.id, name: activeBurger.name, price: activeBurger.price })}
+                />
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<App />);
+    </script>
+
+    <!-- Nota rápida:
+      Si lo abres con doble click y algo no carga, úsalo con un server local (ej: VSCode Live Server).
+    -->
+  </body>
+</html>
