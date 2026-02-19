@@ -35,7 +35,10 @@
     <!-- Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
     <!-- Favicon -->
     <link
@@ -53,7 +56,7 @@
         color: #f5efe6;
         overflow-x: hidden;
       }
-      ::selection { background: rgba(199, 163, 92, 0.35); }
+      ::selection { background: rgba(199,163,92,0.35); }
 
       .divine-noise{
         position:fixed; inset:0; pointer-events:none; opacity:.05; z-index:0;
@@ -119,6 +122,11 @@
         color: rgba(199,163,92,0.95);
         transform: translateY(-1px);
       }
+      .btn-disabled{
+        opacity:.45;
+        filter:saturate(.6);
+        cursor:not-allowed;
+      }
 
       .nav-link{ position:relative; padding:8px 6px; }
       .nav-link::after{
@@ -154,8 +162,8 @@
 
       .scroll-smooth-ios{ -webkit-overflow-scrolling: touch; }
       .floating-safe{
-        bottom: calc(1.25rem + env(safe-area-inset-bottom));
-        right: calc(1.25rem + env(safe-area-inset-right));
+        bottom: calc(1.1rem + env(safe-area-inset-bottom));
+        right: calc(1.1rem + env(safe-area-inset-right));
       }
 
       .mobile-scroll{
@@ -185,10 +193,9 @@
 
     <!-- Three.js (UMD) -->
     <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-    <!-- Optional for future photoreal GLB loading -->
     <script src="https://unpkg.com/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
 
-    <!-- Babel (JSX en el navegador) -->
+    <!-- Babel -->
     <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
   </head>
 
@@ -202,14 +209,17 @@
       const { useEffect, useMemo, useRef, useState } = React;
 
       // =========================
-      // Branding
+      // Flags / Branding
       // =========================
       const BRAND_NAME = "Divinée";
       const LOGO_LOCAL = "./assets/logo-divinee.jpg";
       const LOGO_REMOTE = "https://i.postimg.cc/J7czGY3s/Whats_App_Image_2026_02_10_at_2_42_10_PM.jpg";
 
+      // Deshabilitar Yogurt por ahora
+      const YOGURT_ENABLED = false;
+
       // =========================
-      // Motion fallback (safe)
+      // Motion fallback
       // =========================
       const FM = window.framerMotion || {};
       function stripMotionProps(props = {}) {
@@ -335,7 +345,7 @@
           img: "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=1600&q=80",
           ingredients: ["Pan brioche", "Angus 180g", "Gruyère", "Crema de trufa", "Rúcula", "Alioli Divinée"],
           nutrition: { kcal: 780, proteina_g: 42, carbos_g: 48, grasa_g: 46, sodio_mg: 980 },
-          modelUrl: "./models/burger.glb",
+          modelUrl: "./models/burger.glb", // si existe, se cargará
         },
         {
           id: "golden-smash",
@@ -426,7 +436,7 @@
       ];
 
       // =========================
-      // Three helpers
+      // Three helpers (small)
       // =========================
       function makeNoiseTexture(THREE, { size = 256, contrast = 0.6 } = {}) {
         const c = document.createElement("canvas");
@@ -467,10 +477,26 @@
       }
 
       // =========================
-      // Header
+      // Components
       // =========================
       function Header({ onNavigate, onOpenCart, cartCount }) {
         const [logoSrc, setLogoSrc] = useState(LOGO_LOCAL);
+
+        const NavChip = ({ label, enabled, onClick }) => (
+          <button
+            disabled={!enabled}
+            onClick={enabled ? onClick : undefined}
+            className={[
+              "whitespace-nowrap rounded-full border px-4 py-2 text-[11px] tracking-[0.22em] backdrop-blur transition",
+              enabled
+                ? "border-divineLine2 bg-black/25 text-divineCream/75 hover:text-divineGold hover:border-divineGold/40"
+                : "border-divineLine2 bg-black/20 text-divineCream/40 btn-disabled",
+            ].join(" ")}
+            type="button"
+          >
+            {label}
+          </button>
+        );
 
         return (
           <header className="fixed left-0 top-0 z-40 w-full">
@@ -495,10 +521,26 @@
                   </div>
 
                   <nav className="hidden md:flex items-center gap-4 text-xs tracking-[0.22em] text-divineCream/80">
-                    <button onClick={() => onNavigate("burgers")} className="nav-link hover:text-divineGold transition" type="button">HAMBURGUESAS</button>
-                    <button onClick={() => onNavigate("desserts")} className="nav-link hover:text-divineGold transition" type="button">POSTRES</button>
-                    <button onClick={() => onNavigate("yogurt")} className="nav-link hover:text-divineGold transition" type="button">YOGURT</button>
-                    <button onClick={() => onNavigate("atelier")} className="nav-link hover:text-divineGold transition" type="button">ATELIER</button>
+                    <button onClick={() => onNavigate("burgers")} className="nav-link hover:text-divineGold transition" type="button">
+                      HAMBURGUESAS
+                    </button>
+                    <button onClick={() => onNavigate("desserts")} className="nav-link hover:text-divineGold transition" type="button">
+                      POSTRES
+                    </button>
+                    <button
+                      disabled={!YOGURT_ENABLED}
+                      onClick={YOGURT_ENABLED ? () => onNavigate("yogurt") : undefined}
+                      className={[
+                        "nav-link transition",
+                        YOGURT_ENABLED ? "hover:text-divineGold" : "btn-disabled text-divineCream/50",
+                      ].join(" ")}
+                      type="button"
+                    >
+                      YOGURT {YOGURT_ENABLED ? "" : "• PRONTO"}
+                    </button>
+                    <button onClick={() => onNavigate("atelier")} className="nav-link hover:text-divineGold transition" type="button">
+                      ATELIER
+                    </button>
                   </nav>
 
                   <div className="flex items-center gap-2">
@@ -508,23 +550,13 @@
                   </div>
                 </div>
 
+                {/* Mobile chips */}
                 <div className="md:hidden px-4 pb-3">
                   <div className="mobile-scroll flex gap-2">
-                    {[
-                      ["Hamburguesas", "burgers"],
-                      ["Postres", "desserts"],
-                      ["Yogurt", "yogurt"],
-                      ["Atelier", "atelier"],
-                    ].map(([label, key]) => (
-                      <button
-                        key={key}
-                        onClick={() => onNavigate(key)}
-                        className="whitespace-nowrap rounded-full border border-divineLine2 bg-black/25 px-4 py-2 text-[11px] tracking-[0.22em] text-divineCream/75 hover:text-divineGold hover:border-divineGold/40 transition backdrop-blur"
-                        type="button"
-                      >
-                        {label.toUpperCase()}
-                      </button>
-                    ))}
+                    <NavChip label="HAMBURGUESAS" enabled={true} onClick={() => onNavigate("burgers")} />
+                    <NavChip label="POSTRES" enabled={true} onClick={() => onNavigate("desserts")} />
+                    <NavChip label="YOGURT • PRONTO" enabled={false} onClick={() => {}} />
+                    <NavChip label="ATELIER" enabled={true} onClick={() => onNavigate("atelier")} />
                   </div>
                 </div>
               </div>
@@ -535,13 +567,13 @@
 
       function SectionShell({ eyebrow, title, subtitle, children }) {
         return (
-          <div className="mb-12 md:mb-16">
+          <div className="mb-10 md:mb-16">
             <motion.div
-              initial={{ opacity: 0, y: 18 }}
+              initial={{ opacity: 0, y: 14 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ amount: 0.25, once: true }}
-              transition={{ duration: 0.7, ease: [0.2, 0.8, 0.2, 1] }}
-              className="mb-5 md:mb-7"
+              transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
+              className="mb-4 md:mb-7"
             >
               <div className="mb-2 text-xs tracking-[0.35em] text-divineGold/90">{eyebrow}</div>
               <h2 className="text-2xl font-semibold md:text-4xl">{title}</h2>
@@ -595,28 +627,57 @@
         );
       }
 
+      // Mobile-friendly: horizontal rail instead of long vertical grid
+      function ProductShowcase({ items, badge, onOpen, onAdd }) {
+        return (
+          <>
+            {/* Mobile rail */}
+            <div className="sm:hidden">
+              <div className="mobile-scroll flex gap-3 pb-2 snap-x snap-mandatory">
+                {items.map((p) => (
+                  <div key={p.id} className="w-[78vw] max-w-[360px] snap-start">
+                    <ProductCard
+                      product={p}
+                      badge={badge}
+                      onClick={() => onOpen(p)}
+                      onAdd={() => onAdd({ id: p.id, name: p.name, price: p.price })}
+                    />
+                  </div>
+                ))}
+              </div>
+              <p className="mt-2 text-xs text-divineCream/50">Desliza horizontal para ver más.</p>
+            </div>
+
+            {/* Desktop grid */}
+            <div className="hidden sm:grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {items.map((p) => (
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  badge={badge}
+                  onClick={() => onOpen(p)}
+                  onAdd={() => onAdd({ id: p.id, name: p.name, price: p.price })}
+                />
+              ))}
+            </div>
+          </>
+        );
+      }
+
       // =========================
-      // 3D Viewer (supports real GLB if exists, else procedural)
-      // Rotation: yaw (left/right) + pitch (up/down) = true 360
+      // 3D Viewer (procedural, tries GLB if exists)
+      // 360 rotation: yaw dx + pitch dy
       // =========================
-      function BurgerViewer3D({
-        heightClass = "h-[280px] md:h-[440px]",
-        modelUrl,
-        buildConfig, // { bunId, proteinsCount, cheesesCount, toppings[] } (optional)
-        showUI = true,
-      }) {
+      function BurgerViewer3D({ heightClass = "h-[280px] md:h-[440px]", modelUrl, showUI = true }) {
         const mountRef = useRef(null);
         const rafRef = useRef(null);
 
-        const sceneRef = useRef(null);
         const cameraRef = useRef(null);
-        const rendererRef = useRef(null);
-
-        const rootGroupRef = useRef(null);     // parent group
-        const stackGroupRef = useRef(null);    // burger model or procedural stack
+        const rootRef = useRef(null);
+        const stackRef = useRef(null);
 
         const yawRef = useRef(0);
-        const pitchRef = useRef(-0.10);
+        const pitchRef = useRef(-0.12);
 
         const draggingRef = useRef(false);
         const lastRef = useRef({ x: 0, y: 0 });
@@ -627,32 +688,15 @@
 
         const [err, setErr] = useState(null);
 
-        const sig = useMemo(() => JSON.stringify(buildConfig || {}), [buildConfig]);
-
-        function bunColorHex(id) {
-          if (id === "lettuce") return 0x2f7a4b;
-          if (id === "pretzel") return 0x7a5a3b;
-          if (id === "ciabatta") return 0xc7b097;
-          return 0xc7a35c;
-        }
-
-        function clearGroup(group) {
-          if (!group) return;
-          while (group.children.length) {
-            const c = group.children.pop();
-            if (!c) continue;
-            group.remove(c);
-          }
-        }
-
-        function buildProceduralStack(THREE, group, config, { animateDrop = false } = {}) {
-          clearGroup(group);
+        function buildProcedural(THREE, group) {
+          // clear
+          while (group.children.length) group.remove(group.children[0]);
 
           const bunNoise = makeNoiseTexture(THREE, { contrast: 0.45 });
           const meatNoise = makeNoiseTexture(THREE, { contrast: 0.65 });
 
           const bunMat = new THREE.MeshPhysicalMaterial({
-            color: bunColorHex(config?.bunId),
+            color: 0xc7a35c,
             roughness: 0.55,
             metalness: 0.02,
             clearcoat: 0.35,
@@ -676,92 +720,30 @@
           });
           const greenMat = new THREE.MeshStandardMaterial({ color: 0x3f8f5a, roughness: 0.85 });
           const redMat = new THREE.MeshStandardMaterial({ color: 0xb33b2e, roughness: 0.68 });
-          const darkMat = new THREE.MeshStandardMaterial({ color: 0x1b1b20, roughness: 0.92 });
 
-          const add = (mesh, targetY) => {
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
-            if (animateDrop) {
-              mesh.userData.targetY = targetY;
-              mesh.userData.vy = 0;
-              mesh.position.y = targetY + 0.65;
-              mesh.scale.setScalar(0.92);
-            } else {
-              mesh.position.y = targetY;
-            }
-            group.add(mesh);
-            return mesh;
-          };
+          const add = (m) => { m.castShadow = true; m.receiveShadow = true; group.add(m); return m; };
 
-          const proteinsCount = Math.max(1, config?.proteinsCount ?? 1);
-          const cheesesCount = Math.max(0, config?.cheesesCount ?? 1);
-          const toppings = config?.toppings || [];
-          const tset = new Set(toppings);
+          add(new THREE.Mesh(new THREE.CylinderGeometry(0.92, 1.02, 0.26, 64), bunMat)).position.y = 0.00;
+          add(new THREE.Mesh(new THREE.CylinderGeometry(1.04, 1.04, 0.28, 64), meatMat)).position.y = 0.28;
+          add(new THREE.Mesh(new THREE.CylinderGeometry(1.07, 1.07, 0.08, 64), cheeseMat)).position.y = 0.46;
 
-          let y = 0.00;
+          const ring = add(new THREE.Mesh(new THREE.TorusGeometry(0.78, 0.12, 14, 90), greenMat));
+          ring.position.y = 0.56;
+          ring.rotation.x = Math.PI / 2;
 
-          // bottom bun
-          add(new THREE.Mesh(new THREE.CylinderGeometry(0.92, 1.02, 0.26, 64), bunMat), y);
-          y += 0.18;
-
-          // proteins + cheese interleaved
-          for (let i = 0; i < proteinsCount; i++) {
-            add(new THREE.Mesh(new THREE.CylinderGeometry(1.04, 1.04, 0.28, 64), meatMat), y);
-            y += 0.22;
-
-            if (cheesesCount > 0 && i < cheesesCount) {
-              add(new THREE.Mesh(new THREE.CylinderGeometry(1.07, 1.07, 0.08, 64), cheeseMat), y);
-              y += 0.08;
-            }
+          for (let i = 0; i < 3; i++) {
+            const t = add(new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.06, 48), redMat));
+            t.position.set(Math.cos(i * 2.2) * 0.45, 0.62, Math.sin(i * 2.2) * 0.45);
+            t.rotation.x = Math.PI / 2;
           }
 
-          if (tset.has("lettuce") || tset.has("arugula")) {
-            const ring = new THREE.Mesh(new THREE.TorusGeometry(0.78, 0.12, 14, 90), greenMat);
-            ring.rotation.x = Math.PI / 2;
-            add(ring, y + 0.06);
-            y += 0.10;
-          }
+          add(new THREE.Mesh(new THREE.CylinderGeometry(0.86, 0.90, 0.12, 64), bunMat)).position.y = 0.84;
 
-          if (tset.has("tomato")) {
-            for (let i = 0; i < 3; i++) {
-              const t = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.06, 48), redMat);
-              t.rotation.x = Math.PI / 2;
-              t.position.set(Math.cos(i * 2.2) * 0.45, 0, Math.sin(i * 2.2) * 0.45);
-              add(t, y + 0.05);
-            }
-            y += 0.10;
-          }
-
-          if (tset.has("pickles")) {
-            for (let i = 0; i < 4; i++) {
-              const p = new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.03, 10, 30), greenMat);
-              p.rotation.x = Math.PI / 2;
-              p.position.set(Math.cos(i * 1.7) * 0.55, 0, Math.sin(i * 1.7) * 0.55);
-              add(p, y + 0.03);
-            }
-            y += 0.08;
-          }
-
-          if (tset.has("bacon")) {
-            for (let i = 0; i < 2; i++) {
-              const b = new THREE.Mesh(new THREE.BoxGeometry(1.08, 0.05, 0.18), darkMat);
-              b.rotation.y = i * 0.85;
-              add(b, y + 0.05);
-            }
-            y += 0.10;
-          }
-
-          // top bun base + dome
-          add(new THREE.Mesh(new THREE.CylinderGeometry(0.86, 0.90, 0.12, 64), bunMat), y + 0.12);
-
-          const dome = new THREE.Mesh(new THREE.SphereGeometry(0.95, 64, 48, 0, Math.PI * 2, 0, Math.PI / 1.9), bunMat);
+          const dome = add(new THREE.Mesh(new THREE.SphereGeometry(0.95, 64, 48, 0, Math.PI * 2, 0, Math.PI / 1.9), bunMat));
           dome.scale.set(1.0, 0.62, 1.0);
-          add(dome, y + 0.38);
+          dome.position.y = 1.12;
 
-          return () => {
-            bunNoise.dispose?.();
-            meatNoise.dispose?.();
-          };
+          return () => { bunNoise.dispose?.(); meatNoise.dispose?.(); };
         }
 
         useEffect(() => {
@@ -790,17 +772,14 @@
             renderer.domElement.style.width = "100%";
             renderer.domElement.style.height = "100%";
             renderer.domElement.style.display = "block";
-            renderer.domElement.style.touchAction = "none"; // <-- IMPORTANT: allow full 360 drag
+            renderer.domElement.style.touchAction = "none";
             mount.appendChild(renderer.domElement);
 
             const scene = new THREE.Scene();
             scene.fog = new THREE.Fog(0x0a0a0f, 8, 18);
 
             const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
-
-            sceneRef.current = scene;
             cameraRef.current = camera;
-            rendererRef.current = renderer;
 
             // Lights
             scene.add(new THREE.AmbientLight(0xffffff, 0.16));
@@ -826,16 +805,16 @@
             ground.receiveShadow = true;
             scene.add(ground);
 
-            const rootGroup = new THREE.Group();
-            rootGroup.position.set(0, -0.65, 0);
-            scene.add(rootGroup);
-            rootGroupRef.current = rootGroup;
+            const root = new THREE.Group();
+            root.position.set(0, -0.65, 0);
+            scene.add(root);
+            rootRef.current = root;
 
-            const stackGroup = new THREE.Group();
-            rootGroup.add(stackGroup);
-            stackGroupRef.current = stackGroup;
+            const stack = new THREE.Group();
+            root.add(stack);
+            stackRef.current = stack;
 
-            // Rotation handlers: ALWAYS capture pointer, full yaw+pitch
+            // Controls: full yaw/pitch
             const el = renderer.domElement;
 
             const onDown = (e) => {
@@ -843,20 +822,16 @@
               lastRef.current = { x: e.clientX, y: e.clientY };
               el.setPointerCapture?.(e.pointerId);
             };
-
             const onMove = (e) => {
               if (!draggingRef.current) return;
-
               const dx = e.clientX - lastRef.current.x;
               const dy = e.clientY - lastRef.current.y;
               lastRef.current = { x: e.clientX, y: e.clientY };
 
-              yawRef.current += dx * 0.008;     // left/right = 360
-              pitchRef.current += dy * 0.006;   // up/down
-
+              yawRef.current += dx * 0.008;
+              pitchRef.current += dy * 0.006;
               pitchRef.current = Math.max(-0.75, Math.min(0.35, pitchRef.current));
             };
-
             const onUp = (e) => {
               draggingRef.current = false;
               try { el.releasePointerCapture?.(e.pointerId); } catch {}
@@ -874,32 +849,42 @@
             };
             window.addEventListener("resize", onResize);
 
-            // Render loop
+            // Load GLB if possible, else procedural
+            let disposer = null;
+            const useGLB = modelUrl && THREE.GLTFLoader;
+
+            if (useGLB) {
+              const loader = new THREE.GLTFLoader();
+              loader.load(
+                modelUrl,
+                (gltf) => {
+                  while (stack.children.length) stack.remove(stack.children[0]);
+                  const model = gltf.scene;
+                  model.traverse((o) => {
+                    if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; }
+                  });
+                  model.scale.setScalar(1.2);
+                  stack.add(model);
+                  fitCameraToObject(THREE, camera, stack, 1.55);
+                },
+                undefined,
+                () => {
+                  disposer = buildProcedural(THREE, stack);
+                  fitCameraToObject(THREE, camera, stack, 1.55);
+                }
+              );
+            } else {
+              disposer = buildProcedural(THREE, stack);
+              fitCameraToObject(THREE, camera, stack, 1.55);
+            }
+
             const animate = () => {
               rafRef.current = requestAnimationFrame(animate);
-
-              if (rootGroupRef.current) {
+              if (rootRef.current) {
                 if (autoRotateRef.current && !draggingRef.current) yawRef.current += 0.0032;
-                rootGroupRef.current.rotation.y = yawRef.current;
-                rootGroupRef.current.rotation.x = pitchRef.current;
-
-                // If procedural layers have targetY, animate drop
-                const g = stackGroupRef.current;
-                if (g) {
-                  for (const child of g.children) {
-                    if (child?.userData?.targetY == null) continue;
-                    const target = child.userData.targetY;
-                    const y = child.position.y;
-                    const dy = target - y;
-                    child.userData.vy = (child.userData.vy || 0) * 0.78 + dy * 0.18;
-                    child.position.y = y + child.userData.vy;
-
-                    const s = child.scale.x;
-                    child.scale.setScalar(s + (1 - s) * 0.12);
-                  }
-                }
+                rootRef.current.rotation.y = yawRef.current;
+                rootRef.current.rotation.x = pitchRef.current;
               }
-
               renderer.render(scene, camera);
             };
             animate();
@@ -907,87 +892,19 @@
             return () => {
               window.removeEventListener("resize", onResize);
               cancelAnimationFrame(rafRef.current);
+
               el.removeEventListener("pointerdown", onDown);
               el.removeEventListener("pointermove", onMove);
               window.removeEventListener("pointerup", onUp);
 
+              disposer?.();
               renderer.dispose();
               if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
             };
           } catch (e) {
             setErr(e?.message || String(e));
           }
-        }, []);
-
-        // Build content: prefer GLB if available, else procedural. Builder uses procedural config.
-        useEffect(() => {
-          const THREE = window.THREE;
-          if (!THREE) return;
-          const scene = sceneRef.current;
-          const camera = cameraRef.current;
-          const stackGroup = stackGroupRef.current;
-          if (!scene || !camera || !stackGroup) return;
-
-          let disposeTextures = null;
-          let cancelled = false;
-
-          const loadOrBuild = async () => {
-            // If buildConfig exists => procedural with drop animation
-            if (buildConfig) {
-              disposeTextures = buildProceduralStack(THREE, stackGroup, buildConfig, { animateDrop: true });
-              fitCameraToObject(THREE, camera, stackGroup, 1.55);
-              return;
-            }
-
-            // Try GLB model if URL provided and loader exists
-            if (modelUrl && THREE.GLTFLoader) {
-              try {
-                clearGroup(stackGroup);
-
-                const loader = new THREE.GLTFLoader();
-                loader.load(
-                  modelUrl,
-                  (gltf) => {
-                    if (cancelled) return;
-                    const model = gltf.scene;
-                    model.traverse((o) => {
-                      if (o.isMesh) {
-                        o.castShadow = true;
-                        o.receiveShadow = true;
-                      }
-                    });
-                    model.scale.setScalar(1.2);
-                    model.position.set(0, 0.0, 0);
-                    stackGroup.add(model);
-                    fitCameraToObject(THREE, camera, stackGroup, 1.55);
-                  },
-                  undefined,
-                  () => {
-                    // If GLB fails, fallback procedural (no error popup)
-                    const fallback = { bunId: "brioche", proteinsCount: 1, cheesesCount: 1, toppings: ["lettuce", "tomato"] };
-                    disposeTextures = buildProceduralStack(THREE, stackGroup, fallback, { animateDrop: false });
-                    fitCameraToObject(THREE, camera, stackGroup, 1.55);
-                  }
-                );
-                return;
-              } catch {
-                // ignore and fallback below
-              }
-            }
-
-            // Fallback procedural
-            const fallback = { bunId: "brioche", proteinsCount: 1, cheesesCount: 1, toppings: ["lettuce", "tomato"] };
-            disposeTextures = buildProceduralStack(THREE, stackGroup, fallback, { animateDrop: false });
-            fitCameraToObject(THREE, camera, stackGroup, 1.55);
-          };
-
-          loadOrBuild();
-
-          return () => {
-            cancelled = true;
-            disposeTextures?.();
-          };
-        }, [sig, modelUrl]);
+        }, [modelUrl]);
 
         if (err) {
           return (
@@ -1011,11 +928,7 @@
                 <button onClick={() => setAutoRotate((s) => !s)} className="btn-ghost py-2 px-4" type="button">
                   {autoRotate ? "PAUSAR" : "AUTO"}
                 </button>
-                <button
-                  onClick={() => { yawRef.current = 0; pitchRef.current = -0.10; }}
-                  className="btn-ghost py-2 px-4"
-                  type="button"
-                >
+                <button onClick={() => { yawRef.current = 0; pitchRef.current = -0.12; }} className="btn-ghost py-2 px-4" type="button">
                   REINICIAR
                 </button>
               </div>
@@ -1027,7 +940,7 @@
       }
 
       // =========================
-      // Bottom Sheet (mobile)
+      // BottomSheet + ProductModal
       // =========================
       function BottomSheet({ title, subtitle, onClose, children, cta }) {
         const close = useHistoryClose(true, onClose);
@@ -1078,9 +991,6 @@
         );
       }
 
-      // =========================
-      // Product Modal (desktop modal / mobile sheet)
-      // =========================
       function ProductModal({ product, onClose, onAdd }) {
         const isMobile = useIsMobile();
         useLockBodyScroll(true);
@@ -1098,7 +1008,7 @@
               }
             >
               <div className="rounded-2xl border border-divineLine2 bg-black/20 overflow-hidden">
-                <BurgerViewer3D heightClass="h-[260px]" modelUrl={product.modelUrl} showUI={true} />
+                <BurgerViewer3D heightClass="h-[240px]" modelUrl={product.modelUrl} showUI={true} />
               </div>
 
               <div className="mt-4 text-sm text-divineCream/70">{product.description}</div>
@@ -1122,18 +1032,6 @@
                     </li>
                   ))}
                 </ul>
-              </div>
-
-              <div className="mt-4 rounded-2xl border border-divineLine2 bg-black/25 p-4">
-                <div className="text-xs tracking-[0.28em] text-divineCream/60">NUTRICIÓN</div>
-                <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
-                  {Object.entries(product.nutrition || {}).map(([k, v]) => (
-                    <div key={k} className="flex items-center justify-between rounded-xl border border-divineLine bg-divinePanel px-3 py-2">
-                      <span className="text-divineCream/70">{String(k).toUpperCase()}</span>
-                      <span className="font-semibold text-divineCream">{v}</span>
-                    </div>
-                  ))}
-                </div>
               </div>
             </BottomSheet>
           );
@@ -1223,7 +1121,7 @@
       }
 
       // =========================
-      // Cart Button (declared ONCE)
+      // Cart Button / Drawer
       // =========================
       function CartButton({ cartCount, onClick }) {
         return (
@@ -1320,7 +1218,7 @@
       }
 
       // =========================
-      // Atelier Premium Builder (carousel + layers + photogenic procedural 3D)
+      // Atelier (kept as is, but already reduces scroll by horizontal rails above)
       // =========================
       const BURGER_BASE = 2.95;
 
@@ -1391,7 +1289,6 @@
         return (
           <div className="rounded-3xl border border-divineLine2 bg-black/20 p-4">
             <div className="text-xs tracking-[0.35em] text-divineGold/90">{title.toUpperCase()}</div>
-
             <div className="mt-3 grid grid-cols-[auto_1fr_auto] items-center gap-3">
               <IconButton label="←" title="Anterior" onClick={onPrev} />
               <motion.div
@@ -1420,9 +1317,7 @@
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <div className="text-xs tracking-[0.35em] text-divineGold/90">{title.toUpperCase()}</div>
-              <div className="mt-1 text-sm text-divineCream/65">
-                Capas: <span className="text-divineCream">{count}</span>
-              </div>
+              <div className="mt-1 text-sm text-divineCream/65">Capas: <span className="text-divineCream">{count}</span></div>
             </div>
             <button type="button" onClick={onAdd} className="btn-ghost px-4 py-2" disabled={disabled} style={{ opacity: disabled ? 0.55 : 1 }}>
               + <span className="ml-1">{addLabel}</span>
@@ -1467,7 +1362,6 @@
 
       function BurgerBuilder({ onAddToCart }) {
         const [step, setStep] = useState(0);
-
         const [bunIdx, setBunIdx] = useState(0);
 
         const [proteinLayers, setProteinLayers] = useState([0]);
@@ -1480,10 +1374,7 @@
 
         const bun = BURGER_CATALOG.buns[bunIdx];
 
-        const cheesesCount = Math.max(
-          0,
-          cheeseLayers.filter((idx) => BURGER_CATALOG.cheeses[idx]?.id !== "none").length
-        );
+        const cheesesCount = Math.max(0, cheeseLayers.filter((idx) => BURGER_CATALOG.cheeses[idx]?.id !== "none").length);
 
         const price = useMemo(() => {
           const bunP = bun?.price ?? 0;
@@ -1567,7 +1458,7 @@
           const toppingsSel = toppings.map((id) => BURGER_CATALOG.toppings.find((t) => t.id === id)).filter(Boolean);
 
           const id = [
-            "custom-burger-premium",
+            "custom-burger",
             bunSel?.id,
             proteinsSel.map((p) => p.id).join("+"),
             cheesesSel.map((c) => c.id).join("+"),
@@ -1581,7 +1472,7 @@
             toppings: toppingsSel.map((t) => t.name),
           };
 
-          onAddToCart?.({ id, name: "Hamburguesa Divinée (Atelier Premium)", price, meta });
+          onAddToCart?.({ id, name: "Hamburguesa Divinée (Atelier)", price, meta });
 
           setStep(0);
           setBunIdx(0);
@@ -1592,473 +1483,150 @@
           setToppings([]);
         }
 
-        const buildConfig = useMemo(() => {
-          return {
-            bunId: BURGER_CATALOG.buns[bunIdx]?.id,
-            proteinsCount: proteinLayers.length,
-            cheesesCount,
-            toppings,
-          };
-        }, [bunIdx, proteinLayers.length, cheesesCount, toppings]);
-
         return (
-          <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-            <div className="rounded-3xl glass ring-gold p-4 md:p-6">
-              <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="rounded-3xl glass ring-gold p-4 md:p-6">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <div className="text-xs tracking-[0.35em] text-divineGold/90">ATELIER</div>
+                <h3 className="mt-2 text-xl font-semibold md:text-2xl">Arma tu Hamburguesa</h3>
+                <p className="mt-1 text-sm text-divineCream/65">Carrusel + capas múltiples. (Optimizado para móvil)</p>
+              </div>
+
+              <div className="rounded-2xl border border-divineLine2 bg-black/25 px-4 py-3 shadow-glow">
+                <div className="text-[10px] tracking-[0.28em] text-divineCream/55">PRECIO</div>
+                <div className="mt-1 text-lg font-semibold text-divineGold">{money(price)}</div>
+              </div>
+            </div>
+
+            <div className="mt-5 rounded-3xl border border-divineLine2 bg-black/20 overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-divineLine2 bg-black/25">
                 <div>
-                  <div className="text-xs tracking-[0.35em] text-divineGold/90">ATELIER PREMIUM</div>
-                  <h3 className="mt-2 text-xl font-semibold md:text-2xl">Arma tu Hamburguesa</h3>
-                  <p className="mt-1 text-sm text-divineCream/65">Carrusel + capas múltiples + armado animado.</p>
+                  <div className="text-xs tracking-[0.35em] text-divineGold/90">VISTA 3D</div>
+                  <div className="text-xs text-divineCream/60">Arrastra para rotar 360°</div>
                 </div>
-
-                <div className="rounded-2xl border border-divineLine2 bg-black/25 px-4 py-3 shadow-glow">
-                  <div className="text-[10px] tracking-[0.28em] text-divineCream/55">PRECIO</div>
-                  <div className="mt-1 text-lg font-semibold text-divineGold">{money(price)}</div>
+                <div className="text-xs tracking-[0.22em] text-divineCream/55">
+                  {proteinLayers.length} carne(s) • {cheesesCount} queso(s)
                 </div>
               </div>
 
-              <div className="mt-5 rounded-3xl border border-divineLine2 bg-black/20 overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-divineLine2 bg-black/25">
-                  <div>
-                    <div className="text-xs tracking-[0.35em] text-divineGold/90">VISTA 3D</div>
-                    <div className="text-xs text-divineCream/60">Arrastra para rotar 360°</div>
-                  </div>
-                  <div className="text-xs tracking-[0.22em] text-divineCream/55">
-                    {proteinLayers.length} carne(s) • {cheesesCount} queso(s)
-                  </div>
-                </div>
-                <BurgerViewer3D
-                  heightClass="h-[260px] md:h-[320px]"
-                  buildConfig={buildConfig}
-                  showUI={false}
-                />
-              </div>
+              <BurgerViewer3D
+                heightClass="h-[240px] md:h-[320px]"
+                modelUrl={null}
+                showUI={false}
+              />
+            </div>
 
-              <div className="mt-5 grid grid-cols-4 gap-2">
-                {steps.map((label, i) => (
-                  <button
-                    key={label}
-                    onClick={() => setStep(i)}
-                    className={[
-                      "rounded-2xl border px-3 py-2 text-[11px] tracking-[0.22em] transition",
-                      step === i
-                        ? "border-divineGold/60 bg-black/35 text-divineGold shadow-glow"
-                        : "border-divineLine bg-black/25 text-divineCream/70 hover:text-divineGold hover:border-divineGold/40",
-                    ].join(" ")}
-                    type="button"
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-
-              <motion.div
-                key={step}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25 }}
-                className="mt-5"
-              >
-                {step === 0 && (
-                  <CarouselPicker title="Pan" options={BURGER_CATALOG.buns} index={bunIdx} onPrev={bunPrev} onNext={bunNext} />
-                )}
-
-                {step === 1 && (
-                  <div className="space-y-4">
-                    <LayersHeader
-                      title="Carnes"
-                      count={proteinLayers.length}
-                      onAdd={addProteinLayer}
-                      addLabel="Agregar otra carne"
-                      disabled={proteinLayers.length >= MAX_PROTEIN_LAYERS}
-                    />
-                    <LayersTabs
-                      label="Carne"
-                      layers={proteinLayers}
-                      active={activeProteinLayer}
-                      setActive={setActiveProteinLayer}
-                      onRemove={removeProteinLayer}
-                      min={1}
-                    />
-                    <CarouselPicker
-                      title={`Carne ${activeProteinLayer + 1}`}
-                      options={BURGER_CATALOG.proteins}
-                      index={proteinLayers[activeProteinLayer] ?? 0}
-                      onPrev={proteinPrev}
-                      onNext={proteinNext}
-                    />
-                  </div>
-                )}
-
-                {step === 2 && (
-                  <div className="space-y-4">
-                    <LayersHeader
-                      title="Quesos"
-                      count={cheeseLayers.length}
-                      onAdd={addCheeseLayer}
-                      addLabel="Agregar otro queso"
-                      disabled={cheeseLayers.length >= MAX_CHEESE_LAYERS}
-                    />
-                    <LayersTabs
-                      label="Queso"
-                      layers={cheeseLayers}
-                      active={activeCheeseLayer}
-                      setActive={setActiveCheeseLayer}
-                      onRemove={removeCheeseLayer}
-                      min={1}
-                    />
-                    <CarouselPicker
-                      title={`Queso ${activeCheeseLayer + 1}`}
-                      options={BURGER_CATALOG.cheeses}
-                      index={cheeseLayers[activeCheeseLayer] ?? 0}
-                      onPrev={cheesePrev}
-                      onNext={cheeseNext}
-                    />
-                  </div>
-                )}
-
-                {step === 3 && (
-                  <div className="rounded-3xl border border-divineLine2 bg-black/20 p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="text-xs tracking-[0.35em] text-divineGold/90">TOPPINGS</div>
-                        <div className="mt-1 text-sm text-divineCream/65">Selecciona todos los que quieras.</div>
-                      </div>
-                      <div className="text-xs tracking-[0.22em] text-divineCream/55">{toppings.length} seleccionados</div>
-                    </div>
-
-                    <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                      {BURGER_CATALOG.toppings.map((t) => {
-                        const active = toppings.includes(t.id);
-                        return (
-                          <button
-                            key={t.id}
-                            onClick={() => toggleTopping(t.id)}
-                            className={[
-                              "rounded-2xl border px-4 py-3 text-left transition",
-                              active ? "border-divineGold/60 bg-black/35 shadow-glow" : "border-divineLine bg-black/25 hover:border-divineGold/40",
-                            ].join(" ")}
-                            type="button"
-                          >
-                            <div className="flex items-start justify-between gap-3">
-                              <div>
-                                <div className="font-semibold">{t.name}</div>
-                                <div className="mt-1 text-xs tracking-[0.18em] text-divineCream/55">{t.group.toUpperCase()}</div>
-                              </div>
-                              <div className="text-sm font-semibold text-divineGold">{money(t.price)}</div>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </motion.div>
-
-              <div className="mt-6 flex flex-wrap items-center gap-3">
-                <button onClick={() => setStep((s) => Math.max(0, s - 1))} className="btn-ghost" type="button">ATRÁS</button>
-                <button onClick={() => setStep((s) => Math.min(3, s + 1))} className="btn-ghost" type="button">SIGUIENTE</button>
-                <button onClick={buildAndAdd} className="ml-auto btn-primary" disabled={!valid} style={{ opacity: valid ? 1 : 0.6 }} type="button">
-                  ARMAR
+            <div className="mt-5 grid grid-cols-4 gap-2">
+              {steps.map((label, i) => (
+                <button
+                  key={label}
+                  onClick={() => setStep(i)}
+                  className={[
+                    "rounded-2xl border px-3 py-2 text-[11px] tracking-[0.22em] transition",
+                    step === i
+                      ? "border-divineGold/60 bg-black/35 text-divineGold shadow-glow"
+                      : "border-divineLine bg-black/25 text-divineCream/70 hover:text-divineGold hover:border-divineGold/40",
+                  ].join(" ")}
+                  type="button"
+                >
+                  {label}
                 </button>
-              </div>
+              ))}
             </div>
 
-            <div className="rounded-3xl border border-divineLine2 bg-black/25 p-4 md:p-6 shadow-divine">
-              <div className="text-xs tracking-[0.35em] text-divineGold/90">RESUMEN</div>
-              <h4 className="mt-2 text-lg font-semibold">Tu orden</h4>
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25 }}
+              className="mt-5"
+            >
+              {step === 0 && (
+                <CarouselPicker title="Pan" options={BURGER_CATALOG.buns} index={bunIdx} onPrev={bunPrev} onNext={bunNext} />
+              )}
 
-              <div className="mt-4 space-y-3 text-sm">
-                <div className="rounded-2xl border border-divineLine2 bg-divinePanel px-4 py-3">
-                  <div className="flex justify-between gap-3">
-                    <span className="text-divineCream/70">Pan</span>
-                    <span className="font-semibold text-divineCream">{bun?.name}</span>
+              {step === 1 && (
+                <div className="space-y-4">
+                  <LayersHeader title="Carnes" count={proteinLayers.length} onAdd={addProteinLayer} addLabel="Agregar otra carne" disabled={proteinLayers.length >= MAX_PROTEIN_LAYERS} />
+                  <LayersTabs label="Carne" layers={proteinLayers} active={activeProteinLayer} setActive={setActiveProteinLayer} onRemove={removeProteinLayer} min={1} />
+                  <CarouselPicker title={`Carne ${activeProteinLayer + 1}`} options={BURGER_CATALOG.proteins} index={proteinLayers[activeProteinLayer] ?? 0} onPrev={proteinPrev} onNext={proteinNext} />
+                </div>
+              )}
+
+              {step === 2 && (
+                <div className="space-y-4">
+                  <LayersHeader title="Quesos" count={cheeseLayers.length} onAdd={addCheeseLayer} addLabel="Agregar otro queso" disabled={cheeseLayers.length >= MAX_CHEESE_LAYERS} />
+                  <LayersTabs label="Queso" layers={cheeseLayers} active={activeCheeseLayer} setActive={setActiveCheeseLayer} onRemove={removeCheeseLayer} min={1} />
+                  <CarouselPicker title={`Queso ${activeCheeseLayer + 1}`} options={BURGER_CATALOG.cheeses} index={cheeseLayers[activeCheeseLayer] ?? 0} onPrev={cheesePrev} onNext={cheeseNext} />
+                </div>
+              )}
+
+              {step === 3 && (
+                <div className="rounded-3xl border border-divineLine2 bg-black/20 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-xs tracking-[0.35em] text-divineGold/90">TOPPINGS</div>
+                      <div className="mt-1 text-sm text-divineCream/65">Selecciona todos los que quieras.</div>
+                    </div>
+                    <div className="text-xs tracking-[0.22em] text-divineCream/55">{toppings.length} seleccionados</div>
+                  </div>
+
+                  <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                    {BURGER_CATALOG.toppings.map((t) => {
+                      const active = toppings.includes(t.id);
+                      return (
+                        <button
+                          key={t.id}
+                          onClick={() => toggleTopping(t.id)}
+                          className={[
+                            "rounded-2xl border px-4 py-3 text-left transition",
+                            active ? "border-divineGold/60 bg-black/35 shadow-glow" : "border-divineLine bg-black/25 hover:border-divineGold/40",
+                          ].join(" ")}
+                          type="button"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <div className="font-semibold">{t.name}</div>
+                              <div className="mt-1 text-xs tracking-[0.18em] text-divineCream/55">{t.group.toUpperCase()}</div>
+                            </div>
+                            <div className="text-sm font-semibold text-divineGold">{money(t.price)}</div>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
+              )}
+            </motion.div>
 
-                <div className="rounded-2xl border border-divineLine2 bg-divinePanel px-4 py-3">
-                  <div className="flex justify-between gap-3">
-                    <span className="text-divineCream/70">Carnes</span>
-                    <span className="text-xs tracking-[0.22em] text-divineCream/55">{proteinLayers.length}</span>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-divineLine2 bg-divinePanel px-4 py-3">
-                  <div className="flex justify-between gap-3">
-                    <span className="text-divineCream/70">Quesos</span>
-                    <span className="text-xs tracking-[0.22em] text-divineCream/55">{cheeseLayers.length}</span>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-divineLine2 bg-divinePanel px-4 py-3">
-                  <div className="flex justify-between gap-3">
-                    <span className="text-divineCream/70">Toppings</span>
-                    <span className="text-xs tracking-[0.22em] text-divineCream/55">{toppings.length}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between rounded-2xl border border-divineLine2 bg-divinePanel px-4 py-3">
-                  <span className="text-divineCream/70">Total estimado</span>
-                  <span className="font-semibold text-divineGold">{money(price)}</span>
-                </div>
-              </div>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <button onClick={() => setStep((s) => Math.max(0, s - 1))} className="btn-ghost" type="button">ATRÁS</button>
+              <button onClick={() => setStep((s) => Math.min(3, s + 1))} className="btn-ghost" type="button">SIGUIENTE</button>
+              <button onClick={buildAndAdd} className="ml-auto btn-primary" disabled={!valid} style={{ opacity: valid ? 1 : 0.6 }} type="button">
+                ARMAR
+              </button>
             </div>
           </div>
         );
       }
 
       // =========================
-      // Yogurt Builder
+      // Yogurt Coming Soon (compact, reduces scroll)
       // =========================
-      const YOGURT_OPTIONS = {
-        tamano: [
-          { id: "mini", label: "Mini", price: 4.95 },
-          { id: "clasico", label: "Clásico", price: 6.5 },
-          { id: "grand", label: "Grand", price: 7.95 },
-        ],
-        sabor: [
-          { id: "griego", label: "Griego Clásico", price: 0 },
-          { id: "vainilla", label: "Vainilla Bean", price: 0.5 },
-          { id: "fresa", label: "Fresa Rose", price: 0.75 },
-        ],
-        salsas: [
-          { id: "miel", label: "Miel Gold", price: 0.9 },
-          { id: "choco", label: "Chocolate oscuro", price: 1.1 },
-          { id: "berries", label: "Coulis de berries", price: 1.0 },
-          { id: "caramelo", label: "Caramelo salado", price: 1.1 },
-        ],
-        crunch: [
-          { id: "granola", label: "Granola", price: 0.85 },
-          { id: "nibs", label: "Cacao nibs", price: 0.95 },
-          { id: "pistacho", label: "Pistacho", price: 1.25 },
-          { id: "almendra", label: "Almendra brittle", price: 1.15 },
-        ],
-        fruta: [
-          { id: "blueberries", label: "Blueberries", price: 0.95 },
-          { id: "strawberries", label: "Fresas", price: 1.0 },
-          { id: "mango", label: "Mango", price: 1.05 },
-          { id: "banana", label: "Banana", price: 0.75 },
-        ],
-        luxe: [
-          { id: "sal", label: "Sal en escamas", price: 0.35 },
-          { id: "espresso", label: "Polvo de espresso", price: 0.55 },
-          { id: "oro", label: "Polvo oro comestible", price: 1.5 },
-        ],
-      };
-
-      function SummaryRow({ label, value }) {
+      function YogurtComingSoonCard() {
         return (
-          <div className="flex items-center justify-between rounded-2xl border border-divineLine2 bg-divinePanel px-4 py-3">
-            <span className="text-divineCream/70">{label}</span>
-            <span className="font-semibold text-divineCream">{value}</span>
-          </div>
-        );
-      }
-
-      function OptionGrid({ title, options, value, onChange, single }) {
-        return (
-          <div>
-            <div className="mb-3 text-xs tracking-[0.28em] text-divineCream/55">{title.toUpperCase()}</div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {options.map((opt) => {
-                const active = single ? value === opt.id : (value || []).includes(opt.id);
-                return (
-                  <button
-                    key={opt.id}
-                    onClick={() => onChange(opt.id)}
-                    className={[
-                      "rounded-2xl border p-4 text-left transition",
-                      active ? "border-divineGold/60 bg-black/35 shadow-glow" : "border-divineLine bg-black/25 hover:border-divineGold/40",
-                    ].join(" ")}
-                    type="button"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="font-semibold">{opt.label}</div>
-                        <div className="mt-1 text-sm text-divineCream/65">+ {money(opt.price)}</div>
-                      </div>
-                      <div className={["mt-1 h-3 w-3 rounded-full border", active ? "border-divineGold bg-divineGold" : "border-divineLine bg-transparent"].join(" ")} />
-                    </div>
-                  </button>
-                );
-              })}
+          <div className="rounded-3xl border border-divineLine2 bg-black/25 p-6 shadow-divine">
+            <div className="text-[10px] tracking-[0.35em] text-divineGold/90">GREEK YOGURT</div>
+            <div className="mt-2 text-3xl font-semibold">¡MUY PRONTO!</div>
+            <p className="mt-3 text-sm text-divineCream/70">
+              Por el momento no contamos con la máquina de yogurt. Estamos preparando esta experiencia para ti.
+            </p>
+            <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-divineLine2 bg-black/20 px-4 py-2 text-xs tracking-[0.22em] text-divineCream/65">
+              YOGURT DE MÁQUINA • NO DISPONIBLE
             </div>
           </div>
         );
       }
-
-      function YogurtMachineBuilder({ onAddToCart }) {
-        const [step, setStep] = useState(0);
-        const [tamano, setTamano] = useState("clasico");
-        const [sabor, setSabor] = useState("griego");
-        const [salsas, setSalsas] = useState([]);
-        const [crunch, setCrunch] = useState([]);
-        const [fruta, setFruta] = useState([]);
-        const [luxe, setLuxe] = useState([]);
-
-        const price = useMemo(() => {
-          const pick = (id, opts) => (opts.find((x) => x.id === id)?.price ?? 0);
-          const sum = (arr, opts) => arr.reduce((acc, id) => acc + (opts.find((x) => x.id === id)?.price ?? 0), 0);
-          return (
-            pick(tamano, YOGURT_OPTIONS.tamano) +
-            pick(sabor, YOGURT_OPTIONS.sabor) +
-            sum(salsas, YOGURT_OPTIONS.salsas) +
-            sum(crunch, YOGURT_OPTIONS.crunch) +
-            sum(fruta, YOGURT_OPTIONS.fruta) +
-            sum(luxe, YOGURT_OPTIONS.luxe)
-          );
-        }, [tamano, sabor, salsas, crunch, fruta, luxe]);
-
-        const resumen = useMemo(() => {
-          const label = (id, opts) => opts.find((x) => x.id === id)?.label;
-          const labels = (arr, opts) => arr.map((id) => label(id, opts)).filter(Boolean);
-          return {
-            tamano: label(tamano, YOGURT_OPTIONS.tamano),
-            sabor: label(sabor, YOGURT_OPTIONS.sabor),
-            salsas: labels(salsas, YOGURT_OPTIONS.salsas),
-            crunch: labels(crunch, YOGURT_OPTIONS.crunch),
-            fruta: labels(fruta, YOGURT_OPTIONS.fruta),
-            luxe: labels(luxe, YOGURT_OPTIONS.luxe),
-          };
-        }, [tamano, sabor, salsas, crunch, fruta, luxe]);
-
-        function toggle(id, setter) {
-          setter((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
-        }
-
-        function addToCart() {
-          const id = `yogurt:${tamano}:${sabor}:${[...salsas].sort().join(",")}:${[...crunch].sort().join(",")}:${[...fruta].sort().join(",")}:${[...luxe].sort().join(",")}`;
-          onAddToCart?.({ id, name: "Yogurt Griego (Máquina)", price, meta: resumen });
-
-          setStep(0);
-          setTamano("clasico");
-          setSabor("griego");
-          setSalsas([]);
-          setCrunch([]);
-          setFruta([]);
-          setLuxe([]);
-        }
-
-        const steps = [
-          { label: "TAMAÑO", render: () => <OptionGrid title="Elige tamaño" options={YOGURT_OPTIONS.tamano} value={tamano} onChange={setTamano} single /> },
-          { label: "SABOR", render: () => <OptionGrid title="Elige sabor" options={YOGURT_OPTIONS.sabor} value={sabor} onChange={setSabor} single /> },
-          { label: "SALSAS", render: () => <OptionGrid title="Salsas (multi)" options={YOGURT_OPTIONS.salsas} value={salsas} onChange={(id) => toggle(id, setSalsas)} single={false} /> },
-          { label: "CRUNCH", render: () => <OptionGrid title="Crunch (multi)" options={YOGURT_OPTIONS.crunch} value={crunch} onChange={(id) => toggle(id, setCrunch)} single={false} /> },
-          { label: "FRUTA", render: () => <OptionGrid title="Fruta (multi)" options={YOGURT_OPTIONS.fruta} value={fruta} onChange={(id) => toggle(id, setFruta)} single={false} /> },
-          { label: "LUXE", render: () => <OptionGrid title="Toques luxe (multi)" options={YOGURT_OPTIONS.luxe} value={luxe} onChange={(id) => toggle(id, setLuxe)} single={false} /> },
-        ];
-
-        return (
-          <div className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
-            <div className="rounded-3xl glass ring-gold p-4 md:p-6">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <div className="text-xs tracking-[0.35em] text-divineGold/90">MÁQUINA</div>
-                  <h3 className="mt-2 text-xl font-semibold md:text-2xl">Yogurt Griego</h3>
-                  <p className="mt-1 text-sm text-divineCream/65">Selecciona toppings con precio en vivo.</p>
-                </div>
-
-                <div className="rounded-2xl border border-divineLine2 bg-black/25 px-4 py-3 shadow-glow">
-                  <div className="text-[10px] tracking-[0.28em] text-divineCream/55">PRECIO</div>
-                  <div className="mt-1 text-lg font-semibold text-divineGold">{money(price)}</div>
-                </div>
-              </div>
-
-              <div className="mt-5 grid grid-cols-3 gap-2 md:grid-cols-6">
-                {steps.map((s, i) => (
-                  <button
-                    key={s.label}
-                    onClick={() => setStep(i)}
-                    className={[
-                      "rounded-2xl border px-3 py-2 text-[11px] tracking-[0.22em] transition",
-                      step === i
-                        ? "border-divineGold/60 bg-black/35 text-divineGold shadow-glow"
-                        : "border-divineLine bg-black/25 text-divineCream/70 hover:text-divineGold hover:border-divineGold/40",
-                    ].join(" ")}
-                    type="button"
-                  >
-                    {s.label}
-                  </button>
-                ))}
-              </div>
-
-              <motion.div key={step} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="mt-5">
-                {steps[step].render()}
-              </motion.div>
-
-              <div className="mt-6 flex flex-wrap items-center gap-3">
-                <button onClick={() => setStep((s) => Math.max(0, s - 1))} className="btn-ghost" type="button">ATRÁS</button>
-                <button onClick={() => setStep((s) => Math.min(steps.length - 1, s + 1))} className="btn-ghost" type="button">SIGUIENTE</button>
-                <button onClick={addToCart} className="ml-auto btn-primary" type="button">AÑADIR YOGURT</button>
-              </div>
-            </div>
-
-            <div className="rounded-3xl border border-divineLine2 bg-black/25 p-4 md:p-6 shadow-divine">
-              <div className="text-xs tracking-[0.35em] text-divineGold/90">RESUMEN</div>
-              <h4 className="mt-2 text-lg font-semibold">Tu yogurt</h4>
-
-              <div className="mt-4 space-y-3 text-sm">
-                <SummaryRow label="Tamaño" value={resumen.tamano || "—"} />
-                <SummaryRow label="Sabor" value={resumen.sabor || "—"} />
-
-                {[
-                  ["Salsas", resumen.salsas],
-                  ["Crunch", resumen.crunch],
-                  ["Fruta", resumen.fruta],
-                  ["Luxe", resumen.luxe],
-                ].map(([label, arr]) => (
-                  <div key={label} className="rounded-2xl border border-divineLine2 bg-divinePanel p-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-divineCream/70">{label}</span>
-                      <span className="text-xs tracking-[0.22em] text-divineCream/55">{arr?.length || 0}</span>
-                    </div>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {arr?.length ? (
-                        arr.map((t) => (
-                          <span key={t} className="rounded-full border border-divineLine2 bg-black/20 px-3 py-1 text-xs text-divineCream/75">{t}</span>
-                        ))
-                      ) : (
-                        <span className="text-divineCream/55">—</span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-
-                <div className="flex items-center justify-between rounded-2xl border border-divineLine2 bg-divinePanel px-4 py-3">
-                  <span className="text-divineCream/70">Total estimado</span>
-                  <span className="font-semibold text-divineGold">{money(price)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      }
-      function ComingSoonWrap({
-  children,
-  title = "¡MUY PRONTO!",
-  subtitle = "El Yogurt de máquina estará disponible nuevamente en breve.",
-}) {
-  return (
-    <div className="relative overflow-hidden rounded-3xl border border-divineLine2 bg-black/25 shadow-divine">
-      {/* contenido real pero deshabilitado */}
-      <div className="pointer-events-none select-none blur-[2px] opacity-35 grayscale">
-        {children}
-      </div>
-
-      {/* overlay */}
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-4">
-        <div className="rounded-3xl border border-divineLine2 bg-black/55 px-6 py-5 text-center backdrop-blur-xl shadow-glow">
-          <div className="text-[10px] tracking-[0.35em] text-divineGold/90">DIVINÉE</div>
-          <div className="mt-2 text-2xl font-semibold text-divineCream">{title}</div>
-          <div className="mt-2 text-sm text-divineCream/70">{subtitle}</div>
-        </div>
-      </div>
-
-      {/* viñeta/oscurecido para look premium */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/25 to-transparent" />
-    </div>
-  );
-}
 
       // =========================
       // App
@@ -2102,23 +1670,18 @@
 
         return (
           <div className="min-h-screen relative z-[1]">
-            <Header
-              onNavigate={scrollTo}
-              onOpenCart={() => setCartOpen(true)}
-              cartCount={cartCount}
-            />
+            <Header onNavigate={scrollTo} onOpenCart={() => setCartOpen(true)} cartCount={cartCount} />
 
-            <main className="mx-auto max-w-6xl px-4 pb-32 pt-32 md:pt-28 md:px-6">
+            {/* Más compacto en móvil */}
+            <main className="mx-auto max-w-6xl px-4 pb-28 pt-28 md:pt-28 md:px-6">
               <motion.section
-                initial={{ opacity: 0, y: 14 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.75, ease: [0.2, 0.8, 0.2, 1] }}
-                className="mb-10 md:mb-14"
+                transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
+                className="mb-8 md:mb-14"
               >
-                <div className="rounded-3xl hero-grid shadow-divine p-6 md:p-10">
-                  <p className="mb-3 text-xs tracking-[0.35em] text-divineGold/90">
-                    {BRAND_NAME.toUpperCase()} • GOURMET BAR
-                  </p>
+                <div className="rounded-3xl hero-grid shadow-divine p-5 md:p-10">
+                  <p className="mb-3 text-xs tracking-[0.35em] text-divineGold/90">{BRAND_NAME.toUpperCase()} • GOURMET BAR</p>
 
                   <h1 className="text-3xl font-semibold leading-tight md:text-6xl">
                     <span className="bg-gradient-to-r from-divineCream via-divineCream to-divineGold bg-clip-text text-transparent">
@@ -2127,20 +1690,14 @@
                     con estética de lujo.
                   </h1>
 
-                  <p className="mt-4 max-w-2xl text-sm text-divineCream/75 md:text-base">
-                    Abre cada hamburguesa en un visor 360° y arma tu pedido con precios en tiempo real.
+                  <p className="mt-3 max-w-2xl text-sm text-divineCream/75 md:text-base">
+                    Explora el menú y arma tu burger con un configurador premium.
                   </p>
 
-                  <div className="mt-6 flex flex-col sm:flex-row flex-wrap gap-3">
-                    <button className="btn-primary w-full sm:w-auto" onClick={() => scrollTo("burgers")} type="button">
-                      Explorar menú
-                    </button>
-                    <button className="btn-ghost w-full sm:w-auto" onClick={() => scrollTo("atelier")} type="button">
-                      Atelier premium
-                    </button>
-                    <button className="btn-ghost w-full sm:w-auto" onClick={() => scrollTo("yogurt")} type="button">
-                      Yogurt de máquina
-                    </button>
+                  <div className="mt-5 flex flex-col sm:flex-row flex-wrap gap-3">
+                    <button className="btn-primary w-full sm:w-auto" onClick={() => scrollTo("burgers")} type="button">Explorar menú</button>
+                    <button className="btn-ghost w-full sm:w-auto" onClick={() => scrollTo("atelier")} type="button">Atelier</button>
+                    <button className="btn-ghost w-full sm:w-auto btn-disabled" disabled type="button">Yogurt (Muy pronto)</button>
                   </div>
                 </div>
               </motion.section>
@@ -2149,19 +1706,14 @@
                 <SectionShell
                   eyebrow="COLECCIÓN DIVINÉE"
                   title="Hamburguesas"
-                  subtitle="Ingredientes premium, perfiles umami y una presentación impecable."
+                  subtitle="En móvil: desliza horizontal para verlas rápido."
                 >
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {burgers.map((p) => (
-                      <ProductCard
-                        key={p.id}
-                        product={p}
-                        badge="VER 360°"
-                        onClick={() => setActiveBurger(p)}
-                        onAdd={() => addToCart({ id: p.id, name: p.name, price: p.price })}
-                      />
-                    ))}
-                  </div>
+                  <ProductShowcase
+                    items={burgers}
+                    badge="VER 360°"
+                    onOpen={(p) => setActiveBurger(p)}
+                    onAdd={addToCart}
+                  />
                 </SectionShell>
               </section>
 
@@ -2169,42 +1721,32 @@
                 <SectionShell
                   eyebrow="EXQUISITE DESSERTS"
                   title="Postres"
-                  subtitle="Pastelería fina: contraste, textura y final elegante."
+                  subtitle="Selección corta, elegante y con final perfecto."
                 >
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {desserts.map((p) => (
-                      <ProductCard
-                        key={p.id}
-                        product={p}
-                        badge="PATISSERIE"
-                        onClick={() => addToCart({ id: p.id, name: p.name, price: p.price })}
-                        onAdd={() => addToCart({ id: p.id, name: p.name, price: p.price })}
-                      />
-                    ))}
-                  </div>
+                  <ProductShowcase
+                    items={desserts}
+                    badge="PATISSERIE"
+                    onOpen={(p) => addToCart({ id: p.id, name: p.name, price: p.price })} /* click en postre añade */
+                    onAdd={addToCart}
+                  />
                 </SectionShell>
               </section>
 
               <section ref={refs.yogurt} className="scroll-mt-32">
-  <SectionShell
-    eyebrow="GREEK YOGURT DE MÁQUINA"
-    title="Yogurt"
-    subtitle="Por el momento no está disponible."
-  >
-    <ComingSoonWrap
-      title="¡MUY PRONTO!"
-      subtitle="Estamos preparando el Yogurt de máquina. Gracias por tu paciencia."
-    >
-      <YogurtMachineBuilder onAddToCart={addToCart} />
-    </ComingSoonWrap>
-  </SectionShell>
-</section>
+                <SectionShell
+                  eyebrow="GREEK YOGURT DE MÁQUINA"
+                  title="Yogurt"
+                  subtitle="Sección desactivada temporalmente."
+                >
+                  <YogurtComingSoonCard />
+                </SectionShell>
+              </section>
 
               <section ref={refs.atelier} className="scroll-mt-32">
                 <SectionShell
                   eyebrow="ATELIER"
                   title="Arma tu Hamburguesa"
-                  subtitle="Carrusel + capas múltiples + armado 3D con animación."
+                  subtitle="Configurador premium (pan/carnes/quesos/toppings)."
                 >
                   <BurgerBuilder onAddToCart={addToCart} />
                 </SectionShell>
@@ -2242,4 +1784,3 @@
     </script>
   </body>
 </html>
-
