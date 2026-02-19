@@ -607,18 +607,82 @@
       );
     }
 
-    // =========================
+// =========================
     // Atelier (Burger Builder)
     // =========================
     const BURGER_BASE = 2.95;
     const BURGER_CATALOG = {
-      buns: [{ id: "brioche", name: "Brioche", price: 1.75, note: "Suave, dorado" }, { id: "potato", name: "Potato Roll", price: 1.50, note: "Esponjoso" }],
-      proteins: [{ id: "angus180", name: "Angus 180g", price: 7.25, note: "Jugosa y potente" }, { id: "smash", name: "Smash 120g", price: 5.25, note: "Caramelizado" }],
-      cheeses: [{ id: "none", name: "Sin queso", price: 0.0, note: "Directo" }, { id: "cheddar", name: "Cheddar Añejo", price: 1.35, note: "Clásico" }, { id: "gruyere", name: "Gruyère", price: 1.75, note: "Nuez y crema" }],
-      toppings: [{ id: "bacon", name: "Bacon premium", price: 2.00, group: "Crunch" }, { id: "lettuce", name: "Lechuga", price: 0.60, group: "Fresh" }, { id: "tomato", name: "Tomate", price: 0.65, group: "Fresh" }, { id: "arugula", name: "Rúcula", price: 0.85, group: "Fresh" }]
+      buns: [
+        { id: "brioche", name: "Brioche", price: 1.75, note: "Suave, dorado, premium" },
+        { id: "potato", name: "Potato Roll", price: 1.50, note: "Esponjoso, balanceado" },
+        { id: "sesame", name: "Sésamo", price: 1.25, note: "Clásico, crujiente" },
+      ],
+      proteins: [
+        { id: "angus180", name: "Angus 180g", price: 7.25, note: "Jugosa y potente" },
+        { id: "smash", name: "Smash 120g", price: 5.25, note: "Corte caramelizado" },
+        { id: "chickenCrispy", name: "Pollo Crispy", price: 6.90, note: "Crujiente perfecto" },
+      ],
+      cheeses: [
+        { id: "none", name: "Sin queso", price: 0.0, note: "Limpio, directo" },
+        { id: "cheddar", name: "Cheddar Añejo", price: 1.35, note: "Clásico lujo" },
+        { id: "gruyere", name: "Gruyère", price: 1.75, note: "Nuez y crema" },
+        { id: "swiss", name: "Suizo", price: 1.50, note: "Suave, elástico" },
+      ],
+      toppings: [
+        { id: "bacon", name: "Bacon premium", price: 2.00, group: "Crunch" },
+        { id: "pickles", name: "Pepinillos", price: 0.70, group: "Classic" },
+        { id: "lettuce", name: "Lechuga", price: 0.60, group: "Fresh" },
+        { id: "tomato", name: "Tomate", price: 0.65, group: "Fresh" },
+        { id: "caramelOnion", name: "Cebolla caramelizada", price: 1.10, group: "Classic" },
+      ]
     };
+
+    const MAX_PROTEIN_LAYERS = 4;
+    const MAX_CHEESE_LAYERS = 4;
+
     function wrapIndex(i, len) { return (i % len + len) % len; }
     function IconButton({ label, onClick, title }) { return <button onClick={onClick} title={title} className="btn-ghost px-4 py-2" type="button">{label}</button>; }
+
+    function CarouselPicker({ title, options, index, onPrev, onNext }) {
+      const opt = options[index];
+      return (
+        <div className="rounded-3xl border border-divineLine2 bg-black/20 p-4">
+          <div className="text-xs tracking-[0.35em] text-divineGold/90">{title.toUpperCase()}</div>
+          <div className="mt-3 grid grid-cols-[auto_1fr_auto] items-center gap-3">
+            <IconButton label="←" title="Anterior" onClick={onPrev} />
+            <motion.div key={opt?.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.18 }} className="rounded-2xl border border-divineLine2 bg-divinePanel p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div><div className="text-base font-semibold">{opt?.name}</div><div className="mt-1 text-sm text-divineCream/65">{opt?.note}</div></div>
+                <div className="text-sm font-semibold text-divineGold">{money(opt?.price ?? 0)}</div>
+              </div>
+            </motion.div>
+            <IconButton label="→" title="Siguiente" onClick={onNext} />
+          </div>
+        </div>
+      );
+    }
+
+    function LayersHeader({ title, count, onAdd, addLabel, disabled }) {
+      return (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div><div className="text-xs tracking-[0.35em] text-divineGold/90">{title.toUpperCase()}</div><div className="mt-1 text-sm text-divineCream/65">Capas: <span className="text-divineCream">{count}</span></div></div>
+          <button type="button" onClick={onAdd} className="btn-ghost px-4 py-2" disabled={disabled} style={{ opacity: disabled ? 0.55 : 1 }}>+ <span className="ml-1">{addLabel}</span></button>
+        </div>
+      );
+    }
+
+    function LayersTabs({ label, layers, active, setActive, onRemove, min = 1 }) {
+      return (
+        <div className="mt-3 flex gap-2 overflow-x-auto scroll-smooth-ios pb-1 mobile-scroll">
+          {layers.map((_, i) => (
+            <div key={i} className="flex items-center gap-1">
+              <button type="button" onClick={() => setActive(i)} className={["whitespace-nowrap rounded-full border px-3 py-2 text-[11px] tracking-[0.22em] transition backdrop-blur", active === i ? "border-divineGold/60 bg-black/35 text-divineGold shadow-glow" : "border-divineLine2 bg-black/25 text-divineCream/70 hover:text-divineGold hover:border-divineGold/40"].join(" ")}>{label.toUpperCase()} {i + 1}</button>
+              {layers.length > min && (<button type="button" onClick={() => onRemove(i)} className="rounded-full border border-divineLine2 bg-black/25 px-2 py-2 text-[11px] text-divineCream/70 hover:text-divineGold hover:border-divineGold/40 transition" title="Eliminar capa">×</button>)}
+            </div>
+          ))}
+        </div>
+      );
+    }
 
     function BurgerBuilder({ onAddToCart }) {
       const [step, setStep] = useState(0);
@@ -629,6 +693,8 @@
       const [activeCheeseLayer, setActiveCheeseLayer] = useState(0);
       const [toppings, setToppings] = useState([]);
 
+      const cheesesCount = Math.max(0, cheeseLayers.filter((idx) => BURGER_CATALOG.cheeses[idx]?.id !== "none").length);
+
       const price = useMemo(() => {
         let p = BURGER_BASE + (BURGER_CATALOG.buns[bunIdx]?.price ?? 0);
         p += proteinLayers.reduce((acc, idx) => acc + (BURGER_CATALOG.proteins[idx]?.price ?? 0), 0);
@@ -637,8 +703,7 @@
         return p;
       }, [bunIdx, proteinLayers, cheeseLayers, toppings]);
 
-      // ¡AQUÍ ES DONDE PASA LA MAGIA DEL ATELIER! 
-      // Calculamos dinámicamente los componentes para el 3D Viewer.
+      // Configuración dinámica para el visor 3D (La magia de la física)
       const dynamicConfig = useMemo(() => {
         const conf = [{ type: 'bunBottom' }];
         proteinLayers.forEach(() => conf.push({ type: 'meat' }));
@@ -653,7 +718,13 @@
       }, [proteinLayers, cheeseLayers, toppings]);
 
       const valid = proteinLayers.length >= 1;
-      const toggleTopping = (id) => setToppings(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+
+      // Funciones de control de capas
+      function addProteinLayer() { setProteinLayers(l => l.length >= MAX_PROTEIN_LAYERS ? l : [...l, l[l.length - 1] ?? 0]); setActiveProteinLayer(i => Math.min(i + 1, MAX_PROTEIN_LAYERS - 1)); }
+      function removeProteinLayer(i) { setProteinLayers(l => l.filter((_, idx) => idx !== i)); setActiveProteinLayer(cur => cur > 0 ? cur - 1 : 0); }
+      function addCheeseLayer() { setCheeseLayers(l => l.length >= MAX_CHEESE_LAYERS ? l : [...l, l[l.length - 1] ?? 0]); setActiveCheeseLayer(i => Math.min(i + 1, MAX_CHEESE_LAYERS - 1)); }
+      function removeCheeseLayer(i) { setCheeseLayers(l => l.filter((_, idx) => idx !== i)); setActiveCheeseLayer(cur => cur > 0 ? cur - 1 : 0); }
+      function toggleTopping(id) { setToppings(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]); }
 
       return (
         <div className="rounded-3xl glass ring-gold p-4 md:p-6">
@@ -661,23 +732,63 @@
             <div><div className="text-xs tracking-[0.35em] text-divineGold/90">ATELIER</div><h3 className="mt-2 text-xl font-semibold md:text-2xl">Arma tu Hamburguesa</h3><p className="mt-1 text-sm text-divineCream/65">Mira cómo cae cada ingrediente en vivo.</p></div>
             <div className="rounded-2xl border border-divineLine2 bg-black/25 px-4 py-3 shadow-glow"><div className="text-[10px] tracking-[0.28em] text-divineCream/55">PRECIO</div><div className="mt-1 text-lg font-semibold text-divineGold">{money(price)}</div></div>
           </div>
+          
           <div className="mt-5 rounded-3xl border border-divineLine2 bg-black/20 overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-divineLine2 bg-black/25">
+              <div><div className="text-xs tracking-[0.35em] text-divineGold/90">VISTA 3D</div></div>
+              <div className="text-xs tracking-[0.22em] text-divineCream/55">{proteinLayers.length} carne(s) • {cheesesCount} queso(s)</div>
+            </div>
             <BurgerViewer3D heightClass="h-[240px] md:h-[320px]" modelUrl={null} burgerConfig={dynamicConfig} showUI={false} />
           </div>
+
           <div className="mt-5 grid grid-cols-4 gap-2">
             {["PAN", "CARNES", "QUESOS", "TOPPINGS"].map((label, i) => (<button key={label} onClick={() => setStep(i)} className={["rounded-2xl border px-3 py-2 text-[11px] tracking-[0.22em] transition", step === i ? "border-divineGold/60 bg-black/35 text-divineGold shadow-glow" : "border-divineLine bg-black/25 text-divineCream/70 hover:text-divineGold hover:border-divineGold/40"].join(" ")} type="button">{label}</button>))}
           </div>
-          <div className="mt-5">
-            {step === 0 && (<div className="flex items-center gap-3"><IconButton label="←" onClick={() => setBunIdx(i => wrapIndex(i - 1, 2))} /><div className="flex-1 text-center font-semibold">{BURGER_CATALOG.buns[bunIdx].name}</div><IconButton label="→" onClick={() => setBunIdx(i => wrapIndex(i + 1, 2))} /></div>)}
-            {step === 1 && (<div className="flex flex-col gap-3"><div className="flex items-center gap-3"><IconButton label="←" onClick={() => setProteinLayers(l => { const c=[...l]; c[activeProteinLayer]=wrapIndex(c[activeProteinLayer]-1,2); return c; })} /><div className="flex-1 text-center font-semibold">Capa {activeProteinLayer + 1}: {BURGER_CATALOG.proteins[proteinLayers[activeProteinLayer]]?.name}</div><IconButton label="→" onClick={() => setProteinLayers(l => { const c=[...l]; c[activeProteinLayer]=wrapIndex(c[activeProteinLayer]+1,2); return c; })} /></div><button className="btn-ghost text-xs mx-auto" onClick={() => { setProteinLayers(l => [...l, 0]); setActiveProteinLayer(l.length); }}>+ Agregar carne</button></div>)}
-            {step === 2 && (<div className="flex flex-col gap-3"><div className="flex items-center gap-3"><IconButton label="←" onClick={() => setCheeseLayers(l => { const c=[...l]; c[activeCheeseLayer]=wrapIndex(c[activeCheeseLayer]-1,3); return c; })} /><div className="flex-1 text-center font-semibold">Queso {activeCheeseLayer + 1}: {BURGER_CATALOG.cheeses[cheeseLayers[activeCheeseLayer]]?.name}</div><IconButton label="→" onClick={() => setCheeseLayers(l => { const c=[...l]; c[activeCheeseLayer]=wrapIndex(c[activeCheeseLayer]+1,3); return c; })} /></div><button className="btn-ghost text-xs mx-auto" onClick={() => { setCheeseLayers(l => [...l, 1]); setActiveCheeseLayer(l.length); }}>+ Agregar queso</button></div>)}
-            {step === 3 && (<div className="grid grid-cols-2 gap-2">{BURGER_CATALOG.toppings.map(t => (<button key={t.id} onClick={() => toggleTopping(t.id)} className={["border px-4 py-2 rounded-xl text-xs font-semibold", toppings.includes(t.id) ? "border-divineGold text-divineGold bg-black/35" : "border-divineLine text-divineCream/70 bg-black/20"].join(" ")}>{t.name}</button>))}</div>)}
-          </div>
+
+          <motion.div key={step} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="mt-5">
+            {step === 0 && <CarouselPicker title="Pan" options={BURGER_CATALOG.buns} index={bunIdx} onPrev={() => setBunIdx(i => wrapIndex(i - 1, BURGER_CATALOG.buns.length))} onNext={() => setBunIdx(i => wrapIndex(i + 1, BURGER_CATALOG.buns.length))} />}
+            
+            {step === 1 && (
+              <div className="space-y-4">
+                <LayersHeader title="Carnes" count={proteinLayers.length} onAdd={addProteinLayer} addLabel="Agregar otra carne" disabled={proteinLayers.length >= MAX_PROTEIN_LAYERS} />
+                <LayersTabs label="Carne" layers={proteinLayers} active={activeProteinLayer} setActive={setActiveProteinLayer} onRemove={removeProteinLayer} min={1} />
+                <CarouselPicker title={`Carne ${activeProteinLayer + 1}`} options={BURGER_CATALOG.proteins} index={proteinLayers[activeProteinLayer] ?? 0} onPrev={() => setProteinLayers(l => { const c=[...l]; c[activeProteinLayer]=wrapIndex(c[activeProteinLayer]-1, BURGER_CATALOG.proteins.length); return c; })} onNext={() => setProteinLayers(l => { const c=[...l]; c[activeProteinLayer]=wrapIndex(c[activeProteinLayer]+1, BURGER_CATALOG.proteins.length); return c; })} />
+              </div>
+            )}
+            
+            {step === 2 && (
+              <div className="space-y-4">
+                <LayersHeader title="Quesos" count={cheeseLayers.length} onAdd={addCheeseLayer} addLabel="Agregar otro queso" disabled={cheeseLayers.length >= MAX_CHEESE_LAYERS} />
+                <LayersTabs label="Queso" layers={cheeseLayers} active={activeCheeseLayer} setActive={setActiveCheeseLayer} onRemove={removeCheeseLayer} min={1} />
+                <CarouselPicker title={`Queso ${activeCheeseLayer + 1}`} options={BURGER_CATALOG.cheeses} index={cheeseLayers[activeCheeseLayer] ?? 0} onPrev={() => setCheeseLayers(l => { const c=[...l]; c[activeCheeseLayer]=wrapIndex(c[activeCheeseLayer]-1, BURGER_CATALOG.cheeses.length); return c; })} onNext={() => setCheeseLayers(l => { const c=[...l]; c[activeCheeseLayer]=wrapIndex(c[activeCheeseLayer]+1, BURGER_CATALOG.cheeses.length); return c; })} />
+              </div>
+            )}
+            
+            {step === 3 && (
+              <div className="rounded-3xl border border-divineLine2 bg-black/20 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div><div className="text-xs tracking-[0.35em] text-divineGold/90">TOPPINGS</div><div className="mt-1 text-sm text-divineCream/65">Selecciona todos los que quieras.</div></div>
+                  <div className="text-xs tracking-[0.22em] text-divineCream/55">{toppings.length} seleccionados</div>
+                </div>
+                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                  {BURGER_CATALOG.toppings.map((t) => (
+                    <button key={t.id} onClick={() => toggleTopping(t.id)} className={["rounded-2xl border px-4 py-3 text-left transition", toppings.includes(t.id) ? "border-divineGold/60 bg-black/35 shadow-glow" : "border-divineLine bg-black/25 hover:border-divineGold/40"].join(" ")} type="button">
+                      <div className="flex items-start justify-between gap-3">
+                        <div><div className="font-semibold">{t.name}</div><div className="mt-1 text-xs tracking-[0.18em] text-divineCream/55">{t.group.toUpperCase()}</div></div>
+                        <div className="text-sm font-semibold text-divineGold">{money(t.price)}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </motion.div>
+
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <button onClick={() => setStep(s => Math.max(0, s - 1))} className="btn-ghost" type="button">ATRÁS</button>
             <button onClick={() => {
               if(!valid) return;
-              onAddToCart?.({ id: "custom", name: "Divinée Custom", price, qty: 1 });
+              onAddToCart?.({ id: "custom-" + Date.now(), name: "Hamburguesa Divinée (Atelier)", price, qty: 1 });
               setProteinLayers([0]); setCheeseLayers([1]); setToppings([]); setStep(0);
             }} className="btn-primary ml-auto" disabled={!valid} style={{ opacity: valid ? 1 : 0.6 }} type="button">AÑADIR AL CARRITO</button>
           </div>
@@ -733,3 +844,4 @@
   </script>
 </body>
 </html>
+
