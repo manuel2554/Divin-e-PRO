@@ -2,7 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#07070A" />
     <title>Divinée — Gourmet Bar</title>
 
@@ -86,9 +86,9 @@
         pointer-events: none;
         z-index: 0;
         background:
-          radial-gradient(700px 520px at var(--mx) var(--my), rgba(199,163,92,0.22), transparent 55%),
-          radial-gradient(1000px 700px at 20% 35%, rgba(255,255,255,0.06), transparent 60%),
-          radial-gradient(1200px 600px at 80% 5%, rgba(199,163,92,0.14), transparent 62%);
+          radial-gradient(700px 520px at var(--mx) var(--my), rgba(199, 163, 92, 0.22), transparent 55%),
+          radial-gradient(1000px 700px at 20% 35%, rgba(255, 255, 255, 0.06), transparent 60%),
+          radial-gradient(1200px 600px at 80% 5%, rgba(199, 163, 92, 0.14), transparent 62%);
         filter: saturate(1.05);
         transition: background 120ms linear;
       }
@@ -130,7 +130,7 @@
         content: "";
         position: absolute;
         inset: -2px;
-        background: linear-gradient(120deg, transparent 40%, rgba(255,255,255,0.55), transparent 60%);
+        background: linear-gradient(120deg, transparent 40%, rgba(255, 255, 255, 0.55), transparent 60%);
         transform: translateX(-120%);
         transition: transform 550ms ease;
         opacity: 0.7;
@@ -156,6 +156,7 @@
         padding: 12px 16px;
         transition: border-color 160ms ease, color 160ms ease, transform 160ms ease;
         backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
       }
 
       .btn-ghost:hover {
@@ -176,7 +177,7 @@
         right: 6px;
         bottom: 2px;
         height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(199,163,92,0.9), transparent);
+        background: linear-gradient(90deg, transparent, rgba(199, 163, 92, 0.9), transparent);
         transform: scaleX(0);
         transform-origin: center;
         transition: transform 220ms ease;
@@ -196,7 +197,7 @@
         content: "";
         position: absolute;
         inset: -1px;
-        background: radial-gradient(600px 220px at 20% 0%, rgba(199,163,92,0.18), transparent 60%);
+        background: radial-gradient(600px 220px at 20% 0%, rgba(199, 163, 92, 0.18), transparent 60%);
         opacity: 0;
         transition: opacity 350ms ease;
         pointer-events: none;
@@ -210,17 +211,28 @@
         content: "";
         position: absolute;
         inset: 0;
-        background: linear-gradient(to top, rgba(0,0,0,0.55), transparent 45%);
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent 45%);
         opacity: 0.55;
         pointer-events: none;
       }
 
       .hero-grid {
         background:
-          radial-gradient(1000px 500px at 10% 10%, rgba(199,163,92,0.10), transparent 60%),
-          radial-gradient(900px 500px at 90% 20%, rgba(255,255,255,0.06), transparent 60%),
-          linear-gradient(to bottom, rgba(0,0,0,0.0), rgba(0,0,0,0.25));
-        border: 1px solid rgba(255,255,255,0.08);
+          radial-gradient(1000px 500px at 10% 10%, rgba(199, 163, 92, 0.10), transparent 60%),
+          radial-gradient(900px 500px at 90% 20%, rgba(255, 255, 255, 0.06), transparent 60%),
+          linear-gradient(to bottom, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.25));
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      /* iOS: scroll suave dentro de modales/drawers */
+      .scroll-smooth-ios {
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* Botón flotante con safe area */
+      .floating-safe {
+        bottom: calc(1.5rem + env(safe-area-inset-bottom));
+        right: calc(1.5rem + env(safe-area-inset-right));
       }
 
       @media (prefers-reduced-motion: reduce) {
@@ -255,12 +267,12 @@
       const React = window.React;
       const { useEffect, useMemo, useRef, useState } = React;
 
-      // ============= Branding
+      // Branding
       const BRAND_NAME = "Divinée";
-      const LOGO_LOCAL = "./assets/logo-divinee.jpg"; // súbelo a tu repo con este path
+      const LOGO_LOCAL = "./assets/logo-divinee.jpg";
       const LOGO_REMOTE = "https://i.postimg.cc/J7czGY3s/Whats_App_Image_2026_02_10_at_2_42_10_PM.jpg";
 
-      // ============= Motion fallback (para que nunca se rompa si el CDN falla)
+      // Motion fallback
       const FM = window.framerMotion || {};
       function stripMotionProps(props = {}) {
         const clean = { ...props };
@@ -278,7 +290,7 @@
       const motion = FM.motion || createMotionFallback();
       const AnimatePresence = FM.AnimatePresence || (({ children }) => React.createElement(React.Fragment, null, children));
 
-      // ============= Utils
+      // Utils
       const money = (n) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
 
       function useLockBodyScroll(locked) {
@@ -299,7 +311,7 @@
         }, [handler, active]);
       }
 
-      // ============= Spotlight follow mouse (luxury glow)
+      // Spotlight follow mouse
       function useSpotlight() {
         useEffect(() => {
           const root = document.documentElement;
@@ -317,15 +329,8 @@
             raf = requestAnimationFrame(tick);
           };
 
-          const onMove = (e) => {
-            tx = e.clientX;
-            ty = e.clientY;
-          };
-
-          const onTouch = () => {
-            tx = window.innerWidth * 0.55;
-            ty = window.innerHeight * 0.25;
-          };
+          const onMove = (e) => { tx = e.clientX; ty = e.clientY; };
+          const onTouch = () => { tx = window.innerWidth * 0.55; ty = window.innerHeight * 0.25; };
 
           window.addEventListener("pointermove", onMove, { passive: true });
           window.addEventListener("touchstart", onTouch, { passive: true });
@@ -339,7 +344,7 @@
         }, []);
       }
 
-      // ============= Data
+      // Data
       const burgers = [
         {
           id: "divinee-truffle",
@@ -434,9 +439,15 @@
         },
       ];
 
-      // ============= UI Components
+      // UI Components
       function Header({ onNavigate, onOpenCart, cartCount }) {
         const [logoSrc, setLogoSrc] = useState(LOGO_LOCAL);
+        const [mobileOpen, setMobileOpen] = useState(false);
+
+        function go(key) {
+          setMobileOpen(false);
+          onNavigate(key);
+        }
 
         return (
           <div className="fixed left-0 top-0 z-40 w-full">
@@ -464,7 +475,6 @@
                           }}
                         />
                       </div>
-
                       <div className="hidden sm:block leading-tight">
                         <div className="text-xs tracking-luxe text-divineGold/95">{BRAND_NAME.toUpperCase()}</div>
                         <div className="text-[10px] tracking-[0.35em] text-divineCream/60">GOURMET BAR</div>
@@ -473,32 +483,50 @@
                   </div>
 
                   <div className="flex items-center justify-end gap-2">
-                    <button onClick={onOpenCart} className="btn-ghost">
+                    <button onClick={onOpenCart} className="btn-ghost hidden sm:inline-flex">
                       CARRITO {cartCount > 0 ? `(${cartCount})` : ""}
                     </button>
 
-                    <div className="flex md:hidden">
-                      <button onClick={() => onNavigate("burgers")} className="btn-ghost">MENÚ</button>
-                    </div>
+                    <button onClick={onOpenCart} className="btn-ghost sm:hidden px-4 py-2">
+                      CARRITO
+                    </button>
+
+                    <button
+                      onClick={() => setMobileOpen((s) => !s)}
+                      className="btn-ghost md:hidden px-4 py-2"
+                      aria-expanded={mobileOpen}
+                      aria-controls="mobile-nav"
+                    >
+                      MENÚ
+                    </button>
                   </div>
                 </div>
 
-                <div className="flex md:hidden gap-2 px-4 pb-3">
-                  {[
-                    ["HAMB", "burgers"],
-                    ["POSTRES", "desserts"],
-                    ["YOGURT", "yogurt"],
-                    ["ATELIER", "atelier"],
-                  ].map(([label, key]) => (
-                    <button
-                      key={key}
-                      onClick={() => onNavigate(key)}
-                      className="flex-1 rounded-xl border border-divineLine bg-black/25 py-2 text-[11px] tracking-[0.22em] text-divineCream/75 hover:border-divineLine2 hover:text-divineGold transition backdrop-blur"
-                    >
-                      {label}
-                    </button>
-                  ))}
+                <div
+                  id="mobile-nav"
+                  className={[
+                    "md:hidden overflow-hidden transition-[max-height] duration-300",
+                    mobileOpen ? "max-h-40" : "max-h-0",
+                  ].join(" ")}
+                >
+                  <div className="flex gap-2 px-4 pb-3">
+                    {[
+                      ["HAMB", "burgers"],
+                      ["POSTRES", "desserts"],
+                      ["YOGURT", "yogurt"],
+                      ["ATELIER", "atelier"],
+                    ].map(([label, key]) => (
+                      <button
+                        key={key}
+                        onClick={() => go(key)}
+                        className="flex-1 rounded-xl border border-divineLine bg-black/25 py-2 text-[11px] tracking-[0.22em] text-divineCream/75 hover:border-divineLine2 hover:text-divineGold transition backdrop-blur"
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
+
               </div>
             </div>
           </div>
@@ -548,12 +576,8 @@
               </div>
 
               <div className="p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-base font-semibold">{product.name}</div>
-                    <div className="mt-1 text-sm text-divineCream/70 line-clamp-2">{product.description}</div>
-                  </div>
-                </div>
+                <div className="text-base font-semibold">{product.name}</div>
+                <div className="mt-1 text-sm text-divineCream/70 line-clamp-2">{product.description}</div>
 
                 <div className="mt-4 flex items-center justify-between gap-3">
                   <span className="text-xs tracking-[0.22em] text-divineCream/55">{BRAND_NAME.toUpperCase()}</span>
@@ -574,7 +598,7 @@
         );
       }
 
-      // ============= 3D Viewer (robusto, sin OrbitControls)
+      // 3D Viewer (mejorado para móvil: NO bloquea scroll vertical)
       function ThreeBurgerViewer() {
         const mountRef = useRef(null);
 
@@ -584,7 +608,9 @@
 
         const yawRef = useRef(0);
         const pitchRef = useRef(0);
-        const draggingRef = useRef(false);
+
+        const isDraggingRef = useRef(false);
+        const dragActivatedRef = useRef(false);
         const lastRef = useRef({ x: 0, y: 0 });
 
         const autoRotateRef = useRef(true);
@@ -621,7 +647,8 @@
             renderer.domElement.style.width = "100%";
             renderer.domElement.style.height = "100%";
             renderer.domElement.style.display = "block";
-            renderer.domElement.style.touchAction = "none";
+            /* CLAVE PARA MÓVIL: permite scroll vertical; igual podemos rotar con drag horizontal */
+            renderer.domElement.style.touchAction = "pan-y";
 
             mount.appendChild(renderer.domElement);
 
@@ -646,7 +673,7 @@
             key.shadow.camera.bottom = -4;
             scene.add(key);
 
-            const rim = new THREE.DirectionalLight(0xc7a35c, 0.70);
+            const rim = new THREE.DirectionalLight(0xc7a35c, 0.7);
             rim.position.set(-4.5, 2.0, -2.5);
             scene.add(rim);
 
@@ -701,23 +728,46 @@
 
             const el = renderer.domElement;
 
+            const DRAG_THRESHOLD = 10;
+
             const onDown = (e) => {
-              draggingRef.current = true;
+              isDraggingRef.current = true;
+              dragActivatedRef.current = false;
               lastRef.current = { x: e.clientX, y: e.clientY };
-              if (el.setPointerCapture) el.setPointerCapture(e.pointerId);
+              // NO capturamos el pointer aquí para no bloquear el scroll vertical.
             };
 
             const onMove = (e) => {
-              if (!draggingRef.current) return;
+              if (!isDraggingRef.current) return;
+
               const dx = e.clientX - lastRef.current.x;
               const dy = e.clientY - lastRef.current.y;
+
+              // Activamos "modo rotación" SOLO si el gesto es mayormente horizontal
+              if (!dragActivatedRef.current) {
+                const dist = Math.hypot(dx, dy);
+                if (dist < DRAG_THRESHOLD) return;
+
+                if (Math.abs(dx) > Math.abs(dy)) {
+                  dragActivatedRef.current = true;
+                  if (el.setPointerCapture) el.setPointerCapture(e.pointerId);
+                } else {
+                  // gesto vertical: dejamos que el usuario haga scroll del modal/página
+                  isDraggingRef.current = false;
+                  return;
+                }
+              }
+
               lastRef.current = { x: e.clientX, y: e.clientY };
               yawRef.current += dx * 0.007;
               pitchRef.current += dy * 0.007;
               pitchRef.current = Math.max(-1.15, Math.min(1.15, pitchRef.current));
             };
 
-            const onUp = () => { draggingRef.current = false; };
+            const onUp = () => {
+              isDraggingRef.current = false;
+              dragActivatedRef.current = false;
+            };
 
             const onWheel = (e) => {
               e.preventDefault();
@@ -727,9 +777,9 @@
               cam.position.z = Math.max(2.2, Math.min(5.2, cam.position.z));
             };
 
-            el.addEventListener("pointerdown", onDown);
-            el.addEventListener("pointermove", onMove);
-            window.addEventListener("pointerup", onUp);
+            el.addEventListener("pointerdown", onDown, { passive: true });
+            el.addEventListener("pointermove", onMove, { passive: true });
+            window.addEventListener("pointerup", onUp, { passive: true });
             el.addEventListener("wheel", onWheel, { passive: false });
 
             const onResize = () => {
@@ -743,7 +793,7 @@
             const animate = () => {
               rafRef.current = requestAnimationFrame(animate);
               if (burgerRef.current) {
-                if (autoRotateRef.current && !draggingRef.current) yawRef.current += 0.0045;
+                if (autoRotateRef.current && !dragActivatedRef.current) yawRef.current += 0.0045;
                 burgerRef.current.rotation.y = yawRef.current;
                 burgerRef.current.rotation.x = pitchRef.current;
                 burgerRef.current.rotation.z = rollRef.current;
@@ -771,7 +821,7 @@
 
         if (threeError) {
           return (
-            <div className="h-[340px] md:h-[420px] lg:h-[560px] w-full rounded-2xl border border-divineLine bg-black/20 p-4">
+            <div className="h-[260px] md:h-[420px] lg:h-[560px] w-full rounded-2xl border border-divineLine bg-black/20 p-4">
               <div className="text-xs tracking-[0.28em] text-divineGold/90">VISOR 360°</div>
               <div className="mt-2 text-sm text-divineCream/70">No se pudo cargar el visor 3D.</div>
               <div className="mt-2 text-xs text-divineCream/50">Detalle: {threeError}</div>
@@ -785,12 +835,12 @@
               VISOR 360°
             </div>
 
-            <div className="absolute bottom-4 left-4 right-4 z-10 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-              <div className="flex gap-2">
-                <button onClick={() => setAutoRotate((s) => !s)} className="btn-ghost">
+            <div className="absolute bottom-3 left-3 right-3 z-10 flex flex-col gap-2">
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => setAutoRotate((s) => !s)} className="btn-ghost py-2 px-4">
                   {autoRotate ? "PAUSAR" : "AUTO"}
                 </button>
-                <button onClick={() => { yawRef.current = 0; pitchRef.current = 0; setRoll(0); }} className="btn-ghost">
+                <button onClick={() => { yawRef.current = 0; pitchRef.current = 0; setRoll(0); }} className="btn-ghost py-2 px-4">
                   REINICIAR
                 </button>
               </div>
@@ -804,108 +854,133 @@
                   step={0.01}
                   value={roll}
                   onChange={(e) => setRoll(parseFloat(e.target.value))}
-                  className="w-44 accent-[#C7A35C]"
+                  className="w-full accent-[#C7A35C]"
                 />
+              </div>
+
+              <div className="text-[10px] tracking-[0.28em] text-divineCream/55">
+                Tip móvil: arrastra horizontal para rotar • desliza vertical para hacer scroll
               </div>
             </div>
 
-            <div ref={mountRef} className="h-[340px] md:h-[420px] lg:h-[560px] w-full bg-gradient-to-b from-black/0 to-black/35"></div>
+            <div ref={mountRef} className="h-[260px] md:h-[420px] lg:h-[560px] w-full bg-gradient-to-b from-black/0 to-black/35"></div>
           </div>
         );
       }
 
+      // Modal (SOLUCIÓN: panel con overflow interno y backdrop que no bloquea scroll)
       function ProductModal({ product, onClose, onAdd }) {
         useLockBodyScroll(true);
         useEscape(onClose, true);
+
         const [showIngredients, setShowIngredients] = useState(true);
 
         return (
-          <motion.div className="fixed inset-0 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} aria-modal="true" role="dialog">
-            <button className="absolute inset-0 bg-black/70" onClick={onClose} aria-label="Cerrar" />
+          <motion.div
+            className="fixed inset-0 z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            aria-modal="true"
+            role="dialog"
+          >
+            <div className="absolute inset-0 bg-black/70" onClick={onClose}></div>
 
-            <motion.div
-              initial={{ y: 26, opacity: 0, scale: 0.98 }}
-              animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: 18, opacity: 0, scale: 0.98 }}
-              transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}
-              className="absolute left-1/2 top-1/2 w-[92vw] max-w-5xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-3xl border border-divineLine2 bg-divineInk shadow-divine"
-            >
-              <div className="grid grid-cols-1 lg:grid-cols-2">
-                <div className="relative">
-                  <ThreeBurgerViewer />
-                </div>
-
-                <div className="p-5 lg:p-7">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div className="text-xs tracking-[0.35em] text-divineGold/90">COLECCIÓN DIVINÉE</div>
-                      <h3 className="mt-2 text-2xl font-semibold">{product.name}</h3>
-                      <p className="mt-2 text-sm text-divineCream/70">{product.description}</p>
+            <div className="absolute inset-0 flex items-center justify-center p-3 md:p-6">
+              <motion.div
+                initial={{ y: 26, opacity: 0, scale: 0.985 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                exit={{ y: 18, opacity: 0, scale: 0.985 }}
+                transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}
+                className="relative w-full max-w-5xl max-h-[92vh] overflow-hidden rounded-3xl border border-divineLine2 bg-divineInk shadow-divine"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="max-h-[92vh] overflow-y-auto scroll-smooth-ios overscroll-contain">
+                  <div className="grid grid-cols-1 lg:grid-cols-2">
+                    <div className="relative">
+                      <ThreeBurgerViewer />
                     </div>
 
-                    <button onClick={onClose} className="btn-ghost">CERRAR</button>
-                  </div>
-
-                  <div className="mt-5 flex flex-wrap items-center gap-3">
-                    <span className="rounded-full border border-divineLine2 bg-divinePanel px-3 py-1 text-xs text-divineCream/80">
-                      Peso: <span className="text-divineCream">{product.grams}g</span>
-                    </span>
-                    <span className="rounded-full border border-divineLine2 bg-divinePanel px-3 py-1 text-xs text-divineCream/80">
-                      Precio: <span className="text-divineGold font-semibold">{money(product.price)}</span>
-                    </span>
-
-                    <button onClick={onAdd} className="ml-auto btn-primary">AÑADIR</button>
-                  </div>
-
-                  <div className="mt-6">
-                    <button
-                      onClick={() => setShowIngredients((s) => !s)}
-                      className="flex w-full items-center justify-between rounded-2xl border border-divineLine2 bg-divinePanel px-4 py-3 text-left hover:border-divineGold/40 transition"
-                    >
-                      <div>
-                        <div className="text-xs tracking-[0.28em] text-divineCream/60">DETALLES</div>
-                        <div className="mt-1 text-sm font-semibold">Ingredientes</div>
-                      </div>
-                      <span className="text-xs tracking-[0.22em] text-divineGold">{showIngredients ? "OCULTAR" : "MOSTRAR"}</span>
-                    </button>
-
-                    <AnimatePresence initial={false}>
-                      {showIngredients && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.25 }}
-                          className="overflow-hidden"
-                        >
-                          <ul className="mt-3 space-y-2 rounded-2xl border border-divineLine bg-black/25 p-4 text-sm text-divineCream/75">
-                            {product.ingredients?.map((ing) => (
-                              <li key={ing} className="flex items-center justify-between">
-                                <span>{ing}</span>
-                                <span className="text-divineGold/60">•</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-
-                  <div className="mt-6 rounded-2xl border border-divineLine2 bg-black/25 p-4">
-                    <div className="text-xs tracking-[0.28em] text-divineCream/60">NUTRICIÓN</div>
-                    <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
-                      {Object.entries(product.nutrition || {}).map(([k, v]) => (
-                        <div key={k} className="flex items-center justify-between rounded-xl border border-divineLine bg-divinePanel px-3 py-2">
-                          <span className="text-divineCream/70">{String(k).toUpperCase()}</span>
-                          <span className="font-semibold text-divineCream">{v}</span>
+                    <div className="p-5 lg:p-7">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <div className="text-xs tracking-[0.35em] text-divineGold/90">COLECCIÓN DIVINÉE</div>
+                          <h3 className="mt-2 text-2xl font-semibold">{product.name}</h3>
+                          <p className="mt-2 text-sm text-divineCream/70">{product.description}</p>
                         </div>
-                      ))}
+
+                        <button onClick={onClose} className="btn-ghost py-2 px-4">CERRAR</button>
+                      </div>
+
+                      <div className="mt-5 flex flex-wrap items-center gap-3">
+                        <span className="rounded-full border border-divineLine2 bg-divinePanel px-3 py-1 text-xs text-divineCream/80">
+                          Peso: <span className="text-divineCream">{product.grams}g</span>
+                        </span>
+                        <span className="rounded-full border border-divineLine2 bg-divinePanel px-3 py-1 text-xs text-divineCream/80">
+                          Precio: <span className="text-divineGold font-semibold">{money(product.price)}</span>
+                        </span>
+
+                        <button onClick={onAdd} className="ml-auto btn-primary">AÑADIR</button>
+                      </div>
+
+                      <div className="mt-6">
+                        <button
+                          onClick={() => setShowIngredients((s) => !s)}
+                          className="flex w-full items-center justify-between rounded-2xl border border-divineLine2 bg-divinePanel px-4 py-3 text-left hover:border-divineGold/40 transition"
+                        >
+                          <div>
+                            <div className="text-xs tracking-[0.28em] text-divineCream/60">DETALLES</div>
+                            <div className="mt-1 text-sm font-semibold">Ingredientes</div>
+                          </div>
+                          <span className="text-xs tracking-[0.22em] text-divineGold">
+                            {showIngredients ? "OCULTAR" : "MOSTRAR"}
+                          </span>
+                        </button>
+
+                        <AnimatePresence initial={false}>
+                          {showIngredients && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.25 }}
+                              className="overflow-hidden"
+                            >
+                              <ul className="mt-3 space-y-2 rounded-2xl border border-divineLine bg-black/25 p-4 text-sm text-divineCream/75">
+                                {product.ingredients?.map((ing) => (
+                                  <li key={ing} className="flex items-center justify-between">
+                                    <span>{ing}</span>
+                                    <span className="text-divineGold/60">•</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+
+                      <div className="mt-6 rounded-2xl border border-divineLine2 bg-black/25 p-4">
+                        <div className="text-xs tracking-[0.28em] text-divineCream/60">NUTRICIÓN</div>
+                        <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                          {Object.entries(product.nutrition || {}).map(([k, v]) => (
+                            <div
+                              key={k}
+                              className="flex items-center justify-between rounded-xl border border-divineLine bg-divinePanel px-3 py-2"
+                            >
+                              <span className="text-divineCream/70">{String(k).toUpperCase()}</span>
+                              <span className="font-semibold text-divineCream">{v}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <p className="mt-3 text-xs text-divineCream/50">Valores aproximados (placeholder).</p>
+                      </div>
+
+                      <div className="h-4"></div>
                     </div>
-                    <p className="mt-3 text-xs text-divineCream/50">Valores aproximados (placeholder).</p>
                   </div>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            </div>
           </motion.div>
         );
       }
@@ -914,7 +989,7 @@
         return (
           <button
             onClick={onClick}
-            className="fixed bottom-6 right-6 z-40 rounded-2xl border border-divineLine2 bg-black/35 px-4 py-3 shadow-glow backdrop-blur hover:brightness-110 transition"
+            className="fixed z-40 rounded-2xl border border-divineLine2 bg-black/35 px-4 py-3 shadow-glow backdrop-blur hover:brightness-110 transition floating-safe"
             aria-label="Abrir carrito"
           >
             <div className="flex items-center gap-3">
@@ -925,80 +1000,85 @@
         );
       }
 
+      // Drawer (SOLUCIÓN: overflow interno + backdrop div, no button)
       function CartDrawer({ items, total, onClose, onQty }) {
         useLockBodyScroll(true);
         useEscape(onClose, true);
 
         return (
           <motion.div className="fixed inset-0 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} aria-modal="true" role="dialog">
-            <button className="absolute inset-0 bg-black/70" onClick={onClose} aria-label="Cerrar carrito" />
+            <div className="absolute inset-0 bg-black/70" onClick={onClose}></div>
+
             <motion.aside
               initial={{ x: 24, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: 24, opacity: 0 }}
               transition={{ duration: 0.28, ease: [0.2, 0.8, 0.2, 1] }}
-              className="absolute right-0 top-0 h-full w-[92vw] max-w-md border-l border-divineLine2 bg-divineInk p-5 shadow-divine"
+              className="absolute right-0 top-0 h-full w-[92vw] max-w-md border-l border-divineLine2 bg-divineInk shadow-divine"
+              onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="text-xs tracking-[0.35em] text-divineGold/90">{BRAND_NAME.toUpperCase()}</div>
-                  <h3 className="mt-2 text-xl font-semibold">Carrito</h3>
-                  <p className="mt-1 text-sm text-divineCream/60">Revisa y ajusta cantidades.</p>
+              <div className="h-full overflow-y-auto scroll-smooth-ios overscroll-contain p-5 pb-10" style={{ paddingBottom: "calc(2.5rem + env(safe-area-inset-bottom))" }}>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="text-xs tracking-[0.35em] text-divineGold/90">{BRAND_NAME.toUpperCase()}</div>
+                    <h3 className="mt-2 text-xl font-semibold">Carrito</h3>
+                    <p className="mt-1 text-sm text-divineCream/60">Revisa y ajusta cantidades.</p>
+                  </div>
+                  <button onClick={onClose} className="btn-ghost py-2 px-4">CERRAR</button>
                 </div>
-                <button onClick={onClose} className="btn-ghost">CERRAR</button>
-              </div>
 
-              <div className="mt-6 space-y-3">
-                {items.length === 0 ? (
-                  <div className="rounded-2xl border border-divineLine bg-divinePanel p-4 text-sm text-divineCream/70">Tu carrito está vacío.</div>
-                ) : (
-                  items.map((it) => (
-                    <div key={it.id} className="rounded-2xl border border-divineLine2 bg-divinePanel p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="font-semibold">{it.name}</div>
-                          <div className="mt-1 text-sm text-divineCream/70">{money(it.price)}</div>
+                <div className="mt-6 space-y-3">
+                  {items.length === 0 ? (
+                    <div className="rounded-2xl border border-divineLine bg-divinePanel p-4 text-sm text-divineCream/70">Tu carrito está vacío.</div>
+                  ) : (
+                    items.map((it) => (
+                      <div key={it.id} className="rounded-2xl border border-divineLine2 bg-divinePanel p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="font-semibold">{it.name}</div>
+                            <div className="mt-1 text-sm text-divineCream/70">{money(it.price)}</div>
 
-                          {it.meta && (
-                            <div className="mt-2 text-xs text-divineCream/55">
-                              {Object.entries(it.meta).map(([k, v]) => (
-                                <div key={k}>
-                                  <span className="text-divineGold/80">{k}:</span>{" "}
-                                  <span>{Array.isArray(v) ? v.join(", ") : String(v)}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                            {it.meta && (
+                              <div className="mt-2 text-xs text-divineCream/55">
+                                {Object.entries(it.meta).map(([k, v]) => (
+                                  <div key={k}>
+                                    <span className="text-divineGold/80">{k}:</span>{" "}
+                                    <span>{Array.isArray(v) ? v.join(", ") : String(v)}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-sm font-semibold text-divineGold">{money(it.price * it.qty)}</div>
                         </div>
-                        <div className="text-sm font-semibold text-divineGold">{money(it.price * it.qty)}</div>
-                      </div>
 
-                      <div className="mt-3 flex items-center gap-2">
-                        <button className="btn-ghost" onClick={() => onQty(it.id, it.qty - 1)}>−</button>
-                        <div className="min-w-10 text-center text-sm">{it.qty}</div>
-                        <button className="btn-ghost" onClick={() => onQty(it.id, it.qty + 1)}>+</button>
-                        <button className="ml-auto btn-ghost" onClick={() => onQty(it.id, 0)}>ELIMINAR</button>
+                        <div className="mt-3 flex items-center gap-2">
+                          <button className="btn-ghost py-2 px-4" onClick={() => onQty(it.id, it.qty - 1)}>−</button>
+                          <div className="min-w-10 text-center text-sm">{it.qty}</div>
+                          <button className="btn-ghost py-2 px-4" onClick={() => onQty(it.id, it.qty + 1)}>+</button>
+                          <button className="ml-auto btn-ghost py-2 px-4" onClick={() => onQty(it.id, 0)}>ELIMINAR</button>
+                        </div>
                       </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              <div className="mt-6 rounded-2xl border border-divineLine2 bg-black/25 p-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-divineCream/70">Total</span>
-                  <span className="text-lg font-semibold text-divineGold">{money(total)}</span>
+                    ))
+                  )}
                 </div>
-                <button className="mt-4 w-full btn-primary" disabled={items.length === 0}>
-                  PAGAR (placeholder)
-                </button>
+
+                <div className="mt-6 rounded-2xl border border-divineLine2 bg-black/25 p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-divineCream/70">Total</span>
+                    <span className="text-lg font-semibold text-divineGold">{money(total)}</span>
+                  </div>
+                  <button className="mt-4 w-full btn-primary" disabled={items.length === 0}>
+                    PAGAR (placeholder)
+                  </button>
+                </div>
               </div>
             </motion.aside>
           </motion.div>
         );
       }
 
-      // ===== Builders (mantenemos lógica, mejoramos UI)
+      // Builders
       const BURGER_OPTIONS = {
         pan: [
           { id: "brioche", label: "Brioche", price: 1.75 },
@@ -1377,7 +1457,7 @@
         );
       }
 
-      // ============= App
+      // App
       function App() {
         useSpotlight();
 
@@ -1419,7 +1499,7 @@
           <div className="min-h-screen relative z-[1]">
             <Header onNavigate={scrollTo} onOpenCart={() => setCartOpen(true)} cartCount={cartCount} />
 
-            <main className="mx-auto max-w-6xl px-4 pb-24 pt-24 md:px-6">
+            <main className="mx-auto max-w-6xl px-4 pb-32 pt-24 md:px-6">
               <motion.section
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1442,28 +1522,16 @@
                     Abre cada hamburguesa en un visor 360° y arma tu pedido con precios en tiempo real.
                   </p>
 
-                  <div className="mt-6 flex flex-wrap gap-3">
-                    <button className="btn-primary" onClick={() => scrollTo("burgers")}>Explorar menú</button>
-                    <button className="btn-ghost" onClick={() => scrollTo("atelier")}>Armar hamburguesa</button>
-                    <button className="btn-ghost" onClick={() => scrollTo("yogurt")}>Yogurt de máquina</button>
-                  </div>
-
-                  <div className="mt-8 flex flex-wrap items-center gap-2">
-                    {["Premium", "Minimal", "360°", "Atelier", "Machine Bar"].map((t) => (
-                      <span key={t} className="rounded-full border border-divineLine2 bg-black/25 px-3 py-1 text-[11px] tracking-[0.16em] text-divineCream/70 backdrop-blur">
-                        {t.toUpperCase()}
-                      </span>
-                    ))}
+                  <div className="mt-6 flex flex-col sm:flex-row flex-wrap gap-3">
+                    <button className="btn-primary w-full sm:w-auto" onClick={() => scrollTo("burgers")}>Explorar menú</button>
+                    <button className="btn-ghost w-full sm:w-auto" onClick={() => scrollTo("atelier")}>Armar hamburguesa</button>
+                    <button className="btn-ghost w-full sm:w-auto" onClick={() => scrollTo("yogurt")}>Yogurt de máquina</button>
                   </div>
                 </div>
               </motion.section>
 
               <section ref={refs.burgers} className="scroll-mt-28">
-                <SectionShell
-                  eyebrow="COLECCIÓN DIVINÉE"
-                  title="Hamburguesas"
-                  subtitle="Ingredientes premium, perfiles umami y una presentación impecable."
-                >
+                <SectionShell eyebrow="COLECCIÓN DIVINÉE" title="Hamburguesas" subtitle="Ingredientes premium, perfiles umami y una presentación impecable.">
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {burgers.map((p) => (
                       <ProductCard
@@ -1479,11 +1547,7 @@
               </section>
 
               <section ref={refs.desserts} className="scroll-mt-28">
-                <SectionShell
-                  eyebrow="EXQUISITE DESSERTS"
-                  title="Postres"
-                  subtitle="Pastelería fina: contraste, textura y final elegante."
-                >
+                <SectionShell eyebrow="EXQUISITE DESSERTS" title="Postres" subtitle="Pastelería fina: contraste, textura y final elegante.">
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {desserts.map((p) => (
                       <ProductCard
@@ -1499,31 +1563,16 @@
               </section>
 
               <section ref={refs.yogurt} className="scroll-mt-28">
-                <SectionShell
-                  eyebrow="GREEK YOGURT DE MÁQUINA"
-                  title="Yogurt"
-                  subtitle="Elige tamaño, sabor y toppings como un bar premium."
-                >
+                <SectionShell eyebrow="GREEK YOGURT DE MÁQUINA" title="Yogurt" subtitle="Elige tamaño, sabor y toppings como un bar premium.">
                   <YogurtMachineBuilder onAddToCart={addToCart} />
                 </SectionShell>
               </section>
 
               <section ref={refs.atelier} className="scroll-mt-28">
-                <SectionShell
-                  eyebrow="ATELIER"
-                  title="Arma tu Hamburguesa"
-                  subtitle="Configurador paso a paso con resumen en vivo y cálculo automático."
-                >
+                <SectionShell eyebrow="ATELIER" title="Arma tu Hamburguesa" subtitle="Configurador paso a paso con resumen en vivo y cálculo automático.">
                   <BurgerBuilder onAddToCart={addToCart} />
                 </SectionShell>
               </section>
-
-              <div className="mt-10 rounded-3xl border border-divineLine2 bg-black/25 p-6 text-sm text-divineCream/70 shadow-divine">
-                <div className="text-xs tracking-[0.35em] text-divineGold/90">DIVINÉE</div>
-                <div className="mt-2">
-                  ¿Te gusta este estilo más llamativo? Podemos ajustar el “oro”, el contraste y los brillos para que coincidan al 100% con tu logo.
-                </div>
-              </div>
             </main>
 
             <CartButton cartCount={cartCount} onClick={() => setCartOpen(true)} />
