@@ -26,9 +26,7 @@
               divine: "0 30px 80px rgba(0,0,0,0.60)",
               glow: "0 0 0 1px rgba(199,163,92,0.18), 0 18px 60px rgba(199,163,92,0.12)",
             },
-            letterSpacing: {
-              luxe: "0.18em",
-            },
+            letterSpacing: { luxe: "0.18em" },
           },
         },
       };
@@ -37,11 +35,9 @@
     <!-- Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
+    <!-- Favicon -->
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%23C7A35C' d='M32 6l7 14 15 2-11 11 3 15-14-7-14 7 3-15-11-11 15-2z'/%3E%3C/svg%3E"
@@ -53,12 +49,7 @@
         --mx: 50vw;
         --my: 20vh;
       }
-
-      html,
-      body {
-        height: 100%;
-      }
-
+      html, body { height: 100%; }
       body {
         margin: 0;
         font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
@@ -66,10 +57,7 @@
         color: #f5efe6;
         overflow-x: hidden;
       }
-
-      ::selection {
-        background: rgba(199, 163, 92, 0.35);
-      }
+      ::selection { background: rgba(199, 163, 92, 0.35); }
 
       .divine-noise {
         position: fixed;
@@ -125,7 +113,6 @@
         padding: 12px 16px;
         transition: transform 160ms ease, filter 160ms ease;
       }
-
       .btn-primary::after {
         content: "";
         position: absolute;
@@ -135,15 +122,8 @@
         transition: transform 550ms ease;
         opacity: 0.7;
       }
-
-      .btn-primary:hover {
-        filter: brightness(1.05);
-        transform: translateY(-1px);
-      }
-
-      .btn-primary:hover::after {
-        transform: translateX(120%);
-      }
+      .btn-primary:hover { filter: brightness(1.05); transform: translateY(-1px); }
+      .btn-primary:hover::after { transform: translateX(120%); }
 
       .btn-ghost {
         border-radius: 16px;
@@ -158,18 +138,9 @@
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
       }
+      .btn-ghost:hover { border-color: rgba(199, 163, 92, 0.55); color: rgba(199, 163, 92, 0.95); transform: translateY(-1px); }
 
-      .btn-ghost:hover {
-        border-color: rgba(199, 163, 92, 0.55);
-        color: rgba(199, 163, 92, 0.95);
-        transform: translateY(-1px);
-      }
-
-      .nav-link {
-        position: relative;
-        padding: 8px 6px;
-      }
-
+      .nav-link { position: relative; padding: 8px 6px; }
       .nav-link::after {
         content: "";
         position: absolute;
@@ -183,16 +154,9 @@
         transition: transform 220ms ease;
         opacity: 0.9;
       }
+      .nav-link:hover::after { transform: scaleX(1); }
 
-      .nav-link:hover::after {
-        transform: scaleX(1);
-      }
-
-      .card-premium {
-        position: relative;
-        overflow: hidden;
-      }
-
+      .card-premium { position: relative; overflow: hidden; }
       .card-premium::before {
         content: "";
         position: absolute;
@@ -202,16 +166,12 @@
         transition: opacity 350ms ease;
         pointer-events: none;
       }
-
-      .card-premium:hover::before {
-        opacity: 1;
-      }
-
+      .card-premium:hover::before { opacity: 1; }
       .card-premium::after {
         content: "";
         position: absolute;
         inset: 0;
-        background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent 45%);
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.58), transparent 45%);
         opacity: 0.55;
         pointer-events: none;
       }
@@ -224,23 +184,22 @@
         border: 1px solid rgba(255, 255, 255, 0.08);
       }
 
-      /* iOS: scroll suave dentro de modales/drawers */
-      .scroll-smooth-ios {
-        -webkit-overflow-scrolling: touch;
+      .scroll-smooth-ios { -webkit-overflow-scrolling: touch; }
+
+      .floating-safe {
+        bottom: calc(1.25rem + env(safe-area-inset-bottom));
+        right: calc(1.25rem + env(safe-area-inset-right));
       }
 
-      /* Botón flotante con safe area */
-      .floating-safe {
-        bottom: calc(1.5rem + env(safe-area-inset-bottom));
-        right: calc(1.5rem + env(safe-area-inset-right));
+      .mobile-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
       }
+      .mobile-scroll::-webkit-scrollbar { display: none; }
 
       @media (prefers-reduced-motion: reduce) {
-        .btn-primary,
-        .btn-ghost,
-        .nav-link::after {
-          transition: none !important;
-        }
+        .btn-primary, .btn-ghost, .nav-link::after { transition: none !important; }
       }
     </style>
 
@@ -311,11 +270,40 @@
         }, [handler, active]);
       }
 
-      // Spotlight follow mouse
+      // History trap: en móvil, el botón ATRÁS cierra modal/drawer sin recargar.
+      function useHistoryClose(active, onClose) {
+        const pushedRef = useRef(false);
+
+        useEffect(() => {
+          if (!active) return;
+
+          pushedRef.current = true;
+          history.pushState({ __divineeOverlay: true }, "");
+
+          const onPop = () => {
+            pushedRef.current = false;
+            onClose?.();
+          };
+
+          window.addEventListener("popstate", onPop);
+          return () => window.removeEventListener("popstate", onPop);
+        }, [active, onClose]);
+
+        const close = () => {
+          // si empujamos state, hacemos back para volver a la pantalla anterior
+          if (pushedRef.current) {
+            history.back();
+            return;
+          }
+          onClose?.();
+        };
+
+        return close;
+      }
+
       function useSpotlight() {
         useEffect(() => {
           const root = document.documentElement;
-
           let raf = null;
           let tx = window.innerWidth * 0.55;
           let ty = window.innerHeight * 0.18;
@@ -439,97 +427,75 @@
         },
       ];
 
-      // UI Components
+      // Header premium (logo izquierda)
       function Header({ onNavigate, onOpenCart, cartCount }) {
         const [logoSrc, setLogoSrc] = useState(LOGO_LOCAL);
-        const [mobileOpen, setMobileOpen] = useState(false);
-
-        function go(key) {
-          setMobileOpen(false);
-          onNavigate(key);
-        }
 
         return (
-          <div className="fixed left-0 top-0 z-40 w-full">
+          <header className="fixed left-0 top-0 z-40 w-full">
             <div className="mx-auto max-w-6xl px-4 md:px-6">
-              <div className="mt-3 rounded-2xl glass ring-gold">
-                <div className="grid grid-cols-3 items-center px-4 py-3 md:px-6">
-                  <nav className="hidden gap-4 text-xs tracking-[0.22em] text-divineCream/80 md:flex">
+              <div
+                className="mt-3 rounded-2xl glass ring-gold"
+                style={{ paddingTop: "env(safe-area-inset-top)" }}
+              >
+                <div className="flex items-center justify-between gap-3 px-4 py-3 md:px-6">
+                  {/* Left: logo */}
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="rounded-xl border border-divineLine2 bg-black/25 p-2 shadow-glow">
+                      <img
+                        src={logoSrc}
+                        alt={BRAND_NAME}
+                        className="h-8 w-auto object-contain"
+                        loading="eager"
+                        decoding="async"
+                        onError={() => { if (logoSrc !== LOGO_REMOTE) setLogoSrc(LOGO_REMOTE); }}
+                      />
+                    </div>
+
+                    <div className="hidden md:block min-w-0">
+                      <div className="text-xs tracking-luxe text-divineGold/95">{BRAND_NAME.toUpperCase()}</div>
+                      <div className="text-[10px] tracking-[0.35em] text-divineCream/60">GOURMET BAR</div>
+                    </div>
+                  </div>
+
+                  {/* Center nav (desktop) */}
+                  <nav className="hidden md:flex items-center gap-4 text-xs tracking-[0.22em] text-divineCream/80">
                     <button onClick={() => onNavigate("burgers")} className="nav-link hover:text-divineGold transition">HAMBURGUESAS</button>
                     <button onClick={() => onNavigate("desserts")} className="nav-link hover:text-divineGold transition">POSTRES</button>
                     <button onClick={() => onNavigate("yogurt")} className="nav-link hover:text-divineGold transition">YOGURT</button>
                     <button onClick={() => onNavigate("atelier")} className="nav-link hover:text-divineGold transition">ATELIER</button>
                   </nav>
 
-                  <div className="flex items-center justify-center select-none">
-                    <div className="flex items-center gap-3">
-                      <div className="rounded-xl border border-divineLine2 bg-black/25 p-2 shadow-glow">
-                        <img
-                          src={logoSrc}
-                          alt={BRAND_NAME}
-                          className="h-8 w-auto object-contain"
-                          loading="eager"
-                          decoding="async"
-                          onError={() => {
-                            if (logoSrc !== LOGO_REMOTE) setLogoSrc(LOGO_REMOTE);
-                          }}
-                        />
-                      </div>
-                      <div className="hidden sm:block leading-tight">
-                        <div className="text-xs tracking-luxe text-divineGold/95">{BRAND_NAME.toUpperCase()}</div>
-                        <div className="text-[10px] tracking-[0.35em] text-divineCream/60">GOURMET BAR</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-end gap-2">
-                    <button onClick={onOpenCart} className="btn-ghost hidden sm:inline-flex">
+                  {/* Right actions */}
+                  <div className="flex items-center gap-2">
+                    <button onClick={onOpenCart} className="btn-ghost px-4 py-2">
                       CARRITO {cartCount > 0 ? `(${cartCount})` : ""}
-                    </button>
-
-                    <button onClick={onOpenCart} className="btn-ghost sm:hidden px-4 py-2">
-                      CARRITO
-                    </button>
-
-                    <button
-                      onClick={() => setMobileOpen((s) => !s)}
-                      className="btn-ghost md:hidden px-4 py-2"
-                      aria-expanded={mobileOpen}
-                      aria-controls="mobile-nav"
-                    >
-                      MENÚ
                     </button>
                   </div>
                 </div>
 
-                <div
-                  id="mobile-nav"
-                  className={[
-                    "md:hidden overflow-hidden transition-[max-height] duration-300",
-                    mobileOpen ? "max-h-40" : "max-h-0",
-                  ].join(" ")}
-                >
-                  <div className="flex gap-2 px-4 pb-3">
+                {/* Mobile horizontal nav (no amontonado) */}
+                <div className="md:hidden px-4 pb-3">
+                  <div className="mobile-scroll flex gap-2">
                     {[
-                      ["HAMB", "burgers"],
-                      ["POSTRES", "desserts"],
-                      ["YOGURT", "yogurt"],
-                      ["ATELIER", "atelier"],
+                      ["Hamburguesas", "burgers"],
+                      ["Postres", "desserts"],
+                      ["Yogurt", "yogurt"],
+                      ["Atelier", "atelier"],
                     ].map(([label, key]) => (
                       <button
                         key={key}
-                        onClick={() => go(key)}
-                        className="flex-1 rounded-xl border border-divineLine bg-black/25 py-2 text-[11px] tracking-[0.22em] text-divineCream/75 hover:border-divineLine2 hover:text-divineGold transition backdrop-blur"
+                        onClick={() => onNavigate(key)}
+                        className="whitespace-nowrap rounded-full border border-divineLine2 bg-black/25 px-4 py-2 text-[11px] tracking-[0.22em] text-divineCream/75 hover:text-divineGold hover:border-divineGold/40 transition backdrop-blur"
                       >
-                        {label}
+                        {label.toUpperCase()}
                       </button>
                     ))}
                   </div>
                 </div>
-
               </div>
             </div>
-          </div>
+          </header>
         );
       }
 
@@ -582,11 +548,7 @@
                 <div className="mt-4 flex items-center justify-between gap-3">
                   <span className="text-xs tracking-[0.22em] text-divineCream/55">{BRAND_NAME.toUpperCase()}</span>
                   <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      onAdd?.();
-                    }}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAdd?.(); }}
                     className="rounded-xl border border-divineLine2 bg-black/25 px-3 py-2 text-xs tracking-[0.22em] text-divineCream/80 hover:bg-black/35 hover:text-divineGold hover:border-divineGold/50 transition"
                   >
                     AÑADIR
@@ -598,7 +560,7 @@
         );
       }
 
-      // 3D Viewer (mejorado para móvil: NO bloquea scroll vertical)
+      // 3D Viewer para producto (móvil friendly)
       function ThreeBurgerViewer() {
         const mountRef = useRef(null);
 
@@ -626,15 +588,12 @@
         useEffect(() => {
           try {
             if (!window.THREE) throw new Error("Three.js no se cargó.");
-
             const mount = mountRef.current;
             if (!mount) return;
 
             const getSize = () => {
               const r = mount.getBoundingClientRect();
-              const w = Math.max(1, Math.floor(r.width));
-              const h = Math.max(1, Math.floor(r.height));
-              return { w, h };
+              return { w: Math.max(1, Math.floor(r.width)), h: Math.max(1, Math.floor(r.height)) };
             };
 
             const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -647,9 +606,7 @@
             renderer.domElement.style.width = "100%";
             renderer.domElement.style.height = "100%";
             renderer.domElement.style.display = "block";
-            /* CLAVE PARA MÓVIL: permite scroll vertical; igual podemos rotar con drag horizontal */
             renderer.domElement.style.touchAction = "pan-y";
-
             mount.appendChild(renderer.domElement);
 
             const scene = new THREE.Scene();
@@ -677,15 +634,13 @@
             rim.position.set(-4.5, 2.0, -2.5);
             scene.add(rim);
 
-            const ground = new THREE.Mesh(
-              new THREE.PlaneGeometry(30, 30),
-              new THREE.ShadowMaterial({ opacity: 0.22 })
-            );
+            const ground = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.ShadowMaterial({ opacity: 0.22 }));
             ground.rotation.x = -Math.PI / 2;
             ground.position.y = -1.1;
             ground.receiveShadow = true;
             scene.add(ground);
 
+            // Placeholder burger
             const burger = new THREE.Group();
             burger.position.set(0, -0.35, 0);
 
@@ -707,10 +662,8 @@
             layer(new THREE.CylinderGeometry(0.92, 0.86, 0.35, 56), matBun, 1.0);
             layer(new THREE.CylinderGeometry(0.98, 0.98, 0.08, 56), matCheese, 0.72);
             layer(new THREE.CylinderGeometry(1.0, 1.0, 0.26, 56), matMeat, 0.53);
-
             const lettuce = layer(new THREE.TorusGeometry(0.78, 0.12, 14, 80), matLettuce, 0.22);
             lettuce.rotation.x = Math.PI / 2;
-
             layer(new THREE.CylinderGeometry(1.02, 1.02, 0.07, 56), matCheese, 0.32);
 
             for (let i = 0; i < 3; i++) {
@@ -720,39 +673,32 @@
               t.castShadow = true;
               burger.add(t);
             }
-
             layer(new THREE.CylinderGeometry(0.9, 0.96, 0.22, 56), matBun, -0.02);
 
             scene.add(burger);
             burgerRef.current = burger;
 
             const el = renderer.domElement;
-
             const DRAG_THRESHOLD = 10;
 
             const onDown = (e) => {
               isDraggingRef.current = true;
               dragActivatedRef.current = false;
               lastRef.current = { x: e.clientX, y: e.clientY };
-              // NO capturamos el pointer aquí para no bloquear el scroll vertical.
             };
 
             const onMove = (e) => {
               if (!isDraggingRef.current) return;
-
               const dx = e.clientX - lastRef.current.x;
               const dy = e.clientY - lastRef.current.y;
 
-              // Activamos "modo rotación" SOLO si el gesto es mayormente horizontal
               if (!dragActivatedRef.current) {
                 const dist = Math.hypot(dx, dy);
                 if (dist < DRAG_THRESHOLD) return;
-
                 if (Math.abs(dx) > Math.abs(dy)) {
                   dragActivatedRef.current = true;
                   if (el.setPointerCapture) el.setPointerCapture(e.pointerId);
                 } else {
-                  // gesto vertical: dejamos que el usuario haga scroll del modal/página
                   isDraggingRef.current = false;
                   return;
                 }
@@ -764,10 +710,7 @@
               pitchRef.current = Math.max(-1.15, Math.min(1.15, pitchRef.current));
             };
 
-            const onUp = () => {
-              isDraggingRef.current = false;
-              dragActivatedRef.current = false;
-            };
+            const onUp = () => { isDraggingRef.current = false; dragActivatedRef.current = false; };
 
             const onWheel = (e) => {
               e.preventDefault();
@@ -805,12 +748,10 @@
             return () => {
               window.removeEventListener("resize", onResize);
               cancelAnimationFrame(rafRef.current);
-
               el.removeEventListener("pointerdown", onDown);
               el.removeEventListener("pointermove", onMove);
               window.removeEventListener("pointerup", onUp);
               el.removeEventListener("wheel", onWheel);
-
               renderer.dispose();
               if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
             };
@@ -847,15 +788,9 @@
 
               <div className="flex items-center gap-3 rounded-2xl border border-divineLine2 bg-black/35 px-3 py-2 backdrop-blur">
                 <div className="text-[10px] tracking-[0.28em] text-divineCream/60">GIRO Z</div>
-                <input
-                  type="range"
-                  min={-3.1416}
-                  max={3.1416}
-                  step={0.01}
-                  value={roll}
+                <input type="range" min={-3.1416} max={3.1416} step={0.01} value={roll}
                   onChange={(e) => setRoll(parseFloat(e.target.value))}
-                  className="w-full accent-[#C7A35C]"
-                />
+                  className="w-full accent-[#C7A35C]" />
               </div>
 
               <div className="text-[10px] tracking-[0.28em] text-divineCream/55">
@@ -868,49 +803,49 @@
         );
       }
 
-      // Modal (SOLUCIÓN: panel con overflow interno y backdrop que no bloquea scroll)
+      // Modal premium: sticky top bar + back closes modal
       function ProductModal({ product, onClose, onAdd }) {
         useLockBodyScroll(true);
-        useEscape(onClose, true);
+        useEscape(() => close(), true);
+        const close = useHistoryClose(true, onClose);
 
         const [showIngredients, setShowIngredients] = useState(true);
 
         return (
-          <motion.div
-            className="fixed inset-0 z-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            aria-modal="true"
-            role="dialog"
-          >
-            <div className="absolute inset-0 bg-black/70" onClick={onClose}></div>
+          <motion.div className="fixed inset-0 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} aria-modal="true" role="dialog">
+            <div className="absolute inset-0 bg-black/70" onClick={close}></div>
 
-            <div className="absolute inset-0 flex items-center justify-center p-3 md:p-6">
+            <div className="absolute inset-0 flex items-center justify-center p-2 sm:p-4 md:p-6">
               <motion.div
-                initial={{ y: 26, opacity: 0, scale: 0.985 }}
+                initial={{ y: 22, opacity: 0, scale: 0.988 }}
                 animate={{ y: 0, opacity: 1, scale: 1 }}
-                exit={{ y: 18, opacity: 0, scale: 0.985 }}
-                transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}
-                className="relative w-full max-w-5xl max-h-[92vh] overflow-hidden rounded-3xl border border-divineLine2 bg-divineInk shadow-divine"
+                exit={{ y: 16, opacity: 0, scale: 0.988 }}
+                transition={{ duration: 0.32, ease: [0.2, 0.8, 0.2, 1] }}
+                className="relative w-full max-w-5xl h-[96vh] sm:h-auto sm:max-h-[92vh] overflow-hidden rounded-3xl border border-divineLine2 bg-divineInk shadow-divine"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="max-h-[92vh] overflow-y-auto scroll-smooth-ios overscroll-contain">
+                {/* Sticky top bar always visible */}
+                <div className="sticky top-0 z-20 border-b border-divineLine2 bg-black/35 backdrop-blur px-4 py-3" style={{ paddingTop: "calc(0.75rem + env(safe-area-inset-top))" }}>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="text-[10px] tracking-[0.35em] text-divineGold/90">COLECCIÓN DIVINÉE</div>
+                      <div className="truncate text-sm font-semibold text-divineCream">{product.name}</div>
+                    </div>
+                    <button onClick={close} className="btn-ghost py-2 px-4" type="button">
+                      ✕ CERRAR
+                    </button>
+                  </div>
+                </div>
+
+                <div className="max-h-[calc(96vh-64px)] sm:max-h-[92vh] overflow-y-auto scroll-smooth-ios overscroll-contain">
                   <div className="grid grid-cols-1 lg:grid-cols-2">
                     <div className="relative">
                       <ThreeBurgerViewer />
                     </div>
 
                     <div className="p-5 lg:p-7">
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <div className="text-xs tracking-[0.35em] text-divineGold/90">COLECCIÓN DIVINÉE</div>
-                          <h3 className="mt-2 text-2xl font-semibold">{product.name}</h3>
-                          <p className="mt-2 text-sm text-divineCream/70">{product.description}</p>
-                        </div>
-
-                        <button onClick={onClose} className="btn-ghost py-2 px-4">CERRAR</button>
-                      </div>
+                      <h3 className="text-2xl font-semibold">{product.name}</h3>
+                      <p className="mt-2 text-sm text-divineCream/70">{product.description}</p>
 
                       <div className="mt-5 flex flex-wrap items-center gap-3">
                         <span className="rounded-full border border-divineLine2 bg-divinePanel px-3 py-1 text-xs text-divineCream/80">
@@ -920,21 +855,22 @@
                           Precio: <span className="text-divineGold font-semibold">{money(product.price)}</span>
                         </span>
 
-                        <button onClick={onAdd} className="ml-auto btn-primary">AÑADIR</button>
+                        <button onClick={onAdd} className="ml-auto btn-primary" type="button">
+                          AÑADIR
+                        </button>
                       </div>
 
                       <div className="mt-6">
                         <button
                           onClick={() => setShowIngredients((s) => !s)}
                           className="flex w-full items-center justify-between rounded-2xl border border-divineLine2 bg-divinePanel px-4 py-3 text-left hover:border-divineGold/40 transition"
+                          type="button"
                         >
                           <div>
                             <div className="text-xs tracking-[0.28em] text-divineCream/60">DETALLES</div>
                             <div className="mt-1 text-sm font-semibold">Ingredientes</div>
                           </div>
-                          <span className="text-xs tracking-[0.22em] text-divineGold">
-                            {showIngredients ? "OCULTAR" : "MOSTRAR"}
-                          </span>
+                          <span className="text-xs tracking-[0.22em] text-divineGold">{showIngredients ? "OCULTAR" : "MOSTRAR"}</span>
                         </button>
 
                         <AnimatePresence initial={false}>
@@ -963,10 +899,7 @@
                         <div className="text-xs tracking-[0.28em] text-divineCream/60">NUTRICIÓN</div>
                         <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
                           {Object.entries(product.nutrition || {}).map(([k, v]) => (
-                            <div
-                              key={k}
-                              className="flex items-center justify-between rounded-xl border border-divineLine bg-divinePanel px-3 py-2"
-                            >
+                            <div key={k} className="flex items-center justify-between rounded-xl border border-divineLine bg-divinePanel px-3 py-2">
                               <span className="text-divineCream/70">{String(k).toUpperCase()}</span>
                               <span className="font-semibold text-divineCream">{v}</span>
                             </div>
@@ -975,9 +908,16 @@
                         <p className="mt-3 text-xs text-divineCream/50">Valores aproximados (placeholder).</p>
                       </div>
 
-                      <div className="h-4"></div>
+                      <div style={{ height: "calc(1.25rem + env(safe-area-inset-bottom))" }}></div>
                     </div>
                   </div>
+                </div>
+
+                {/* Bottom sticky CTA on mobile */}
+                <div className="sticky bottom-0 z-20 border-t border-divineLine2 bg-black/40 backdrop-blur p-3 sm:hidden" style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}>
+                  <button onClick={onAdd} className="w-full btn-primary" type="button">
+                    AÑADIR AL CARRITO · {money(product.price)}
+                  </button>
                 </div>
               </motion.div>
             </div>
@@ -987,11 +927,7 @@
 
       function CartButton({ cartCount, onClick }) {
         return (
-          <button
-            onClick={onClick}
-            className="fixed z-40 rounded-2xl border border-divineLine2 bg-black/35 px-4 py-3 shadow-glow backdrop-blur hover:brightness-110 transition floating-safe"
-            aria-label="Abrir carrito"
-          >
+          <button onClick={onClick} className="fixed z-40 rounded-2xl border border-divineLine2 bg-black/35 px-4 py-3 shadow-glow backdrop-blur hover:brightness-110 transition floating-safe" aria-label="Abrir carrito" type="button">
             <div className="flex items-center gap-3">
               <div className="text-xs tracking-[0.28em] text-divineCream/75">CARRITO</div>
               <div className="rounded-full bg-divineGold px-2 py-1 text-xs font-semibold text-black">{cartCount}</div>
@@ -1000,14 +936,14 @@
         );
       }
 
-      // Drawer (SOLUCIÓN: overflow interno + backdrop div, no button)
       function CartDrawer({ items, total, onClose, onQty }) {
         useLockBodyScroll(true);
-        useEscape(onClose, true);
+        useEscape(() => close(), true);
+        const close = useHistoryClose(true, onClose);
 
         return (
           <motion.div className="fixed inset-0 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} aria-modal="true" role="dialog">
-            <div className="absolute inset-0 bg-black/70" onClick={onClose}></div>
+            <div className="absolute inset-0 bg-black/70" onClick={close}></div>
 
             <motion.aside
               initial={{ x: 24, opacity: 0 }}
@@ -1024,7 +960,7 @@
                     <h3 className="mt-2 text-xl font-semibold">Carrito</h3>
                     <p className="mt-1 text-sm text-divineCream/60">Revisa y ajusta cantidades.</p>
                   </div>
-                  <button onClick={onClose} className="btn-ghost py-2 px-4">CERRAR</button>
+                  <button onClick={close} className="btn-ghost py-2 px-4" type="button">CERRAR</button>
                 </div>
 
                 <div className="mt-6 space-y-3">
@@ -1053,10 +989,10 @@
                         </div>
 
                         <div className="mt-3 flex items-center gap-2">
-                          <button className="btn-ghost py-2 px-4" onClick={() => onQty(it.id, it.qty - 1)}>−</button>
+                          <button className="btn-ghost py-2 px-4" onClick={() => onQty(it.id, it.qty - 1)} type="button">−</button>
                           <div className="min-w-10 text-center text-sm">{it.qty}</div>
-                          <button className="btn-ghost py-2 px-4" onClick={() => onQty(it.id, it.qty + 1)}>+</button>
-                          <button className="ml-auto btn-ghost py-2 px-4" onClick={() => onQty(it.id, 0)}>ELIMINAR</button>
+                          <button className="btn-ghost py-2 px-4" onClick={() => onQty(it.id, it.qty + 1)} type="button">+</button>
+                          <button className="ml-auto btn-ghost py-2 px-4" onClick={() => onQty(it.id, 0)} type="button">ELIMINAR</button>
                         </div>
                       </div>
                     ))
@@ -1068,7 +1004,7 @@
                     <span className="text-sm text-divineCream/70">Total</span>
                     <span className="text-lg font-semibold text-divineGold">{money(total)}</span>
                   </div>
-                  <button className="mt-4 w-full btn-primary" disabled={items.length === 0}>
+                  <button className="mt-4 w-full btn-primary" disabled={items.length === 0} style={{ opacity: items.length ? 1 : 0.6 }} type="button">
                     PAGAR (placeholder)
                   </button>
                 </div>
@@ -1078,666 +1014,551 @@
         );
       }
 
-      // Builders
-/* =========================
-   BURGER BUILDER V2 (Carrusel + Capas + Preview)
-   Reemplaza el builder anterior por este bloque.
-========================= */
+      /* =========================
+         ATELIER PREMIUM (Builder) + Preview 3D REAL
+      ========================= */
 
-const BURGER_BASE = 2.95;
+      const BURGER_BASE = 2.95;
 
-const BURGER_CATALOG = {
-  buns: [
-    { id: "brioche", name: "Brioche", price: 1.75, note: "Suave, dorado, premium" },
-    { id: "potato", name: "Potato Roll", price: 1.50, note: "Esponjoso, balanceado" },
-    { id: "sesame", name: "Sésamo", price: 1.25, note: "Clásico, crujiente" },
-    { id: "pretzel", name: "Pretzel", price: 1.95, note: "Más denso, elegante" },
-    { id: "ciabatta", name: "Ciabatta", price: 1.85, note: "Textura artesanal" },
-    { id: "lettuce", name: "Lettuce Wrap", price: 0.95, note: "Fresco, low-carb" },
-  ],
-  proteins: [
-    { id: "angus180", name: "Angus 180g", price: 7.25, note: "Jugosa y potente" },
-    { id: "smash", name: "Smash 120g", price: 5.25, note: "Corte caramelizado" },
-    { id: "wagyuBlend", name: "Wagyu Blend", price: 9.50, note: "Ultra premium" },
-    { id: "chickenCrispy", name: "Pollo Crispy", price: 6.90, note: "Crujiente perfecto" },
-    { id: "chickenGrilled", name: "Pollo Grilled", price: 6.50, note: "Más ligero" },
-    { id: "plant", name: "Plant-based", price: 7.10, note: "Sabor moderno" },
-    { id: "lamb", name: "Cordero", price: 8.40, note: "Gourmet intenso" },
-  ],
-  cheeses: [
-    { id: "cheddar", name: "Cheddar Añejo", price: 1.35, note: "Clásico lujo" },
-    { id: "gruyere", name: "Gruyère", price: 1.75, note: "Nuez y crema" },
-    { id: "swiss", name: "Suizo", price: 1.50, note: "Suave, elástico" },
-    { id: "blue", name: "Azul Suave", price: 1.95, note: "Umami elegante" },
-    { id: "pepperJack", name: "Pepper Jack", price: 1.65, note: "Picante sutil" },
-    { id: "none", name: "Sin queso", price: 0.0, note: "Limpio, directo" },
-  ],
-  toppings: [
-    { id: "truffle", name: "Trufa", price: 2.40, group: "Luxe" },
-    { id: "bacon", name: "Bacon premium", price: 2.00, group: "Crunch" },
-    { id: "caramelOnion", name: "Cebolla caramelizada", price: 1.10, group: "Classic" },
-    { id: "crispyOnion", name: "Cebolla crujiente", price: 1.05, group: "Crunch" },
-    { id: "pickles", name: "Pepinillos", price: 0.70, group: "Classic" },
-    { id: "mushrooms", name: "Hongos salteados", price: 1.25, group: "Umami" },
-    { id: "jalapeno", name: "Jalapeño", price: 0.85, group: "Spicy" },
-    { id: "arugula", name: "Rúcula", price: 0.85, group: "Fresh" },
-    { id: "lettuce", name: "Lechuga", price: 0.60, group: "Fresh" },
-    { id: "tomato", name: "Tomate", price: 0.65, group: "Fresh" },
-    { id: "egg", name: "Huevo", price: 1.60, group: "Luxe" },
-    { id: "avocado", name: "Aguacate", price: 1.80, group: "Luxe" },
-    { id: "hashbrown", name: "Hashbrown", price: 1.90, group: "Crunch" },
-    { id: "divineeSauce", name: "Salsa Divinée", price: 1.00, group: "Sauce" },
-    { id: "aioli", name: "Alioli", price: 0.90, group: "Sauce" },
-    { id: "bbq", name: "BBQ", price: 0.90, group: "Sauce" },
-    { id: "spicyMayo", name: "Mayo spicy", price: 0.95, group: "Sauce" },
-  ],
-};
+      const BURGER_CATALOG = {
+        buns: [
+          { id: "brioche", name: "Brioche", price: 1.75, note: "Suave, dorado, premium" },
+          { id: "potato", name: "Potato Roll", price: 1.50, note: "Esponjoso, balanceado" },
+          { id: "sesame", name: "Sésamo", price: 1.25, note: "Clásico, crujiente" },
+          { id: "pretzel", name: "Pretzel", price: 1.95, note: "Más denso, elegante" },
+          { id: "ciabatta", name: "Ciabatta", price: 1.85, note: "Textura artesanal" },
+          { id: "lettuce", name: "Lettuce Wrap", price: 0.95, note: "Fresco, low-carb" },
+        ],
+        proteins: [
+          { id: "angus180", name: "Angus 180g", price: 7.25, note: "Jugosa y potente" },
+          { id: "smash", name: "Smash 120g", price: 5.25, note: "Corte caramelizado" },
+          { id: "wagyuBlend", name: "Wagyu Blend", price: 9.50, note: "Ultra premium" },
+          { id: "chickenCrispy", name: "Pollo Crispy", price: 6.90, note: "Crujiente perfecto" },
+          { id: "chickenGrilled", name: "Pollo Grilled", price: 6.50, note: "Más ligero" },
+          { id: "plant", name: "Plant-based", price: 7.10, note: "Sabor moderno" },
+          { id: "lamb", name: "Cordero", price: 8.40, note: "Gourmet intenso" },
+        ],
+        cheeses: [
+          { id: "cheddar", name: "Cheddar Añejo", price: 1.35, note: "Clásico lujo" },
+          { id: "gruyere", name: "Gruyère", price: 1.75, note: "Nuez y crema" },
+          { id: "swiss", name: "Suizo", price: 1.50, note: "Suave, elástico" },
+          { id: "blue", name: "Azul Suave", price: 1.95, note: "Umami elegante" },
+          { id: "pepperJack", name: "Pepper Jack", price: 1.65, note: "Picante sutil" },
+          { id: "none", name: "Sin queso", price: 0.0, note: "Limpio, directo" },
+        ],
+        toppings: [
+          { id: "truffle", name: "Trufa", price: 2.40, group: "Luxe" },
+          { id: "bacon", name: "Bacon premium", price: 2.00, group: "Crunch" },
+          { id: "caramelOnion", name: "Cebolla caramelizada", price: 1.10, group: "Classic" },
+          { id: "crispyOnion", name: "Cebolla crujiente", price: 1.05, group: "Crunch" },
+          { id: "pickles", name: "Pepinillos", price: 0.70, group: "Classic" },
+          { id: "mushrooms", name: "Hongos salteados", price: 1.25, group: "Umami" },
+          { id: "jalapeno", name: "Jalapeño", price: 0.85, group: "Spicy" },
+          { id: "arugula", name: "Rúcula", price: 0.85, group: "Fresh" },
+          { id: "lettuce", name: "Lechuga", price: 0.60, group: "Fresh" },
+          { id: "tomato", name: "Tomate", price: 0.65, group: "Fresh" },
+          { id: "egg", name: "Huevo", price: 1.60, group: "Luxe" },
+          { id: "avocado", name: "Aguacate", price: 1.80, group: "Luxe" },
+          { id: "hashbrown", name: "Hashbrown", price: 1.90, group: "Crunch" },
+          { id: "divineeSauce", name: "Salsa Divinée", price: 1.00, group: "Sauce" },
+          { id: "aioli", name: "Alioli", price: 0.90, group: "Sauce" },
+          { id: "bbq", name: "BBQ", price: 0.90, group: "Sauce" },
+          { id: "spicyMayo", name: "Mayo spicy", price: 0.95, group: "Sauce" },
+        ],
+      };
 
-const MAX_PROTEIN_LAYERS = 4;
-const MAX_CHEESE_LAYERS = 4;
+      const MAX_PROTEIN_LAYERS = 4;
+      const MAX_CHEESE_LAYERS = 4;
 
-function wrapIndex(i, len) {
-  if (len <= 0) return 0;
-  return (i % len + len) % len;
-}
+      function wrapIndex(i, len) {
+        if (len <= 0) return 0;
+        return (i % len + len) % len;
+      }
 
-function IconButton({ label, onClick, title }) {
-  return (
-    <button
-      onClick={onClick}
-      title={title}
-      className="btn-ghost px-4 py-2"
-      type="button"
-    >
-      {label}
-    </button>
-  );
-}
-
-function CarouselPicker({ title, options, index, onPrev, onNext }) {
-  const opt = options[index];
-
-  return (
-    <div className="rounded-3xl border border-divineLine2 bg-black/20 p-4">
-      <div className="text-xs tracking-[0.35em] text-divineGold/90">{title.toUpperCase()}</div>
-
-      <div className="mt-3 grid grid-cols-[auto_1fr_auto] items-center gap-3">
-        <IconButton label="←" title="Anterior" onClick={onPrev} />
-        <motion.div
-          key={opt?.id}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.18 }}
-          className="rounded-2xl border border-divineLine2 bg-divinePanel p-4"
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <div className="text-base font-semibold">{opt?.name}</div>
-              <div className="mt-1 text-sm text-divineCream/65">{opt?.note}</div>
-            </div>
-            <div className="text-sm font-semibold text-divineGold">{money(opt?.price ?? 0)}</div>
-          </div>
-        </motion.div>
-        <IconButton label="→" title="Siguiente" onClick={onNext} />
-      </div>
-    </div>
-  );
-}
-
-function LayersHeader({ title, count, onAdd, addLabel, disabled }) {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <div>
-        <div className="text-xs tracking-[0.35em] text-divineGold/90">{title.toUpperCase()}</div>
-        <div className="mt-1 text-sm text-divineCream/65">
-          Capas: <span className="text-divineCream">{count}</span>
-        </div>
-      </div>
-      <button
-        type="button"
-        onClick={onAdd}
-        className="btn-ghost px-4 py-2"
-        disabled={disabled}
-        style={{ opacity: disabled ? 0.55 : 1 }}
-        title={disabled ? "Límite de capas alcanzado" : addLabel}
-      >
-        + <span className="ml-1">{addLabel}</span>
-      </button>
-    </div>
-  );
-}
-
-function LayersTabs({ label, layers, active, setActive, onRemove, min = 1 }) {
-  return (
-    <div className="mt-3 flex gap-2 overflow-x-auto scroll-smooth-ios pb-1">
-      {layers.map((_, i) => (
-        <div key={i} className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => setActive(i)}
-            className={[
-              "whitespace-nowrap rounded-full border px-3 py-2 text-[11px] tracking-[0.22em] transition backdrop-blur",
-              active === i
-                ? "border-divineGold/60 bg-black/35 text-divineGold shadow-glow"
-                : "border-divineLine2 bg-black/25 text-divineCream/70 hover:text-divineGold hover:border-divineGold/40",
-            ].join(" ")}
-          >
-            {label.toUpperCase()} {i + 1}
+      function IconButton({ label, onClick, title }) {
+        return (
+          <button onClick={onClick} title={title} className="btn-ghost px-4 py-2" type="button">
+            {label}
           </button>
+        );
+      }
 
-          {layers.length > min && (
+      function CarouselPicker({ title, options, index, onPrev, onNext }) {
+        const opt = options[index];
+        return (
+          <div className="rounded-3xl border border-divineLine2 bg-black/20 p-4">
+            <div className="text-xs tracking-[0.35em] text-divineGold/90">{title.toUpperCase()}</div>
+            <div className="mt-3 grid grid-cols-[auto_1fr_auto] items-center gap-3">
+              <IconButton label="←" title="Anterior" onClick={onPrev} />
+              <motion.div
+                key={opt?.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.18 }}
+                className="rounded-2xl border border-divineLine2 bg-divinePanel p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-base font-semibold">{opt?.name}</div>
+                    <div className="mt-1 text-sm text-divineCream/65">{opt?.note}</div>
+                  </div>
+                  <div className="text-sm font-semibold text-divineGold">{money(opt?.price ?? 0)}</div>
+                </div>
+              </motion.div>
+              <IconButton label="→" title="Siguiente" onClick={onNext} />
+            </div>
+          </div>
+        );
+      }
+
+      function LayersHeader({ title, count, onAdd, addLabel, disabled }) {
+        return (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="text-xs tracking-[0.35em] text-divineGold/90">{title.toUpperCase()}</div>
+              <div className="mt-1 text-sm text-divineCream/65">
+                Capas: <span className="text-divineCream">{count}</span>
+              </div>
+            </div>
             <button
               type="button"
-              onClick={() => onRemove(i)}
-              className="rounded-full border border-divineLine2 bg-black/25 px-2 py-2 text-[11px] text-divineCream/70 hover:text-divineGold hover:border-divineGold/40 transition"
-              title="Eliminar capa"
+              onClick={onAdd}
+              className="btn-ghost px-4 py-2"
+              disabled={disabled}
+              style={{ opacity: disabled ? 0.55 : 1 }}
             >
-              ×
+              + <span className="ml-1">{addLabel}</span>
             </button>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
+          </div>
+        );
+      }
 
-function BurgerPreview2D({ bunIdx, proteinLayers, cheeseLayers, toppings }) {
-  const bun = BURGER_CATALOG.buns[bunIdx];
-
-  // Pequeño “stack” visual
-  const bunTone =
-    bun?.id === "lettuce"
-      ? "from-[#2F7A4B] to-[#1f5a35]"
-      : bun?.id === "pretzel"
-      ? "from-[#8a6b4a] to-[#5a3f27]"
-      : bun?.id === "ciabatta"
-      ? "from-[#d9c3a7] to-[#b38b5d]"
-      : "from-[#d2b06f] to-[#a47735]";
-
-  return (
-    <div className="rounded-3xl border border-divineLine2 bg-black/20 p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="text-xs tracking-[0.35em] text-divineGold/90">VISTA</div>
-          <div className="mt-1 text-sm text-divineCream/65">Tu hamburguesa en tiempo real</div>
-        </div>
-        <div className="text-xs tracking-[0.22em] text-divineCream/55">
-          {proteinLayers.length} carne(s) • {cheeseLayers.length} queso(s) • {toppings.length} toppings
-        </div>
-      </div>
-
-      <div className="mt-4 flex items-center justify-center">
-        <div className="w-full max-w-[320px]">
-          {/* top bun */}
-          <div className={`h-10 rounded-t-[999px] bg-gradient-to-b ${bunTone} shadow-glow`} />
-
-          {/* toppings as chips */}
-          {toppings.length > 0 && (
-            <div className="mt-2 flex flex-wrap justify-center gap-2">
-              {toppings.slice(0, 8).map((t) => (
-                <span
-                  key={t}
-                  className="rounded-full border border-divineLine2 bg-black/25 px-3 py-1 text-[11px] text-divineCream/75"
+      function LayersTabs({ label, layers, active, setActive, onRemove, min = 1 }) {
+        return (
+          <div className="mt-3 flex gap-2 overflow-x-auto scroll-smooth-ios pb-1 mobile-scroll">
+            {layers.map((_, i) => (
+              <div key={i} className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setActive(i)}
+                  className={[
+                    "whitespace-nowrap rounded-full border px-3 py-2 text-[11px] tracking-[0.22em] transition backdrop-blur",
+                    active === i
+                      ? "border-divineGold/60 bg-black/35 text-divineGold shadow-glow"
+                      : "border-divineLine2 bg-black/25 text-divineCream/70 hover:text-divineGold hover:border-divineGold/40",
+                  ].join(" ")}
                 >
-                  {BURGER_CATALOG.toppings.find((x) => x.id === t)?.name || t}
-                </span>
-              ))}
-              {toppings.length > 8 && (
-                <span className="rounded-full border border-divineLine2 bg-black/25 px-3 py-1 text-[11px] text-divineCream/55">
-                  +{toppings.length - 8}
-                </span>
-              )}
-            </div>
-          )}
+                  {label.toUpperCase()} {i + 1}
+                </button>
 
-          {/* cheese layers */}
-          {cheeseLayers.map((_, i) => (
-            <div key={`ch-${i}`} className="mt-2 h-2 rounded-full bg-gradient-to-r from-[#f6d05f] to-[#c7a35c] opacity-90" />
-          ))}
-
-          {/* protein layers */}
-          {proteinLayers.map((pIdx, i) => (
-            <div
-              key={`p-${i}-${pIdx}`}
-              className="mt-2 h-6 rounded-full bg-gradient-to-b from-[#4a2a1c] to-[#2a160f] shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
-            />
-          ))}
-
-          {/* bottom bun */}
-          <div className={`mt-2 h-8 rounded-b-[999px] bg-gradient-to-b ${bunTone} shadow-glow`} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function BurgerBuilder({ onAddToCart }) {
-  const [step, setStep] = useState(0); // 0 bun, 1 proteins, 2 cheeses, 3 toppings
-
-  // Carruseles: guardamos índices
-  const [bunIdx, setBunIdx] = useState(0);
-
-  const [proteinLayers, setProteinLayers] = useState([0]);
-  const [activeProteinLayer, setActiveProteinLayer] = useState(0);
-
-  const [cheeseLayers, setCheeseLayers] = useState([5]); // default: "Sin queso" para que exista capa
-  const [activeCheeseLayer, setActiveCheeseLayer] = useState(0);
-
-  const [toppings, setToppings] = useState([]);
-
-  const bun = BURGER_CATALOG.buns[bunIdx];
-
-  const price = useMemo(() => {
-    const bunP = bun?.price ?? 0;
-    const proteinsP = proteinLayers.reduce((acc, idx) => acc + (BURGER_CATALOG.proteins[idx]?.price ?? 0), 0);
-    const cheesesP = cheeseLayers.reduce((acc, idx) => acc + (BURGER_CATALOG.cheeses[idx]?.price ?? 0), 0);
-    const toppingsP = toppings.reduce((acc, id) => acc + (BURGER_CATALOG.toppings.find((t) => t.id === id)?.price ?? 0), 0);
-    return BURGER_BASE + bunP + proteinsP + cheesesP + toppingsP;
-  }, [bunIdx, proteinLayers, cheeseLayers, toppings]);
-
-  const valid = useMemo(() => {
-    // Requerimos al menos pan y 1 carne.
-    return bunIdx !== null && proteinLayers.length >= 1;
-  }, [bunIdx, proteinLayers]);
-
-  function toggleTopping(id) {
-    setToppings((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
-  }
-
-  // ====== Nav steps
-  const steps = ["PAN", "CARNES", "QUESOS", "TOPPINGS"];
-
-  // ====== Bun carousel handlers
-  function bunPrev() {
-    setBunIdx((i) => wrapIndex(i - 1, BURGER_CATALOG.buns.length));
-  }
-  function bunNext() {
-    setBunIdx((i) => wrapIndex(i + 1, BURGER_CATALOG.buns.length));
-  }
-
-  // ====== Protein layer handlers
-  function proteinPrev() {
-    setProteinLayers((layers) => {
-      const copy = [...layers];
-      copy[activeProteinLayer] = wrapIndex(copy[activeProteinLayer] - 1, BURGER_CATALOG.proteins.length);
-      return copy;
-    });
-  }
-  function proteinNext() {
-    setProteinLayers((layers) => {
-      const copy = [...layers];
-      copy[activeProteinLayer] = wrapIndex(copy[activeProteinLayer] + 1, BURGER_CATALOG.proteins.length);
-      return copy;
-    });
-  }
-  function addProteinLayer() {
-    setProteinLayers((layers) => {
-      if (layers.length >= MAX_PROTEIN_LAYERS) return layers;
-      const last = layers[layers.length - 1] ?? 0;
-      return [...layers, last];
-    });
-    setActiveProteinLayer((i) => Math.min(i + 1, MAX_PROTEIN_LAYERS - 1));
-  }
-  function removeProteinLayer(i) {
-    setProteinLayers((layers) => layers.filter((_, idx) => idx !== i));
-    setActiveProteinLayer((cur) => (cur > 0 ? cur - 1 : 0));
-  }
-
-  // ====== Cheese layer handlers
-  function cheesePrev() {
-    setCheeseLayers((layers) => {
-      const copy = [...layers];
-      copy[activeCheeseLayer] = wrapIndex(copy[activeCheeseLayer] - 1, BURGER_CATALOG.cheeses.length);
-      return copy;
-    });
-  }
-  function cheeseNext() {
-    setCheeseLayers((layers) => {
-      const copy = [...layers];
-      copy[activeCheeseLayer] = wrapIndex(copy[activeCheeseLayer] + 1, BURGER_CATALOG.cheeses.length);
-      return copy;
-    });
-  }
-  function addCheeseLayer() {
-    setCheeseLayers((layers) => {
-      if (layers.length >= MAX_CHEESE_LAYERS) return layers;
-      const last = layers[layers.length - 1] ?? 0;
-      return [...layers, last];
-    });
-    setActiveCheeseLayer((i) => Math.min(i + 1, MAX_CHEESE_LAYERS - 1));
-  }
-  function removeCheeseLayer(i) {
-    setCheeseLayers((layers) => layers.filter((_, idx) => idx !== i));
-    setActiveCheeseLayer((cur) => (cur > 0 ? cur - 1 : 0));
-  }
-
-  // ====== Add to cart
-  function buildAndAdd() {
-    if (!valid) return;
-
-    const bunSel = BURGER_CATALOG.buns[bunIdx];
-    const proteinsSel = proteinLayers.map((idx) => BURGER_CATALOG.proteins[idx]).filter(Boolean);
-    const cheesesSel = cheeseLayers.map((idx) => BURGER_CATALOG.cheeses[idx]).filter(Boolean);
-    const toppingsSel = toppings.map((id) => BURGER_CATALOG.toppings.find((t) => t.id === id)).filter(Boolean);
-
-    const id = [
-      "custom-burger-v2",
-      bunSel?.id,
-      proteinsSel.map((p) => p.id).join("+"),
-      cheesesSel.map((c) => c.id).join("+"),
-      toppings.slice().sort().join(","),
-    ].join(":");
-
-    const meta = {
-      pan: bunSel?.name,
-      carnes: proteinsSel.map((p) => p.name),
-      quesos: cheesesSel.map((c) => c.name),
-      toppings: toppingsSel.map((t) => t.name),
-    };
-
-    onAddToCart?.({
-      id,
-      name: "Hamburguesa Divinée (Atelier)",
-      price,
-      meta,
-    });
-
-    // reset suave
-    setStep(0);
-    setBunIdx(0);
-    setProteinLayers([0]);
-    setActiveProteinLayer(0);
-    setCheeseLayers([5]); // Sin queso
-    setActiveCheeseLayer(0);
-    setToppings([]);
-  }
-
-  // ====== UI pieces
-  const activeProtein = BURGER_CATALOG.proteins[proteinLayers[activeProteinLayer] ?? 0];
-  const activeCheese = BURGER_CATALOG.cheeses[cheeseLayers[activeCheeseLayer] ?? 0];
-
-  return (
-    <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-      {/* Left panel */}
-      <div className="rounded-3xl glass ring-gold p-4 md:p-6">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <div className="text-xs tracking-[0.35em] text-divineGold/90">ATELIER</div>
-            <h3 className="mt-2 text-xl font-semibold md:text-2xl">Arma tu Hamburguesa</h3>
-            <p className="mt-1 text-sm text-divineCream/65">
-              Carrusel con capas: carne abajo/arriba, queso abajo/arriba y toppings premium.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-divineLine2 bg-black/25 px-4 py-3 shadow-glow">
-            <div className="text-[10px] tracking-[0.28em] text-divineCream/55">PRECIO</div>
-            <div className="mt-1 text-lg font-semibold text-divineGold">{money(price)}</div>
-          </div>
-        </div>
-
-        {/* Preview */}
-        <div className="mt-5">
-          <BurgerPreview2D
-            bunIdx={bunIdx}
-            proteinLayers={proteinLayers}
-            cheeseLayers={cheeseLayers.filter((idx) => BURGER_CATALOG.cheeses[idx]?.id !== "none")}
-            toppings={toppings}
-          />
-        </div>
-
-        {/* Stepper */}
-        <div className="mt-5 grid grid-cols-4 gap-2">
-          {steps.map((label, i) => (
-            <button
-              key={label}
-              onClick={() => setStep(i)}
-              className={[
-                "rounded-2xl border px-3 py-2 text-[11px] tracking-[0.22em] transition",
-                step === i
-                  ? "border-divineGold/60 bg-black/35 text-divineGold shadow-glow"
-                  : "border-divineLine bg-black/25 text-divineCream/70 hover:text-divineGold hover:border-divineGold/40",
-              ].join(" ")}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {/* Step content */}
-        <motion.div
-          key={step}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25 }}
-          className="mt-5"
-        >
-          {step === 0 && (
-            <CarouselPicker
-              title="Pan"
-              options={BURGER_CATALOG.buns}
-              index={bunIdx}
-              onPrev={bunPrev}
-              onNext={bunNext}
-            />
-          )}
-
-          {step === 1 && (
-            <div className="space-y-4">
-              <LayersHeader
-                title="Carnes"
-                count={proteinLayers.length}
-                onAdd={addProteinLayer}
-                addLabel="Agregar otra carne"
-                disabled={proteinLayers.length >= MAX_PROTEIN_LAYERS}
-              />
-
-              <LayersTabs
-                label="Carne"
-                layers={proteinLayers}
-                active={activeProteinLayer}
-                setActive={setActiveProteinLayer}
-                onRemove={removeProteinLayer}
-                min={1}
-              />
-
-              <CarouselPicker
-                title={`Carne ${activeProteinLayer + 1}`}
-                options={BURGER_CATALOG.proteins}
-                index={proteinLayers[activeProteinLayer] ?? 0}
-                onPrev={proteinPrev}
-                onNext={proteinNext}
-              />
-
-              <div className="text-xs text-divineCream/55">
-                Tip: agrega 2 carnes para estilo “doble patty” (abajo/arriba).
+                {layers.length > min && (
+                  <button
+                    type="button"
+                    onClick={() => onRemove(i)}
+                    className="rounded-full border border-divineLine2 bg-black/25 px-2 py-2 text-[11px] text-divineCream/70 hover:text-divineGold hover:border-divineGold/40 transition"
+                    title="Eliminar capa"
+                  >
+                    ×
+                  </button>
+                )}
               </div>
-            </div>
-          )}
+            ))}
+          </div>
+        );
+      }
 
-          {step === 2 && (
-            <div className="space-y-4">
-              <LayersHeader
-                title="Quesos"
-                count={cheeseLayers.length}
-                onAdd={addCheeseLayer}
-                addLabel="Agregar otro queso"
-                disabled={cheeseLayers.length >= MAX_CHEESE_LAYERS}
-              />
+      // Preview 3D premium en vivo (sin romper scroll)
+      function AtelierBurgerPreview3D({ bunId, proteinsCount, cheesesCount, toppings }) {
+        const mountRef = useRef(null);
+        const sceneRef = useRef(null);
+        const rendererRef = useRef(null);
+        const cameraRef = useRef(null);
+        const groupRef = useRef(null);
+        const rafRef = useRef(null);
 
-              <LayersTabs
-                label="Queso"
-                layers={cheeseLayers}
-                active={activeCheeseLayer}
-                setActive={setActiveCheeseLayer}
-                onRemove={removeCheeseLayer}
-                min={1}
-              />
+        const yawRef = useRef(0);
+        const pitchRef = useRef(0);
+        const draggingRef = useRef(false);
+        const dragActivatedRef = useRef(false);
+        const lastRef = useRef({ x: 0, y: 0 });
 
-              <CarouselPicker
-                title={`Queso ${activeCheeseLayer + 1}`}
-                options={BURGER_CATALOG.cheeses}
-                index={cheeseLayers[activeCheeseLayer] ?? 0}
-                onPrev={cheesePrev}
-                onNext={cheeseNext}
-              />
+        const [err, setErr] = useState(null);
 
-              <div className="text-xs text-divineCream/55">
-                Puedes poner queso abajo y otro arriba (ej: cheddar + gruyère).
-              </div>
-            </div>
-          )}
+        const keySig = useMemo(() => {
+          return JSON.stringify({ bunId, proteinsCount, cheesesCount, toppings: toppings.slice().sort() });
+        }, [bunId, proteinsCount, cheesesCount, toppings]);
 
-          {step === 3 && (
+        function bunColor() {
+          if (bunId === "lettuce") return 0x2f7a4b;
+          if (bunId === "pretzel") return 0x7a5a3b;
+          if (bunId === "ciabatta") return 0xc7b097;
+          return 0xc7a35c;
+        }
+
+        useEffect(() => {
+          try {
+            if (!window.THREE) throw new Error("Three.js no se cargó.");
+
+            const mount = mountRef.current;
+            if (!mount) return;
+
+            const getSize = () => {
+              const r = mount.getBoundingClientRect();
+              return { w: Math.max(1, Math.floor(r.width)), h: Math.max(1, Math.floor(r.height)) };
+            };
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            const { w, h } = getSize();
+            renderer.setSize(w, h);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            renderer.domElement.style.width = "100%";
+            renderer.domElement.style.height = "100%";
+            renderer.domElement.style.display = "block";
+            renderer.domElement.style.touchAction = "pan-y";
+            mount.appendChild(renderer.domElement);
+
+            const scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x0a0a0f, 7, 16);
+
+            const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
+            camera.position.set(0, 1.0, 3.2);
+
+            scene.add(new THREE.HemisphereLight(0xf5efe6, 0x07070a, 0.65));
+            const key = new THREE.DirectionalLight(0xffffff, 1.15);
+            key.position.set(3.5, 4.5, 2.8);
+            key.castShadow = true;
+            key.shadow.mapSize.set(1024, 1024);
+            scene.add(key);
+
+            const rim = new THREE.DirectionalLight(0xc7a35c, 0.75);
+            rim.position.set(-4.5, 2.0, -2.5);
+            scene.add(rim);
+
+            const ground = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.ShadowMaterial({ opacity: 0.20 }));
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -1.0;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            const group = new THREE.Group();
+            group.position.set(0, -0.25, 0);
+            scene.add(group);
+
+            sceneRef.current = scene;
+            rendererRef.current = renderer;
+            cameraRef.current = camera;
+            groupRef.current = group;
+
+            // drag rotate (solo horizontal activa)
+            const el = renderer.domElement;
+            const DRAG_THRESHOLD = 10;
+
+            const onDown = (e) => {
+              draggingRef.current = true;
+              dragActivatedRef.current = false;
+              lastRef.current = { x: e.clientX, y: e.clientY };
+            };
+            const onMove = (e) => {
+              if (!draggingRef.current) return;
+              const dx = e.clientX - lastRef.current.x;
+              const dy = e.clientY - lastRef.current.y;
+
+              if (!dragActivatedRef.current) {
+                const dist = Math.hypot(dx, dy);
+                if (dist < DRAG_THRESHOLD) return;
+
+                if (Math.abs(dx) > Math.abs(dy)) {
+                  dragActivatedRef.current = true;
+                  if (el.setPointerCapture) el.setPointerCapture(e.pointerId);
+                } else {
+                  draggingRef.current = false;
+                  return;
+                }
+              }
+
+              lastRef.current = { x: e.clientX, y: e.clientY };
+              yawRef.current += dx * 0.007;
+              pitchRef.current += dy * 0.005;
+              pitchRef.current = Math.max(-0.65, Math.min(0.45, pitchRef.current));
+            };
+            const onUp = () => { draggingRef.current = false; dragActivatedRef.current = false; };
+
+            el.addEventListener("pointerdown", onDown, { passive: true });
+            el.addEventListener("pointermove", onMove, { passive: true });
+            window.addEventListener("pointerup", onUp, { passive: true });
+
+            const onResize = () => {
+              const { w: nw, h: nh } = getSize();
+              camera.aspect = nw / nh;
+              camera.updateProjectionMatrix();
+              renderer.setSize(nw, nh);
+            };
+            window.addEventListener("resize", onResize);
+
+            const animate = () => {
+              rafRef.current = requestAnimationFrame(animate);
+              if (groupRef.current) {
+                if (!dragActivatedRef.current) yawRef.current += 0.0035;
+                groupRef.current.rotation.y = yawRef.current;
+                groupRef.current.rotation.x = pitchRef.current;
+              }
+              renderer.render(scene, camera);
+            };
+            animate();
+
+            return () => {
+              window.removeEventListener("resize", onResize);
+              cancelAnimationFrame(rafRef.current);
+              el.removeEventListener("pointerdown", onDown);
+              el.removeEventListener("pointermove", onMove);
+              window.removeEventListener("pointerup", onUp);
+              renderer.dispose();
+              if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
+            };
+          } catch (e) {
+            setErr(e?.message || String(e));
+          }
+        }, []);
+
+        // rebuild stack when selections change
+        useEffect(() => {
+          if (!groupRef.current) return;
+
+          const group = groupRef.current;
+          while (group.children.length) group.remove(group.children[0]);
+
+          const bunMat = new THREE.MeshStandardMaterial({ color: bunColor(), roughness: 0.55, metalness: 0.08 });
+          const meatMat = new THREE.MeshStandardMaterial({ color: 0x3b2016, roughness: 0.86, metalness: 0.02 });
+          const cheeseMat = new THREE.MeshStandardMaterial({ color: 0xf2c24f, roughness: 0.35, metalness: 0.03 });
+          const greenMat = new THREE.MeshStandardMaterial({ color: 0x3f8f5a, roughness: 0.8 });
+          const redMat = new THREE.MeshStandardMaterial({ color: 0xb33b2e, roughness: 0.65 });
+          const darkMat = new THREE.MeshStandardMaterial({ color: 0x1b1b20, roughness: 0.9 });
+
+          const add = (mesh) => { mesh.castShadow = true; mesh.receiveShadow = true; group.add(mesh); return mesh; };
+
+          let y = 0;
+
+          // bottom bun
+          const bunBottom = add(new THREE.Mesh(new THREE.CylinderGeometry(0.92, 0.98, 0.22, 56), bunMat));
+          bunBottom.position.y = y; y += 0.18;
+
+          // proteins + cheeses interleaved (more “real”)
+          for (let i = 0; i < proteinsCount; i++) {
+            const meat = add(new THREE.Mesh(new THREE.CylinderGeometry(1.02, 1.02, 0.26, 56), meatMat));
+            meat.position.y = y; y += 0.20;
+
+            if (cheesesCount > 0 && i < cheesesCount) {
+              const cheese = add(new THREE.Mesh(new THREE.CylinderGeometry(1.05, 1.05, 0.07, 56), cheeseMat));
+              cheese.position.y = y; y += 0.08;
+            }
+          }
+
+          // toppings as simple ingredients
+          const toppingSet = new Set(toppings);
+          if (toppingSet.has("lettuce") || toppingSet.has("arugula")) {
+            const ring = add(new THREE.Mesh(new THREE.TorusGeometry(0.78, 0.12, 14, 80), greenMat));
+            ring.position.y = y + 0.05;
+            ring.rotation.x = Math.PI / 2;
+            y += 0.08;
+          }
+
+          if (toppingSet.has("tomato")) {
+            for (let i = 0; i < 3; i++) {
+              const t = add(new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.06, 40), redMat));
+              t.position.set(Math.cos(i * 2.2) * 0.45, y + 0.04, Math.sin(i * 2.2) * 0.45);
+              t.rotation.x = Math.PI / 2;
+            }
+            y += 0.08;
+          }
+
+          if (toppingSet.has("pickles")) {
+            for (let i = 0; i < 4; i++) {
+              const p = add(new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.03, 10, 30), greenMat));
+              p.position.set(Math.cos(i * 1.7) * 0.55, y + 0.02, Math.sin(i * 1.7) * 0.55);
+              p.rotation.x = Math.PI / 2;
+            }
+            y += 0.06;
+          }
+
+          if (toppingSet.has("bacon")) {
+            for (let i = 0; i < 2; i++) {
+              const b = add(new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.05, 0.18), darkMat));
+              b.position.y = y + 0.03;
+              b.rotation.y = i * 0.8;
+            }
+            y += 0.07;
+          }
+
+          // top bun
+          const bunTop = add(new THREE.Mesh(new THREE.CylinderGeometry(0.92, 0.86, 0.35, 56), bunMat));
+          bunTop.position.y = y + 0.22;
+
+        }, [keySig]);
+
+        if (err) {
+          return (
             <div className="rounded-3xl border border-divineLine2 bg-black/20 p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-xs tracking-[0.35em] text-divineGold/90">TOPPINGS</div>
-                  <div className="mt-1 text-sm text-divineCream/65">Selecciona todos los que quieras.</div>
-                </div>
-                <div className="text-xs tracking-[0.22em] text-divineCream/55">{toppings.length} seleccionados</div>
-              </div>
-
-              <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                {BURGER_CATALOG.toppings.map((t) => {
-                  const active = toppings.includes(t.id);
-                  return (
-                    <button
-                      key={t.id}
-                      onClick={() => toggleTopping(t.id)}
-                      className={[
-                        "rounded-2xl border px-4 py-3 text-left transition",
-                        active
-                          ? "border-divineGold/60 bg-black/35 shadow-glow"
-                          : "border-divineLine bg-black/25 hover:border-divineGold/40",
-                      ].join(" ")}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="font-semibold">{t.name}</div>
-                          <div className="mt-1 text-xs tracking-[0.18em] text-divineCream/55">{t.group.toUpperCase()}</div>
-                        </div>
-                        <div className="text-sm font-semibold text-divineGold">{money(t.price)}</div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+              <div className="text-xs tracking-[0.35em] text-divineGold/90">VISTA 3D</div>
+              <div className="mt-2 text-sm text-divineCream/70">No se pudo cargar el preview 3D.</div>
+              <div className="mt-2 text-xs text-divineCream/50">{err}</div>
             </div>
-          )}
-        </motion.div>
-
-        {/* Nav + Build */}
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <button onClick={() => setStep((s) => Math.max(0, s - 1))} className="btn-ghost">
-            ATRÁS
-          </button>
-          <button onClick={() => setStep((s) => Math.min(3, s + 1))} className="btn-ghost">
-            SIGUIENTE
-          </button>
-
-          <button
-            onClick={buildAndAdd}
-            className="ml-auto btn-primary"
-            disabled={!valid}
-            style={{ opacity: valid ? 1 : 0.6 }}
-          >
-            ARMAR
-          </button>
-        </div>
-
-        {!valid && (
-          <div className="mt-3 text-xs text-divineCream/55">
-            Selecciona al menos <span className="text-divineGold">pan</span> y <span className="text-divineGold">1 carne</span>.
-          </div>
-        )}
-      </div>
-
-      {/* Right summary */}
-      <div className="rounded-3xl border border-divineLine2 bg-black/25 p-4 md:p-6 shadow-divine">
-        <div className="text-xs tracking-[0.35em] text-divineGold/90">RESUMEN</div>
-        <h4 className="mt-2 text-lg font-semibold">Tu orden</h4>
-
-        <div className="mt-4 space-y-3 text-sm">
-          <div className="rounded-2xl border border-divineLine2 bg-divinePanel px-4 py-3">
-            <div className="flex justify-between gap-3">
-              <span className="text-divineCream/70">Pan</span>
-              <span className="font-semibold text-divineCream">{bun?.name}</span>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-divineLine2 bg-divinePanel px-4 py-3">
-            <div className="flex justify-between gap-3">
-              <span className="text-divineCream/70">Carnes</span>
-              <span className="text-xs tracking-[0.22em] text-divineCream/55">{proteinLayers.length}</span>
-            </div>
-            <div className="mt-2 space-y-1">
-              {proteinLayers.map((idx, i) => (
-                <div key={i} className="flex justify-between text-sm">
-                  <span className="text-divineCream/70">Carne {i + 1}</span>
-                  <span className="font-semibold">{BURGER_CATALOG.proteins[idx]?.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-divineLine2 bg-divinePanel px-4 py-3">
-            <div className="flex justify-between gap-3">
-              <span className="text-divineCream/70">Quesos</span>
-              <span className="text-xs tracking-[0.22em] text-divineCream/55">{cheeseLayers.length}</span>
-            </div>
-            <div className="mt-2 space-y-1">
-              {cheeseLayers.map((idx, i) => (
-                <div key={i} className="flex justify-between text-sm">
-                  <span className="text-divineCream/70">Queso {i + 1}</span>
-                  <span className="font-semibold">{BURGER_CATALOG.cheeses[idx]?.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-divineLine2 bg-divinePanel px-4 py-3">
-            <div className="flex justify-between gap-3">
-              <span className="text-divineCream/70">Toppings</span>
-              <span className="text-xs tracking-[0.22em] text-divineCream/55">{toppings.length}</span>
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {toppings.length ? (
-                toppings.map((id) => (
-                  <span key={id} className="rounded-full border border-divineLine2 bg-black/20 px-3 py-1 text-xs text-divineCream/75">
-                    {BURGER_CATALOG.toppings.find((t) => t.id === id)?.name || id}
-                  </span>
-                ))
-              ) : (
-                <span className="text-divineCream/55">—</span>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between rounded-2xl border border-divineLine2 bg-divinePanel px-4 py-3">
-            <span className="text-divineCream/70">Total estimado</span>
-            <span className="font-semibold text-divineGold">{money(price)}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-        function armar() {
-          if (!valido) return;
-          const id = `custom-burger:${pan}:${proteina}:${queso}:${toppings.slice().sort().join(",")}`;
-          const meta = { pan: resumen.panL, proteina: resumen.proL, queso: resumen.queL, toppings: resumen.topL };
-          onAddToCart?.({ id, name: "Hamburguesa Divinée (Personalizada)", price, meta });
-          setStep(0); setPan(null); setProteina(null); setQueso("none"); setToppings([]);
+          );
         }
 
         return (
-          <div className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
+          <div className="rounded-3xl border border-divineLine2 bg-black/20 overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-divineLine2 bg-black/25">
+              <div>
+                <div className="text-xs tracking-[0.35em] text-divineGold/90">VISTA 3D</div>
+                <div className="text-xs text-divineCream/60">Arrastra horizontal para rotar</div>
+              </div>
+              <div className="text-xs tracking-[0.22em] text-divineCream/55">
+                {proteinsCount} carne(s) • {cheesesCount} queso(s)
+              </div>
+            </div>
+            <div ref={mountRef} className="h-[240px] md:h-[280px] w-full bg-gradient-to-b from-black/0 to-black/35"></div>
+          </div>
+        );
+      }
+
+      function BurgerBuilder({ onAddToCart }) {
+        const [step, setStep] = useState(0);
+        const [bunIdx, setBunIdx] = useState(0);
+
+        const [proteinLayers, setProteinLayers] = useState([0]);
+        const [activeProteinLayer, setActiveProteinLayer] = useState(0);
+
+        const [cheeseLayers, setCheeseLayers] = useState([5]); // sin queso
+        const [activeCheeseLayer, setActiveCheeseLayer] = useState(0);
+
+        const [toppings, setToppings] = useState([]);
+
+        const bun = BURGER_CATALOG.buns[bunIdx];
+
+        const price = useMemo(() => {
+          const bunP = bun?.price ?? 0;
+          const proteinsP = proteinLayers.reduce((acc, idx) => acc + (BURGER_CATALOG.proteins[idx]?.price ?? 0), 0);
+          const cheesesP = cheeseLayers.reduce((acc, idx) => acc + (BURGER_CATALOG.cheeses[idx]?.price ?? 0), 0);
+          const toppingsP = toppings.reduce((acc, id) => acc + (BURGER_CATALOG.toppings.find((t) => t.id === id)?.price ?? 0), 0);
+          return BURGER_BASE + bunP + proteinsP + cheesesP + toppingsP;
+        }, [bunIdx, proteinLayers, cheeseLayers, toppings]);
+
+        const valid = useMemo(() => proteinLayers.length >= 1, [proteinLayers]);
+
+        function toggleTopping(id) {
+          setToppings((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+        }
+
+        const steps = ["PAN", "CARNES", "QUESOS", "TOPPINGS"];
+
+        function bunPrev() { setBunIdx((i) => wrapIndex(i - 1, BURGER_CATALOG.buns.length)); }
+        function bunNext() { setBunIdx((i) => wrapIndex(i + 1, BURGER_CATALOG.buns.length)); }
+
+        function proteinPrev() {
+          setProteinLayers((layers) => {
+            const copy = [...layers];
+            copy[activeProteinLayer] = wrapIndex(copy[activeProteinLayer] - 1, BURGER_CATALOG.proteins.length);
+            return copy;
+          });
+        }
+        function proteinNext() {
+          setProteinLayers((layers) => {
+            const copy = [...layers];
+            copy[activeProteinLayer] = wrapIndex(copy[activeProteinLayer] + 1, BURGER_CATALOG.proteins.length);
+            return copy;
+          });
+        }
+        function addProteinLayer() {
+          setProteinLayers((layers) => {
+            if (layers.length >= MAX_PROTEIN_LAYERS) return layers;
+            const last = layers[layers.length - 1] ?? 0;
+            return [...layers, last];
+          });
+          setActiveProteinLayer((i) => Math.min(i + 1, MAX_PROTEIN_LAYERS - 1));
+        }
+        function removeProteinLayer(i) {
+          setProteinLayers((layers) => layers.filter((_, idx) => idx !== i));
+          setActiveProteinLayer((cur) => (cur > 0 ? cur - 1 : 0));
+        }
+
+        function cheesePrev() {
+          setCheeseLayers((layers) => {
+            const copy = [...layers];
+            copy[activeCheeseLayer] = wrapIndex(copy[activeCheeseLayer] - 1, BURGER_CATALOG.cheeses.length);
+            return copy;
+          });
+        }
+        function cheeseNext() {
+          setCheeseLayers((layers) => {
+            const copy = [...layers];
+            copy[activeCheeseLayer] = wrapIndex(copy[activeCheeseLayer] + 1, BURGER_CATALOG.cheeses.length);
+            return copy;
+          });
+        }
+        function addCheeseLayer() {
+          setCheeseLayers((layers) => {
+            if (layers.length >= MAX_CHEESE_LAYERS) return layers;
+            const last = layers[layers.length - 1] ?? 0;
+            return [...layers, last];
+          });
+          setActiveCheeseLayer((i) => Math.min(i + 1, MAX_CHEESE_LAYERS - 1));
+        }
+        function removeCheeseLayer(i) {
+          setCheeseLayers((layers) => layers.filter((_, idx) => idx !== i));
+          setActiveCheeseLayer((cur) => (cur > 0 ? cur - 1 : 0));
+        }
+
+        function buildAndAdd() {
+          if (!valid) return;
+
+          const bunSel = BURGER_CATALOG.buns[bunIdx];
+          const proteinsSel = proteinLayers.map((idx) => BURGER_CATALOG.proteins[idx]).filter(Boolean);
+          const cheesesSel = cheeseLayers.map((idx) => BURGER_CATALOG.cheeses[idx]).filter(Boolean);
+          const toppingsSel = toppings.map((id) => BURGER_CATALOG.toppings.find((t) => t.id === id)).filter(Boolean);
+
+          const id = [
+            "custom-burger-premium",
+            bunSel?.id,
+            proteinsSel.map((p) => p.id).join("+"),
+            cheesesSel.map((c) => c.id).join("+"),
+            toppings.slice().sort().join(","),
+          ].join(":");
+
+          const meta = {
+            pan: bunSel?.name,
+            carnes: proteinsSel.map((p) => p.name),
+            quesos: cheesesSel.map((c) => c.name),
+            toppings: toppingsSel.map((t) => t.name),
+          };
+
+          onAddToCart?.({ id, name: "Hamburguesa Divinée (Atelier Premium)", price, meta });
+
+          setStep(0);
+          setBunIdx(0);
+          setProteinLayers([0]);
+          setActiveProteinLayer(0);
+          setCheeseLayers([5]);
+          setActiveCheeseLayer(0);
+          setToppings([]);
+        }
+
+        const proteinsCount = proteinLayers.length;
+        const cheesesCount = Math.max(0, cheeseLayers.filter((idx) => BURGER_CATALOG.cheeses[idx]?.id !== "none").length);
+        const bunId = BURGER_CATALOG.buns[bunIdx]?.id;
+
+        return (
+          <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
             <div className="rounded-3xl glass ring-gold p-4 md:p-6">
-              <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <div className="text-xs tracking-[0.35em] text-divineGold/90">PASO A PASO</div>
+                  <div className="text-xs tracking-[0.35em] text-divineGold/90">ATELIER PREMIUM</div>
                   <h3 className="mt-2 text-xl font-semibold md:text-2xl">Arma tu Hamburguesa</h3>
-                  <p className="mt-1 text-sm text-divineCream/65">El precio se actualiza en tiempo real.</p>
+                  <p className="mt-1 text-sm text-divineCream/65">
+                    Flechas, capas múltiples y preview 3D real en vivo.
+                  </p>
                 </div>
 
                 <div className="rounded-2xl border border-divineLine2 bg-black/25 px-4 py-3 shadow-glow">
@@ -1746,15 +1567,27 @@ function BurgerBuilder({ onAddToCart }) {
                 </div>
               </div>
 
+              <div className="mt-5">
+                <AtelierBurgerPreview3D
+                  bunId={bunId}
+                  proteinsCount={proteinsCount}
+                  cheesesCount={cheesesCount}
+                  toppings={toppings}
+                />
+              </div>
+
               <div className="mt-5 grid grid-cols-4 gap-2">
-                {["PAN", "PROTEÍNA", "QUESO", "TOPPINGS"].map((label, i) => (
+                {steps.map((label, i) => (
                   <button
                     key={label}
                     onClick={() => setStep(i)}
                     className={[
                       "rounded-2xl border px-3 py-2 text-[11px] tracking-[0.22em] transition",
-                      step === i ? "border-divineGold/60 bg-black/35 text-divineGold shadow-glow" : "border-divineLine bg-black/25 text-divineCream/70 hover:text-divineGold hover:border-divineGold/40",
+                      step === i
+                        ? "border-divineGold/60 bg-black/35 text-divineGold shadow-glow"
+                        : "border-divineLine bg-black/25 text-divineCream/70 hover:text-divineGold hover:border-divineGold/40",
                     ].join(" ")}
+                    type="button"
                   >
                     {label}
                   </button>
@@ -1762,25 +1595,113 @@ function BurgerBuilder({ onAddToCart }) {
               </div>
 
               <motion.div key={step} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="mt-5">
-                {step === 0 && <OptionGrid title="Elige tu pan" options={BURGER_OPTIONS.pan} value={pan} onChange={setPan} single />}
-                {step === 1 && <OptionGrid title="Elige tu proteína" options={BURGER_OPTIONS.proteina} value={proteina} onChange={setProteina} single />}
-                {step === 2 && <OptionGrid title="Elige tu queso" options={BURGER_OPTIONS.queso} value={queso} onChange={setQueso} single />}
-                {step === 3 && <OptionGrid title="Toppings (multi)" options={BURGER_OPTIONS.toppings} value={toppings} onChange={toggleTopping} single={false} />}
+                {step === 0 && (
+                  <CarouselPicker title="Pan" options={BURGER_CATALOG.buns} index={bunIdx} onPrev={bunPrev} onNext={bunNext} />
+                )}
+
+                {step === 1 && (
+                  <div className="space-y-4">
+                    <LayersHeader
+                      title="Carnes"
+                      count={proteinLayers.length}
+                      onAdd={addProteinLayer}
+                      addLabel="Agregar otra carne"
+                      disabled={proteinLayers.length >= MAX_PROTEIN_LAYERS}
+                    />
+
+                    <LayersTabs
+                      label="Carne"
+                      layers={proteinLayers}
+                      active={activeProteinLayer}
+                      setActive={setActiveProteinLayer}
+                      onRemove={removeProteinLayer}
+                      min={1}
+                    />
+
+                    <CarouselPicker
+                      title={`Carne ${activeProteinLayer + 1}`}
+                      options={BURGER_CATALOG.proteins}
+                      index={proteinLayers[activeProteinLayer] ?? 0}
+                      onPrev={proteinPrev}
+                      onNext={proteinNext}
+                    />
+                  </div>
+                )}
+
+                {step === 2 && (
+                  <div className="space-y-4">
+                    <LayersHeader
+                      title="Quesos"
+                      count={cheeseLayers.length}
+                      onAdd={addCheeseLayer}
+                      addLabel="Agregar otro queso"
+                      disabled={cheeseLayers.length >= MAX_CHEESE_LAYERS}
+                    />
+
+                    <LayersTabs
+                      label="Queso"
+                      layers={cheeseLayers}
+                      active={activeCheeseLayer}
+                      setActive={setActiveCheeseLayer}
+                      onRemove={removeCheeseLayer}
+                      min={1}
+                    />
+
+                    <CarouselPicker
+                      title={`Queso ${activeCheeseLayer + 1}`}
+                      options={BURGER_CATALOG.cheeses}
+                      index={cheeseLayers[activeCheeseLayer] ?? 0}
+                      onPrev={cheesePrev}
+                      onNext={cheeseNext}
+                    />
+                  </div>
+                )}
+
+                {step === 3 && (
+                  <div className="rounded-3xl border border-divineLine2 bg-black/20 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-xs tracking-[0.35em] text-divineGold/90">TOPPINGS</div>
+                        <div className="mt-1 text-sm text-divineCream/65">Selecciona todos los que quieras.</div>
+                      </div>
+                      <div className="text-xs tracking-[0.22em] text-divineCream/55">{toppings.length} seleccionados</div>
+                    </div>
+
+                    <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                      {BURGER_CATALOG.toppings.map((t) => {
+                        const active = toppings.includes(t.id);
+                        return (
+                          <button
+                            key={t.id}
+                            onClick={() => toggleTopping(t.id)}
+                            className={[
+                              "rounded-2xl border px-4 py-3 text-left transition",
+                              active ? "border-divineGold/60 bg-black/35 shadow-glow" : "border-divineLine bg-black/25 hover:border-divineGold/40",
+                            ].join(" ")}
+                            type="button"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <div className="font-semibold">{t.name}</div>
+                                <div className="mt-1 text-xs tracking-[0.18em] text-divineCream/55">{t.group.toUpperCase()}</div>
+                              </div>
+                              <div className="text-sm font-semibold text-divineGold">{money(t.price)}</div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </motion.div>
 
               <div className="mt-6 flex flex-wrap items-center gap-3">
-                <button onClick={() => setStep((s) => Math.max(0, s - 1))} className="btn-ghost">ATRÁS</button>
-                <button onClick={() => setStep((s) => Math.min(3, s + 1))} className="btn-ghost">SIGUIENTE</button>
-                <button onClick={armar} disabled={!valido} className="ml-auto btn-primary" style={{ opacity: valido ? 1 : 0.6 }}>
+                <button onClick={() => setStep((s) => Math.max(0, s - 1))} className="btn-ghost" type="button">ATRÁS</button>
+                <button onClick={() => setStep((s) => Math.min(3, s + 1))} className="btn-ghost" type="button">SIGUIENTE</button>
+                <button onClick={buildAndAdd} className="ml-auto btn-primary" disabled={!valid} style={{ opacity: valid ? 1 : 0.6 }} type="button">
                   ARMAR
                 </button>
               </div>
-
-              {!valido && (
-                <p className="mt-3 text-xs text-divineCream/55">
-                  Completa <span className="text-divineGold">pan</span>, <span className="text-divineGold">proteína</span> y <span className="text-divineGold">queso</span>.
-                </p>
-              )}
             </div>
 
             <div className="rounded-3xl border border-divineLine2 bg-black/25 p-4 md:p-6 shadow-divine">
@@ -1788,19 +1709,54 @@ function BurgerBuilder({ onAddToCart }) {
               <h4 className="mt-2 text-lg font-semibold">Tu orden</h4>
 
               <div className="mt-4 space-y-3 text-sm">
-                <SummaryRow label="Pan" value={resumen.panL || "—"} />
-                <SummaryRow label="Proteína" value={resumen.proL || "—"} />
-                <SummaryRow label="Queso" value={resumen.queL || "—"} />
+                <div className="rounded-2xl border border-divineLine2 bg-divinePanel px-4 py-3">
+                  <div className="flex justify-between gap-3">
+                    <span className="text-divineCream/70">Pan</span>
+                    <span className="font-semibold text-divineCream">{bun?.name}</span>
+                  </div>
+                </div>
 
-                <div className="rounded-2xl border border-divineLine2 bg-divinePanel p-4">
-                  <div className="flex items-center justify-between">
+                <div className="rounded-2xl border border-divineLine2 bg-divinePanel px-4 py-3">
+                  <div className="flex justify-between gap-3">
+                    <span className="text-divineCream/70">Carnes</span>
+                    <span className="text-xs tracking-[0.22em] text-divineCream/55">{proteinLayers.length}</span>
+                  </div>
+                  <div className="mt-2 space-y-1">
+                    {proteinLayers.map((idx, i) => (
+                      <div key={i} className="flex justify-between text-sm">
+                        <span className="text-divineCream/70">Carne {i + 1}</span>
+                        <span className="font-semibold">{BURGER_CATALOG.proteins[idx]?.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-divineLine2 bg-divinePanel px-4 py-3">
+                  <div className="flex justify-between gap-3">
+                    <span className="text-divineCream/70">Quesos</span>
+                    <span className="text-xs tracking-[0.22em] text-divineCream/55">{cheeseLayers.length}</span>
+                  </div>
+                  <div className="mt-2 space-y-1">
+                    {cheeseLayers.map((idx, i) => (
+                      <div key={i} className="flex justify-between text-sm">
+                        <span className="text-divineCream/70">Queso {i + 1}</span>
+                        <span className="font-semibold">{BURGER_CATALOG.cheeses[idx]?.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-divineLine2 bg-divinePanel px-4 py-3">
+                  <div className="flex justify-between gap-3">
                     <span className="text-divineCream/70">Toppings</span>
-                    <span className="text-xs tracking-[0.22em] text-divineCream/55">{resumen.topL?.length || 0}</span>
+                    <span className="text-xs tracking-[0.22em] text-divineCream/55">{toppings.length}</span>
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {resumen.topL?.length ? (
-                      resumen.topL.map((t) => (
-                        <span key={t} className="rounded-full border border-divineLine2 bg-black/20 px-3 py-1 text-xs text-divineCream/75">{t}</span>
+                    {toppings.length ? (
+                      toppings.map((id) => (
+                        <span key={id} className="rounded-full border border-divineLine2 bg-black/20 px-3 py-1 text-xs text-divineCream/75">
+                          {BURGER_CATALOG.toppings.find((t) => t.id === id)?.name || id}
+                        </span>
                       ))
                     ) : (
                       <span className="text-divineCream/55">—</span>
@@ -1818,6 +1774,9 @@ function BurgerBuilder({ onAddToCart }) {
         );
       }
 
+      /* =========================
+         Yogurt builder (igual que antes, estable)
+      ========================= */
       const YOGURT_OPTIONS = {
         tamano: [
           { id: "mini", label: "Mini", price: 4.95 },
@@ -1853,6 +1812,47 @@ function BurgerBuilder({ onAddToCart }) {
           { id: "oro", label: "Polvo oro comestible", price: 1.5 },
         ],
       };
+
+      function SummaryRow({ label, value }) {
+        return (
+          <div className="flex items-center justify-between rounded-2xl border border-divineLine2 bg-divinePanel px-4 py-3">
+            <span className="text-divineCream/70">{label}</span>
+            <span className="font-semibold text-divineCream">{value}</span>
+          </div>
+        );
+      }
+
+      function OptionGrid({ title, options, value, onChange, single }) {
+        return (
+          <div>
+            <div className="mb-3 text-xs tracking-[0.28em] text-divineCream/55">{title.toUpperCase()}</div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {options.map((opt) => {
+                const active = single ? value === opt.id : (value || []).includes(opt.id);
+                return (
+                  <button
+                    key={opt.id}
+                    onClick={() => onChange(opt.id)}
+                    className={[
+                      "rounded-2xl border p-4 text-left transition",
+                      active ? "border-divineGold/60 bg-black/35 shadow-glow" : "border-divineLine bg-black/25 hover:border-divineGold/40",
+                    ].join(" ")}
+                    type="button"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="font-semibold">{opt.label}</div>
+                        <div className="mt-1 text-sm text-divineCream/65">+ {money(opt.price)}</div>
+                      </div>
+                      <div className={["mt-1 h-3 w-3 rounded-full border", active ? "border-divineGold bg-divineGold" : "border-divineLine bg-transparent"].join(" ")} />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        );
+      }
 
       function YogurtMachineBuilder({ onAddToCart }) {
         const [step, setStep] = useState(0);
@@ -1938,10 +1938,9 @@ function BurgerBuilder({ onAddToCart }) {
                     onClick={() => setStep(i)}
                     className={[
                       "rounded-2xl border px-3 py-2 text-[11px] tracking-[0.22em] transition",
-                      step === i
-                        ? "border-divineGold/60 bg-black/35 text-divineGold shadow-glow"
-                        : "border-divineLine bg-black/25 text-divineCream/70 hover:text-divineGold hover:border-divineGold/40",
+                      step === i ? "border-divineGold/60 bg-black/35 text-divineGold shadow-glow" : "border-divineLine bg-black/25 text-divineCream/70 hover:text-divineGold hover:border-divineGold/40",
                     ].join(" ")}
+                    type="button"
                   >
                     {s.label}
                   </button>
@@ -1953,9 +1952,9 @@ function BurgerBuilder({ onAddToCart }) {
               </motion.div>
 
               <div className="mt-6 flex flex-wrap items-center gap-3">
-                <button onClick={() => setStep((s) => Math.max(0, s - 1))} className="btn-ghost">ATRÁS</button>
-                <button onClick={() => setStep((s) => Math.min(steps.length - 1, s + 1))} className="btn-ghost">SIGUIENTE</button>
-                <button onClick={addToCart} className="ml-auto btn-primary">AÑADIR YOGURT</button>
+                <button onClick={() => setStep((s) => Math.max(0, s - 1))} className="btn-ghost" type="button">ATRÁS</button>
+                <button onClick={() => setStep((s) => Math.min(steps.length - 1, s + 1))} className="btn-ghost" type="button">SIGUIENTE</button>
+                <button onClick={addToCart} className="ml-auto btn-primary" type="button">AÑADIR YOGURT</button>
               </div>
             </div>
 
@@ -2042,7 +2041,7 @@ function BurgerBuilder({ onAddToCart }) {
           <div className="min-h-screen relative z-[1]">
             <Header onNavigate={scrollTo} onOpenCart={() => setCartOpen(true)} cartCount={cartCount} />
 
-            <main className="mx-auto max-w-6xl px-4 pb-32 pt-24 md:px-6">
+            <main className="mx-auto max-w-6xl px-4 pb-32 pt-32 md:pt-28 md:px-6">
               <motion.section
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -2050,9 +2049,7 @@ function BurgerBuilder({ onAddToCart }) {
                 className="mb-10 md:mb-14"
               >
                 <div className="rounded-3xl hero-grid shadow-divine p-6 md:p-10">
-                  <p className="mb-3 text-xs tracking-[0.35em] text-divineGold/90">
-                    {BRAND_NAME.toUpperCase()} • GOURMET BAR
-                  </p>
+                  <p className="mb-3 text-xs tracking-[0.35em] text-divineGold/90">{BRAND_NAME.toUpperCase()} • GOURMET BAR</p>
 
                   <h1 className="text-3xl font-semibold leading-tight md:text-6xl">
                     <span className="bg-gradient-to-r from-divineCream via-divineCream to-divineGold bg-clip-text text-transparent">
@@ -2066,14 +2063,20 @@ function BurgerBuilder({ onAddToCart }) {
                   </p>
 
                   <div className="mt-6 flex flex-col sm:flex-row flex-wrap gap-3">
-                    <button className="btn-primary w-full sm:w-auto" onClick={() => scrollTo("burgers")}>Explorar menú</button>
-                    <button className="btn-ghost w-full sm:w-auto" onClick={() => scrollTo("atelier")}>Armar hamburguesa</button>
-                    <button className="btn-ghost w-full sm:w-auto" onClick={() => scrollTo("yogurt")}>Yogurt de máquina</button>
+                    <button className="btn-primary w-full sm:w-auto" onClick={() => scrollTo("burgers")} type="button">
+                      Explorar menú
+                    </button>
+                    <button className="btn-ghost w-full sm:w-auto" onClick={() => scrollTo("atelier")} type="button">
+                      Atelier premium
+                    </button>
+                    <button className="btn-ghost w-full sm:w-auto" onClick={() => scrollTo("yogurt")} type="button">
+                      Yogurt de máquina
+                    </button>
                   </div>
                 </div>
               </motion.section>
 
-              <section ref={refs.burgers} className="scroll-mt-28">
+              <section ref={refs.burgers} className="scroll-mt-32">
                 <SectionShell eyebrow="COLECCIÓN DIVINÉE" title="Hamburguesas" subtitle="Ingredientes premium, perfiles umami y una presentación impecable.">
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {burgers.map((p) => (
@@ -2089,7 +2092,7 @@ function BurgerBuilder({ onAddToCart }) {
                 </SectionShell>
               </section>
 
-              <section ref={refs.desserts} className="scroll-mt-28">
+              <section ref={refs.desserts} className="scroll-mt-32">
                 <SectionShell eyebrow="EXQUISITE DESSERTS" title="Postres" subtitle="Pastelería fina: contraste, textura y final elegante.">
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {desserts.map((p) => (
@@ -2105,14 +2108,14 @@ function BurgerBuilder({ onAddToCart }) {
                 </SectionShell>
               </section>
 
-              <section ref={refs.yogurt} className="scroll-mt-28">
+              <section ref={refs.yogurt} className="scroll-mt-32">
                 <SectionShell eyebrow="GREEK YOGURT DE MÁQUINA" title="Yogurt" subtitle="Elige tamaño, sabor y toppings como un bar premium.">
                   <YogurtMachineBuilder onAddToCart={addToCart} />
                 </SectionShell>
               </section>
 
-              <section ref={refs.atelier} className="scroll-mt-28">
-                <SectionShell eyebrow="ATELIER" title="Arma tu Hamburguesa" subtitle="Configurador paso a paso con resumen en vivo y cálculo automático.">
+              <section ref={refs.atelier} className="scroll-mt-32">
+                <SectionShell eyebrow="ATELIER" title="Arma tu Hamburguesa" subtitle="Carrusel, capas múltiples y preview 3D premium en vivo.">
                   <BurgerBuilder onAddToCart={addToCart} />
                 </SectionShell>
               </section>
@@ -2121,7 +2124,14 @@ function BurgerBuilder({ onAddToCart }) {
             <CartButton cartCount={cartCount} onClick={() => setCartOpen(true)} />
 
             <AnimatePresence>
-              {cartOpen && <CartDrawer items={cartItems} total={cartTotal} onClose={() => setCartOpen(false)} onQty={updateQty} />}
+              {cartOpen && (
+                <CartDrawer
+                  items={cartItems}
+                  total={cartTotal}
+                  onClose={() => setCartOpen(false)}
+                  onQty={updateQty}
+                />
+              )}
             </AnimatePresence>
 
             <AnimatePresence>
@@ -2142,4 +2152,3 @@ function BurgerBuilder({ onAddToCart }) {
     </script>
   </body>
 </html>
-
