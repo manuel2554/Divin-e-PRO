@@ -110,20 +110,26 @@
     // 3. UTILIDAD PARA BOLÍVARES
     const moneyVES = (usd, rate) => new Intl.NumberFormat("es-VE", { style: "currency", currency: "VES" }).format(usd * rate);
 
+// =========================
+    // Motion fallback (Corregido para no perder el cursor)
     // =========================
-    // Motion fallback
-    // =========================
-    const FM = window.framerMotion || {};
+    const FM = window.Motion || window.framerMotion || {};
     function stripMotionProps(props = {}) {
       const clean = { ...props };
       ["initial","animate","exit","transition","whileHover","whileInView","viewport","layout","variants","drag","dragConstraints","dragElastic","onDragEnd"].forEach((k) => delete clean[k]);
       return clean;
     }
     function createMotionFallback() {
+      const cache = {};
       return new Proxy({}, {
-        get: (_, tag) => (props) => {
-          const { children, ...rest } = props || {};
-          return React.createElement(tag, stripMotionProps(rest), children);
+        get: (_, tag) => {
+          if (!cache[tag]) {
+            cache[tag] = React.forwardRef((props, ref) => {
+              const { children, ...rest } = props || {};
+              return React.createElement(tag, { ...stripMotionProps(rest), ref }, children);
+            });
+          }
+          return cache[tag];
         }
       });
     }
@@ -1319,6 +1325,7 @@ function App() {
   </script>
 </body>
 </html>
+
 
 
 
