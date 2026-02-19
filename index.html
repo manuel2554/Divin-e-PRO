@@ -898,23 +898,21 @@ function ProductCard({ product, badge, onClick, onAdd }) {
       );
     }
 
-    function CarouselPicker({ title, options, index, onPrev, onNext }) {
+    function CarouselPicker({ title, options, index, onPrev, onNext, disabledItems = [] }) {
       const opt = options[index];
+      const isExhausted = disabledItems.includes(opt?.id);
       return (
-        <div className="rounded-3xl border border-divineLine2 bg-black/20 p-4">
+        <div className={`rounded-3xl border ${isExhausted ? 'border-red-500/40 bg-red-500/5' : 'border-divineLine2 bg-black/20'} p-4 transition-colors`}>
           <div className="text-xs tracking-[0.35em] text-divineGold/90">{title.toUpperCase()}</div>
           <div className="mt-3 grid grid-cols-[auto_1fr_auto] items-center gap-3">
             <IconButton label="←" title="Anterior" onClick={onPrev} />
-            <motion.div
-              key={opt?.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.18 }}
-              className="rounded-2xl border border-divineLine2 bg-divinePanel p-4"
-            >
+            <motion.div key={opt?.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.18 }} className="rounded-2xl border border-divineLine2 bg-divinePanel p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-base font-semibold">{opt?.name}</div>
+                  <div className="text-base font-semibold">
+                    {opt?.name} 
+                    {isExhausted && <span className="ml-2 inline-block rounded-full bg-red-500/20 border border-red-500/50 px-2 py-0.5 text-[9px] font-bold text-red-400 tracking-widest align-middle">AGOTADO</span>}
+                  </div>
                   <div className="mt-1 text-sm text-divineCream/65">{opt?.note}</div>
                 </div>
                 <div className="text-sm font-semibold text-divineGold">{money(opt?.price ?? 0)}</div>
@@ -945,28 +943,8 @@ function ProductCard({ product, badge, onClick, onAdd }) {
         <div className="mt-3 flex gap-2 overflow-x-auto scroll-smooth-ios pb-1 mobile-scroll">
           {layers.map((_, i) => (
             <div key={i} className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => setActive(i)}
-                className={[
-                  "whitespace-nowrap rounded-full border px-3 py-2 text-[11px] tracking-[0.22em] transition backdrop-blur",
-                  active === i
-                    ? "border-divineGold/60 bg-black/35 text-divineGold shadow-glow"
-                    : "border-divineLine2 bg-black/25 text-divineCream/70 hover:text-divineGold hover:border-divineGold/40",
-                ].join(" ")}
-              >
-                {label.toUpperCase()} {i + 1}
-              </button>
-              {layers.length > min && (
-                <button
-                  type="button"
-                  onClick={() => onRemove(i)}
-                  className="rounded-full border border-divineLine2 bg-black/25 px-2 py-2 text-[11px] text-divineCream/70 hover:text-divineGold hover:border-divineGold/40 transition"
-                  title="Eliminar capa"
-                >
-                  ×
-                </button>
-              )}
+              <button type="button" onClick={() => setActive(i)} className={["whitespace-nowrap rounded-full border px-3 py-2 text-[11px] tracking-[0.22em] transition backdrop-blur", active === i ? "border-divineGold/60 bg-black/35 text-divineGold shadow-glow" : "border-divineLine2 bg-black/25 text-divineCream/70 hover:text-divineGold hover:border-divineGold/40"].join(" ")}>{label.toUpperCase()} {i + 1}</button>
+              {layers.length > min && (<button type="button" onClick={() => onRemove(i)} className="rounded-full border border-divineLine2 bg-black/25 px-2 py-2 text-[11px] text-divineCream/70 hover:text-divineGold hover:border-divineGold/40 transition" title="Eliminar capa">×</button>)}
             </div>
           ))}
         </div>
@@ -981,6 +959,17 @@ function ProductCard({ product, badge, onClick, onAdd }) {
       const [cheeseLayers, setCheeseLayers] = useState([5]); 
       const [activeCheeseLayer, setActiveCheeseLayer] = useState(0);
       const [toppings, setToppings] = useState([]);
+      
+      const [disabledItems, setDisabledItems] = useState([]);
+
+      useEffect(() => {
+        const fetchInventory = async () => {
+          if(!window.supabase) return;
+          const { data } = await supabaseClient.from('disabled_ingredients').select('id');
+          if (data) setDisabledItems(data.map(i => i.id));
+        };
+        fetchInventory();
+      }, []);
 
       const bun = BURGER_CATALOG.buns[bunIdx];
       const cheesesCount = Math.max(0, cheeseLayers.filter((idx) => BURGER_CATALOG.cheeses[idx]?.id !== "none").length);
@@ -1006,7 +995,15 @@ function ProductCard({ product, badge, onClick, onAdd }) {
         return conf;
       }, [proteinLayers, cheeseLayers, toppings]);
 
-      const valid = proteinLayers.length >= 1;
+      // LÓGICA DE VALIDACIÓN INVENTARIO
+      const isBunDisabled = disabledItems.includes(bun?.id);
+      const hasDisabledProtein = proteinLayers.some(idx => disabledItems.includes(BURGER_CATALOG.proteins[idx]?.id));
+      const hasDisabledCheese = cheeseLayers.some(idx => disabledItems.includes(BURGER_CATALOG.cheeses[idx]?.id));
+      const hasDisabledTopping = toppings.some(id => disabledItems.includes(id));
+      
+      const hasAnyError = isBunDisabled || hasDisabledProtein || hasDisabledCheese || hasDisabledTopping;
+      const valid = proteinLayers.length >= 1 && !hasAnyError;
+
       const steps = ["PAN", "CARNES", "QUESOS", "TOPPINGS"];
 
       function toggleTopping(id) { setToppings((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])); }
@@ -1029,13 +1026,7 @@ function ProductCard({ product, badge, onClick, onAdd }) {
         const toppingsSel = toppings.map((id) => BURGER_CATALOG.toppings.find((t) => t.id === id)).filter(Boolean);
         
         const id = ["custom-burger", bunSel?.id, proteinsSel.map((p) => p.id).join("+"), cheesesSel.map((c) => c.id).join("+"), toppings.slice().sort().join(",")].join(":");
-        
-        const meta = {
-          pan: bunSel?.name,
-          carnes: proteinsSel.map((p) => p.name),
-          quesos: cheesesSel.map((c) => c.name),
-          toppings: toppingsSel.map((t) => t.name),
-        };
+        const meta = { pan: bunSel?.name, carnes: proteinsSel.map((p) => p.name), quesos: cheesesSel.map((c) => c.name), toppings: toppingsSel.map((t) => t.name) };
         
         onAddToCart?.({ id, name: "Hamburguesa Divinée (Atelier)", price, meta });
         setStep(0); setBunIdx(0); setProteinLayers([0]); setActiveProteinLayer(0); setCheeseLayers([5]); setActiveCheeseLayer(0); setToppings([]);
@@ -1059,7 +1050,6 @@ function ProductCard({ product, badge, onClick, onAdd }) {
             <div className="flex items-center justify-between px-4 py-3 border-b border-divineLine2 bg-black/25">
               <div>
                 <div className="text-xs tracking-[0.35em] text-divineGold/90">VISTA 3D</div>
-                <div className="text-xs text-divineCream/60">Arrastra para rotar 360°</div>
               </div>
               <div className="text-xs tracking-[0.22em] text-divineCream/55">
                 {proteinLayers.length} carne(s) • {cheesesCount} queso(s)
@@ -1067,6 +1057,12 @@ function ProductCard({ product, badge, onClick, onAdd }) {
             </div>
             <BurgerViewer3D heightClass="h-[240px] md:h-[320px]" modelUrl={null} burgerConfig={dynamicConfig} showUI={false} />
           </div>
+
+          {hasAnyError && (
+            <div className="mt-5 p-3 rounded-xl border border-red-500/50 bg-red-500/10 text-red-400 text-sm font-semibold text-center">
+              ⚠️ Tienes ingredientes AGOTADOS seleccionados. Cámbialos para poder armar la hamburguesa.
+            </div>
+          )}
 
           <div className="mt-5 grid grid-cols-4 gap-2">
             {steps.map((label, i) => (
@@ -1078,20 +1074,20 @@ function ProductCard({ product, badge, onClick, onAdd }) {
 
           <motion.div key={step} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="mt-5">
             {step === 0 && (
-              <CarouselPicker title="Pan" options={BURGER_CATALOG.buns} index={bunIdx} onPrev={bunPrev} onNext={bunNext} />
+              <CarouselPicker title="Pan" options={BURGER_CATALOG.buns} index={bunIdx} onPrev={bunPrev} onNext={bunNext} disabledItems={disabledItems} />
             )}
             {step === 1 && (
               <div className="space-y-4">
                 <LayersHeader title="Carnes" count={proteinLayers.length} onAdd={addProteinLayer} addLabel="Agregar otra carne" disabled={proteinLayers.length >= MAX_PROTEIN_LAYERS} />
                 <LayersTabs label="Carne" layers={proteinLayers} active={activeProteinLayer} setActive={setActiveProteinLayer} onRemove={removeProteinLayer} min={1} />
-                <CarouselPicker title={`Carne ${activeProteinLayer + 1}`} options={BURGER_CATALOG.proteins} index={proteinLayers[activeProteinLayer] ?? 0} onPrev={proteinPrev} onNext={proteinNext} />
+                <CarouselPicker title={`Carne ${activeProteinLayer + 1}`} options={BURGER_CATALOG.proteins} index={proteinLayers[activeProteinLayer] ?? 0} onPrev={proteinPrev} onNext={proteinNext} disabledItems={disabledItems} />
               </div>
             )}
             {step === 2 && (
               <div className="space-y-4">
                 <LayersHeader title="Quesos" count={cheeseLayers.length} onAdd={addCheeseLayer} addLabel="Agregar otro queso" disabled={cheeseLayers.length >= MAX_CHEESE_LAYERS} />
                 <LayersTabs label="Queso" layers={cheeseLayers} active={activeCheeseLayer} setActive={setActiveCheeseLayer} onRemove={removeCheeseLayer} min={1} />
-                <CarouselPicker title={`Queso ${activeCheeseLayer + 1}`} options={BURGER_CATALOG.cheeses} index={cheeseLayers[activeCheeseLayer] ?? 0} onPrev={cheesePrev} onNext={cheeseNext} />
+                <CarouselPicker title={`Queso ${activeCheeseLayer + 1}`} options={BURGER_CATALOG.cheeses} index={cheeseLayers[activeCheeseLayer] ?? 0} onPrev={cheesePrev} onNext={cheeseNext} disabledItems={disabledItems} />
               </div>
             )}
             {step === 3 && (
@@ -1106,12 +1102,15 @@ function ProductCard({ product, badge, onClick, onAdd }) {
                 <div className="mt-4 grid gap-2 sm:grid-cols-2">
                   {BURGER_CATALOG.toppings.map((t) => {
                     const active = toppings.includes(t.id);
+                    const isExhausted = disabledItems.includes(t.id);
                     return (
-                      <button key={t.id} onClick={() => toggleTopping(t.id)} className={["rounded-2xl border px-4 py-3 text-left transition", active ? "border-divineGold/60 bg-black/35 shadow-glow" : "border-divineLine bg-black/25 hover:border-divineGold/40"].join(" ")} type="button">
+                      <button key={t.id} onClick={() => !isExhausted && toggleTopping(t.id)} className={`rounded-2xl border px-4 py-3 text-left transition ${isExhausted ? 'border-red-500/30 bg-red-500/5 cursor-not-allowed opacity-60' : (active ? 'border-divineGold/60 bg-black/35 shadow-glow' : 'border-divineLine bg-black/25 hover:border-divineGold/40')}`} type="button">
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <div className="font-semibold">{t.name}</div>
-                            <div className="mt-1 text-xs tracking-[0.18em] text-divineCream/55">{t.group.toUpperCase()}</div>
+                            <div className={`font-semibold ${isExhausted ? 'text-red-400 line-through' : ''}`}>{t.name}</div>
+                            <div className="mt-1 text-xs tracking-[0.18em] text-divineCream/55">
+                              {isExhausted ? <span className="text-red-400 font-bold">AGOTADO</span> : t.group.toUpperCase()}
+                            </div>
                           </div>
                           <div className="text-sm font-semibold text-divineGold">{money(t.price)}</div>
                         </div>
@@ -1123,29 +1122,28 @@ function ProductCard({ product, badge, onClick, onAdd }) {
             )}
           </motion.div>
 
-          {/* DESGLOSE DEL PEDIDO */}
           <div className="mt-8 rounded-2xl border border-divineLine2 bg-divinePanel p-4">
             <div className="text-[10px] tracking-[0.28em] text-divineCream/60 mb-3">DESGLOSE DEL PEDIDO</div>
             <div className="space-y-2 text-sm text-divineCream/75">
               <div className="flex justify-between"><span>Base Divinée</span><span>{money(BURGER_BASE)}</span></div>
-              <div className="flex justify-between"><span>{bun?.name}</span><span>{money(bun?.price ?? 0)}</span></div>
+              <div className={`flex justify-between ${isBunDisabled ? 'text-red-400 line-through' : ''}`}><span>{bun?.name}</span><span>{money(bun?.price ?? 0)}</span></div>
               
               {proteinLayers.map((idx, i) => {
                 const p = BURGER_CATALOG.proteins[idx];
                 if (!p) return null;
-                return <div key={`p-${i}`} className="flex justify-between"><span>{p.name}</span><span>{money(p.price)}</span></div>;
+                return <div key={`p-${i}`} className={`flex justify-between ${disabledItems.includes(p.id) ? 'text-red-400 line-through' : ''}`}><span>{p.name}</span><span>{money(p.price)}</span></div>;
               })}
               
               {cheeseLayers.map((idx, i) => {
                 const c = BURGER_CATALOG.cheeses[idx];
                 if (!c || c.id === 'none') return null;
-                return <div key={`c-${i}`} className="flex justify-between"><span>{c.name}</span><span>{money(c.price)}</span></div>;
+                return <div key={`c-${i}`} className={`flex justify-between ${disabledItems.includes(c.id) ? 'text-red-400 line-through' : ''}`}><span>{c.name}</span><span>{money(c.price)}</span></div>;
               })}
               
               {toppings.map((id) => {
                 const t = BURGER_CATALOG.toppings.find((x) => x.id === id);
                 if (!t) return null;
-                return <div key={id} className="flex justify-between"><span>{t.name}</span><span>{money(t.price)}</span></div>;
+                return <div key={id} className={`flex justify-between ${disabledItems.includes(id) ? 'text-red-400 line-through' : ''}`}><span>{t.name}</span><span>{money(t.price)}</span></div>;
               })}
             </div>
             <div className="mt-3 pt-3 border-t border-divineLine flex justify-between font-semibold">
@@ -1203,14 +1201,22 @@ function ProductCard({ product, badge, onClick, onAdd }) {
 
 function AdminDashboard({ onClose, supabaseClient }) {
       const [orders, setOrders] = useState([]);
+      const [disabledItems, setDisabledItems] = useState([]);
       const [loading, setLoading] = useState(true);
+      const [tab, setTab] = useState('orders'); // 'orders' o 'inventory'
 
-      useEffect(() => { fetchOrders(); }, []);
+      useEffect(() => { 
+        fetchData(); 
+      }, []);
 
-      const fetchOrders = async () => {
+      const fetchData = async () => {
         setLoading(true);
-        const { data, error } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
-        if (data) setOrders(data);
+        const [ordersRes, invRes] = await Promise.all([
+          supabaseClient.from('orders').select('*').order('created_at', { ascending: false }),
+          supabaseClient.from('disabled_ingredients').select('id')
+        ]);
+        if (ordersRes.data) setOrders(ordersRes.data);
+        if (invRes.data) setDisabledItems(invRes.data.map(i => i.id));
         setLoading(false);
       };
 
@@ -1220,11 +1226,20 @@ function AdminDashboard({ onClose, supabaseClient }) {
         else alert("Error actualizando el estatus en la base de datos.");
       };
 
-      // NUEVA FUNCIÓN: Arregla el número para que WhatsApp lo entienda siempre
+      const toggleIngredient = async (id, isCurrentlyDisabled) => {
+        if (isCurrentlyDisabled) {
+          await supabaseClient.from('disabled_ingredients').delete().eq('id', id);
+          setDisabledItems(prev => prev.filter(i => i !== id));
+        } else {
+          await supabaseClient.from('disabled_ingredients').insert([{ id }]);
+          setDisabledItems(prev => [...prev, id]);
+        }
+      };
+
       const formatPhoneForWa = (phone) => {
-        let cleaned = phone.replace(/\D/g, ''); // Quita espacios o guiones si el cliente los puso
-        if (cleaned.startsWith('0')) cleaned = '58' + cleaned.substring(1); // Cambia el 0 por 58
-        else if (!cleaned.startsWith('58')) cleaned = '58' + cleaned; // Le pone 58 si no lo tiene
+        let cleaned = phone.replace(/\D/g, ''); 
+        if (cleaned.startsWith('0')) cleaned = '58' + cleaned.substring(1); 
+        else if (!cleaned.startsWith('58')) cleaned = '58' + cleaned; 
         return cleaned;
       };
 
@@ -1239,18 +1254,28 @@ function AdminDashboard({ onClose, supabaseClient }) {
 
       return (
         <motion.div className="fixed inset-0 z-[60] bg-divineBg overflow-y-auto" initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }}>
-          <div className="sticky top-0 z-20 border-b border-divineLine2 bg-black/80 backdrop-blur px-4 py-4 flex flex-wrap justify-between items-center gap-3">
-            <div>
-              <div className="text-[10px] tracking-[0.35em] text-divineGold/90">PANEL DE CONTROL</div>
-              <h2 className="text-xl font-semibold">Gestión de Pedidos</h2>
+          <div className="sticky top-0 z-20 bg-black/90 backdrop-blur">
+            <div className="border-b border-divineLine2 px-4 py-4 flex flex-wrap justify-between items-center gap-3">
+              <div>
+                <div className="text-[10px] tracking-[0.35em] text-divineGold/90">PANEL DE CONTROL</div>
+                <h2 className="text-xl font-semibold">Gestión Divinée</h2>
+              </div>
+              <div className="flex gap-2">
+                 <button onClick={fetchData} className="btn-ghost px-3 py-2">↻ ACTUALIZAR</button>
+                 <button onClick={onClose} className="btn-primary px-3 py-2">CERRAR PANEL</button>
+              </div>
             </div>
-            <div className="flex gap-2">
-               <button onClick={fetchOrders} className="btn-ghost px-3 py-2">↻ ACTUALIZAR</button>
-               <button onClick={onClose} className="btn-primary px-3 py-2">CERRAR PANEL</button>
+            <div className="flex gap-4 px-4 border-b border-divineLine2/50">
+              <button onClick={() => setTab('orders')} className={`py-3 text-xs tracking-widest transition-colors ${tab === 'orders' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>PEDIDOS</button>
+              <button onClick={() => setTab('inventory')} className={`py-3 text-xs tracking-widest transition-colors ${tab === 'inventory' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>INVENTARIO</button>
             </div>
           </div>
+
           <div className="p-4 max-w-6xl mx-auto space-y-4 pb-20">
-            {loading ? <div className="text-center py-10 text-divineCream/50">Cargando base de datos...</div> : orders.length === 0 ? <div className="text-center py-10 text-divineCream/50">No hay pedidos registrados aún.</div> : (
+            {loading ? <div className="text-center py-10 text-divineCream/50">Cargando datos...</div> : 
+             
+             tab === 'orders' ? (
+              orders.length === 0 ? <div className="text-center py-10 text-divineCream/50">No hay pedidos registrados aún.</div> :
               orders.map(o => (
                 <div key={o.id} className="rounded-2xl border border-divineLine bg-divinePanel p-5 flex flex-col md:flex-row gap-5 justify-between shadow-divine">
                   <div className="flex-1">
@@ -1259,20 +1284,10 @@ function AdminDashboard({ onClose, supabaseClient }) {
                        <span className="text-xs text-divineCream/50 border border-divineLine px-2 py-1 rounded-full">{new Date(o.created_at).toLocaleString('es-VE')}</span>
                     </div>
                     
-                    {/* --- AQUÍ ESTÁ EL ENLACE A WHATSAPP --- */}
                     <div className="text-sm text-divineCream/90 mb-1">
                       <span className="text-divineCream/50">Cliente:</span> {o.customer_name} • 
-                      <a 
-                        href={`https://wa.me/${formatPhoneForWa(o.phone)}?text=${encodeURIComponent(`Hola ${o.customer_name}, ¡gracias por elegir Divinée! Te escribimos para confirmarte que tu pedido ${o.tracking_code} ¡Ya se está procesando!. Exquisito. Divino. Divinée🍔✨`)}`}
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="ml-1 text-divineGold hover:text-divineGold2 transition hover:underline"
-                        title="Abrir chat en WhatsApp"
-                      >
-                        📞 {o.phone}
-                      </a>
+                      <a href={`https://wa.me/${formatPhoneForWa(o.phone)}?text=${encodeURIComponent(`Hola ${o.customer_name}, ¡gracias por elegir Divinée! Te escribimos para confirmarte que tu pedido ${o.tracking_code} ¡Ya se está procesando!. Exquisito. Divino. Divinée🍔✨`)}`} target="_blank" rel="noopener noreferrer" className="ml-1 text-divineGold hover:text-divineGold2 transition hover:underline" title="Abrir chat en WhatsApp">📞 {o.phone}</a>
                     </div>
-                    {/* -------------------------------------- */}
 
                     <div className="text-sm text-divineCream/90 mb-3"><span className="text-divineCream/50">Dir:</span> {o.address}</div>
                     <div className="text-xs text-divineCream/70 bg-black/40 p-3 rounded-xl border border-divineLine2/30">
@@ -1303,7 +1318,31 @@ function AdminDashboard({ onClose, supabaseClient }) {
                   </div>
                 </div>
               ))
-            )}
+             ) : (
+              <div className="space-y-8">
+                <div className="bg-divineLine2/10 border border-divineLine2/30 p-4 rounded-2xl text-sm text-divineCream/80">
+                  Toca un ingrediente para marcarlo como <b>AGOTADO</b>. Los clientes no podrán seleccionarlo.
+                </div>
+                {Object.entries(BURGER_CATALOG).map(([category, items]) => (
+                  <div key={category}>
+                     <h3 className="text-xs tracking-[0.2em] text-divineGold mb-3 uppercase">{category}</h3>
+                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                       {items.map(item => {
+                          if(item.id === 'none') return null; 
+                          const isOff = disabledItems.includes(item.id);
+                          return (
+                            <button key={item.id} onClick={() => toggleIngredient(item.id, isOff)} className={`p-3 rounded-xl border text-left transition ${isOff ? 'bg-red-500/10 border-red-500/30' : 'bg-divinePanel border-divineLine hover:border-divineGold/50'}`}>
+                              <div className={`font-semibold text-sm ${isOff ? 'text-red-400 line-through' : 'text-divineCream'}`}>{item.name}</div>
+                              <div className="text-[10px] mt-1 text-divineCream/50">{isOff ? '🔴 AGOTADO' : '🟢 DISPONIBLE'}</div>
+                            </button>
+                          )
+                       })}
+                     </div>
+                  </div>
+                ))}
+              </div>
+             )
+            }
           </div>
         </motion.div>
       );
@@ -1400,6 +1439,7 @@ function AdminDashboard({ onClose, supabaseClient }) {
   </script>
 </body>
 </html>
+
 
 
 
