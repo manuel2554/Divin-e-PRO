@@ -1201,7 +1201,7 @@ function ProductCard({ product, badge, onClick, onAdd }) {
       );
     }
 
-    function AdminDashboard({ onClose, supabaseClient }) {
+function AdminDashboard({ onClose, supabaseClient }) {
       const [orders, setOrders] = useState([]);
       const [loading, setLoading] = useState(true);
 
@@ -1218,6 +1218,14 @@ function ProductCard({ product, badge, onClick, onAdd }) {
         const { error } = await supabaseClient.from('orders').update({ status: newStatus }).eq('id', id);
         if (!error) setOrders(orders.map(o => o.id === id ? { ...o, status: newStatus } : o));
         else alert("Error actualizando el estatus en la base de datos.");
+      };
+
+      // NUEVA FUNCIÓN: Arregla el número para que WhatsApp lo entienda siempre
+      const formatPhoneForWa = (phone) => {
+        let cleaned = phone.replace(/\D/g, ''); // Quita espacios o guiones si el cliente los puso
+        if (cleaned.startsWith('0')) cleaned = '58' + cleaned.substring(1); // Cambia el 0 por 58
+        else if (!cleaned.startsWith('58')) cleaned = '58' + cleaned; // Le pone 58 si no lo tiene
+        return cleaned;
       };
 
       const statusColors = {
@@ -1250,7 +1258,22 @@ function ProductCard({ product, badge, onClick, onAdd }) {
                        <span className="text-lg font-bold text-divineGold">{o.tracking_code}</span>
                        <span className="text-xs text-divineCream/50 border border-divineLine px-2 py-1 rounded-full">{new Date(o.created_at).toLocaleString('es-VE')}</span>
                     </div>
-                    <div className="text-sm text-divineCream/90 mb-1"><span className="text-divineCream/50">Cliente:</span> {o.customer_name} • 📞 {o.phone}</div>
+                    
+                    {/* --- AQUÍ ESTÁ EL ENLACE A WHATSAPP --- */}
+                    <div className="text-sm text-divineCream/90 mb-1">
+                      <span className="text-divineCream/50">Cliente:</span> {o.customer_name} • 
+                      <a 
+                        href={`https://wa.me/${formatPhoneForWa(o.phone)}?text=${encodeURIComponent(`Hola ${o.customer_name}, ¡gracias por elegir Divinée! Te escribimos para confirmarte que tu pedido ${o.tracking_code} ya se está procesando. 🍔✨`)}`}
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="ml-1 text-divineGold hover:text-divineGold2 transition hover:underline"
+                        title="Abrir chat en WhatsApp"
+                      >
+                        📞 {o.phone}
+                      </a>
+                    </div>
+                    {/* -------------------------------------- */}
+
                     <div className="text-sm text-divineCream/90 mb-3"><span className="text-divineCream/50">Dir:</span> {o.address}</div>
                     <div className="text-xs text-divineCream/70 bg-black/40 p-3 rounded-xl border border-divineLine2/30">
                       <div className="font-semibold text-divineCream mb-1">CARRITO:</div>
@@ -1377,6 +1400,7 @@ function ProductCard({ product, badge, onClick, onAdd }) {
   </script>
 </body>
 </html>
+
 
 
 
