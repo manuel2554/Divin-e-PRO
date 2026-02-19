@@ -303,10 +303,11 @@ function Header({ onNavigate, onOpenCart, cartCount, onOpenAdmin }) {
         </div>
       );
     }
-    function ProductCard({ product, badge, onClick, onAdd }) {
+function ProductCard({ product, badge, onClick, onAdd }) {
       return (
         <motion.div whileHover={{ y: -6 }} transition={{ type: "spring", stiffness: 260, damping: 22 }} className="group overflow-hidden rounded-2xl border border-divineLine bg-divinePanel shadow-divine">
-          <button onClick={onClick} className="block w-full text-left" type="button">
+          {/* AQUÍ ESTÁ EL CAMBIO: Cambiamos <button> por <div className="cursor-pointer"> */}
+          <div onClick={onClick} className="block w-full text-left cursor-pointer">
             <div className="relative aspect-[4/3] overflow-hidden card-premium">
               <img src={product.img} alt={product.name} className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.08]" loading="lazy" />
               <div className="absolute left-3 top-3 rounded-full border border-divineLine2 bg-black/35 px-3 py-1 text-[10px] tracking-[0.28em] text-divineCream/85 backdrop-blur">{badge}</div>
@@ -317,10 +318,14 @@ function Header({ onNavigate, onOpenCart, cartCount, onOpenAdmin }) {
               <div className="mt-1 text-sm text-divineCream/70 line-clamp-2">{product.description}</div>
               <div className="mt-4 flex items-center justify-between gap-3">
                 <span className="text-xs tracking-[0.22em] text-divineCream/55">{BRAND_NAME.toUpperCase()}</span>
-                <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAdd?.(); }} className="rounded-xl border border-divineLine2 bg-black/25 px-3 py-2 text-xs tracking-[0.22em] text-divineCream/80 hover:bg-black/35 hover:text-divineGold hover:border-divineGold/50 transition" type="button">AÑADIR</button>
+                
+                {/* ESTE ES EL BOTÓN DE AÑADIR (Ahora ya no está anidado incorrectamente) */}
+                <button onClick={(e) => { e.stopPropagation(); onAdd?.(); }} className="rounded-xl border border-divineLine2 bg-black/25 px-3 py-2 text-xs tracking-[0.22em] text-divineCream/80 hover:bg-black/35 hover:text-divineGold hover:border-divineGold/50 transition" type="button">
+                  AÑADIR
+                </button>
               </div>
             </div>
-          </button>
+          </div>
         </motion.div>
       );
     }
@@ -1268,6 +1273,7 @@ function Header({ onNavigate, onOpenCart, cartCount, onOpenAdmin }) {
   </script>
 </body>
 </html>
+
 
 
 
