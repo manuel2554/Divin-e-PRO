@@ -2033,6 +2033,32 @@
           </div>
         );
       }
+      function ComingSoonWrap({
+  children,
+  title = "¡MUY PRONTO!",
+  subtitle = "El Yogurt de máquina estará disponible nuevamente en breve.",
+}) {
+  return (
+    <div className="relative overflow-hidden rounded-3xl border border-divineLine2 bg-black/25 shadow-divine">
+      {/* contenido real pero deshabilitado */}
+      <div className="pointer-events-none select-none blur-[2px] opacity-35 grayscale">
+        {children}
+      </div>
+
+      {/* overlay */}
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-4">
+        <div className="rounded-3xl border border-divineLine2 bg-black/55 px-6 py-5 text-center backdrop-blur-xl shadow-glow">
+          <div className="text-[10px] tracking-[0.35em] text-divineGold/90">DIVINÉE</div>
+          <div className="mt-2 text-2xl font-semibold text-divineCream">{title}</div>
+          <div className="mt-2 text-sm text-divineCream/70">{subtitle}</div>
+        </div>
+      </div>
+
+      {/* viñeta/oscurecido para look premium */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/25 to-transparent" />
+    </div>
+  );
+}
 
       // =========================
       // App
@@ -2160,14 +2186,19 @@
               </section>
 
               <section ref={refs.yogurt} className="scroll-mt-32">
-                <SectionShell
-                  eyebrow="GREEK YOGURT DE MÁQUINA"
-                  title="Yogurt"
-                  subtitle="Elige tamaño, sabor y toppings como un bar premium."
-                >
-                  <YogurtMachineBuilder onAddToCart={addToCart} />
-                </SectionShell>
-              </section>
+  <SectionShell
+    eyebrow="GREEK YOGURT DE MÁQUINA"
+    title="Yogurt"
+    subtitle="Por el momento no está disponible."
+  >
+    <ComingSoonWrap
+      title="¡MUY PRONTO!"
+      subtitle="Estamos preparando el Yogurt de máquina. Gracias por tu paciencia."
+    >
+      <YogurtMachineBuilder onAddToCart={addToCart} />
+    </ComingSoonWrap>
+  </SectionShell>
+</section>
 
               <section ref={refs.atelier} className="scroll-mt-32">
                 <SectionShell
@@ -2211,3 +2242,4 @@
     </script>
   </body>
 </html>
+
