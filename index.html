@@ -748,7 +748,7 @@
       );
     }
 
-    function BurgerBuilder({ onAddToCart }) {
+function BurgerBuilder({ onAddToCart }) {
       const [step, setStep] = useState(0);
       const [bunIdx, setBunIdx] = useState(0);
       const [proteinLayers, setProteinLayers] = useState([0]);
@@ -899,6 +899,38 @@
             )}
           </motion.div>
 
+          {/* --- AQUÍ ESTÁ EL NUEVO DESGLOSE/TICKET --- */}
+          <div className="mt-8 rounded-2xl border border-divineLine2 bg-divinePanel p-4">
+            <div className="text-[10px] tracking-[0.28em] text-divineCream/60 mb-3">DESGLOSE DEL PEDIDO</div>
+            <div className="space-y-2 text-sm text-divineCream/75">
+              <div className="flex justify-between"><span>Base Divinée</span><span>{money(BURGER_BASE)}</span></div>
+              <div className="flex justify-between"><span>{bun?.name}</span><span>{money(bun?.price ?? 0)}</span></div>
+              
+              {proteinLayers.map((idx, i) => {
+                const p = BURGER_CATALOG.proteins[idx];
+                if (!p) return null;
+                return <div key={`p-${i}`} className="flex justify-between"><span>{p.name}</span><span>{money(p.price)}</span></div>;
+              })}
+              
+              {cheeseLayers.map((idx, i) => {
+                const c = BURGER_CATALOG.cheeses[idx];
+                if (!c || c.id === 'none') return null;
+                return <div key={`c-${i}`} className="flex justify-between"><span>{c.name}</span><span>{money(c.price)}</span></div>;
+              })}
+              
+              {toppings.map((id) => {
+                const t = BURGER_CATALOG.toppings.find((x) => x.id === id);
+                if (!t) return null;
+                return <div key={id} className="flex justify-between"><span>{t.name}</span><span>{money(t.price)}</span></div>;
+              })}
+            </div>
+            <div className="mt-3 pt-3 border-t border-divineLine flex justify-between font-semibold">
+              <span className="text-divineCream">TOTAL</span>
+              <span className="text-divineGold">{money(price)}</span>
+            </div>
+          </div>
+          {/* --- FIN DEL DESGLOSE --- */}
+
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <button onClick={() => setStep((s) => Math.max(0, s - 1))} className="btn-ghost" type="button">ATRÁS</button>
             <button onClick={() => setStep((s) => Math.min(3, s + 1))} className="btn-ghost" type="button">SIGUIENTE</button>
@@ -958,5 +990,6 @@
   </script>
 </body>
 </html>
+
 
 
