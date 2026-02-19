@@ -49,7 +49,10 @@
         --mx: 50vw;
         --my: 20vh;
       }
-      html, body { height: 100%; }
+      html,
+      body {
+        height: 100%;
+      }
       body {
         margin: 0;
         font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
@@ -57,7 +60,9 @@
         color: #f5efe6;
         overflow-x: hidden;
       }
-      ::selection { background: rgba(199, 163, 92, 0.35); }
+      ::selection {
+        background: rgba(199, 163, 92, 0.35);
+      }
 
       .divine-noise {
         position: fixed;
@@ -73,8 +78,7 @@
         inset: 0;
         pointer-events: none;
         z-index: 0;
-        background:
-          radial-gradient(700px 520px at var(--mx) var(--my), rgba(199, 163, 92, 0.22), transparent 55%),
+        background: radial-gradient(700px 520px at var(--mx) var(--my), rgba(199, 163, 92, 0.22), transparent 55%),
           radial-gradient(1000px 700px at 20% 35%, rgba(255, 255, 255, 0.06), transparent 60%),
           radial-gradient(1200px 600px at 80% 5%, rgba(199, 163, 92, 0.14), transparent 62%);
         filter: saturate(1.05);
@@ -122,8 +126,13 @@
         transition: transform 550ms ease;
         opacity: 0.7;
       }
-      .btn-primary:hover { filter: brightness(1.05); transform: translateY(-1px); }
-      .btn-primary:hover::after { transform: translateX(120%); }
+      .btn-primary:hover {
+        filter: brightness(1.05);
+        transform: translateY(-1px);
+      }
+      .btn-primary:hover::after {
+        transform: translateX(120%);
+      }
 
       .btn-ghost {
         border-radius: 16px;
@@ -138,9 +147,16 @@
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
       }
-      .btn-ghost:hover { border-color: rgba(199, 163, 92, 0.55); color: rgba(199, 163, 92, 0.95); transform: translateY(-1px); }
+      .btn-ghost:hover {
+        border-color: rgba(199, 163, 92, 0.55);
+        color: rgba(199, 163, 92, 0.95);
+        transform: translateY(-1px);
+      }
 
-      .nav-link { position: relative; padding: 8px 6px; }
+      .nav-link {
+        position: relative;
+        padding: 8px 6px;
+      }
       .nav-link::after {
         content: "";
         position: absolute;
@@ -154,9 +170,14 @@
         transition: transform 220ms ease;
         opacity: 0.9;
       }
-      .nav-link:hover::after { transform: scaleX(1); }
+      .nav-link:hover::after {
+        transform: scaleX(1);
+      }
 
-      .card-premium { position: relative; overflow: hidden; }
+      .card-premium {
+        position: relative;
+        overflow: hidden;
+      }
       .card-premium::before {
         content: "";
         position: absolute;
@@ -166,7 +187,9 @@
         transition: opacity 350ms ease;
         pointer-events: none;
       }
-      .card-premium:hover::before { opacity: 1; }
+      .card-premium:hover::before {
+        opacity: 1;
+      }
       .card-premium::after {
         content: "";
         position: absolute;
@@ -177,14 +200,15 @@
       }
 
       .hero-grid {
-        background:
-          radial-gradient(1000px 500px at 10% 10%, rgba(199, 163, 92, 0.10), transparent 60%),
+        background: radial-gradient(1000px 500px at 10% 10%, rgba(199, 163, 92, 0.10), transparent 60%),
           radial-gradient(900px 500px at 90% 20%, rgba(255, 255, 255, 0.06), transparent 60%),
           linear-gradient(to bottom, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.25));
         border: 1px solid rgba(255, 255, 255, 0.08);
       }
 
-      .scroll-smooth-ios { -webkit-overflow-scrolling: touch; }
+      .scroll-smooth-ios {
+        -webkit-overflow-scrolling: touch;
+      }
 
       .floating-safe {
         bottom: calc(1.25rem + env(safe-area-inset-bottom));
@@ -196,10 +220,24 @@
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
       }
-      .mobile-scroll::-webkit-scrollbar { display: none; }
+      .mobile-scroll::-webkit-scrollbar {
+        display: none;
+      }
+
+      .sheet-handle {
+        width: 56px;
+        height: 5px;
+        border-radius: 999px;
+        background: rgba(245, 239, 230, 0.22);
+        border: 1px solid rgba(199, 163, 92, 0.22);
+      }
 
       @media (prefers-reduced-motion: reduce) {
-        .btn-primary, .btn-ghost, .nav-link::after { transition: none !important; }
+        .btn-primary,
+        .btn-ghost,
+        .nav-link::after {
+          transition: none !important;
+        }
       }
     </style>
 
@@ -226,16 +264,16 @@
       const React = window.React;
       const { useEffect, useMemo, useRef, useState } = React;
 
-      // Branding
       const BRAND_NAME = "Divinée";
       const LOGO_LOCAL = "./assets/logo-divinee.jpg";
       const LOGO_REMOTE = "https://i.postimg.cc/J7czGY3s/Whats_App_Image_2026_02_10_at_2_42_10_PM.jpg";
 
-      // Motion fallback
       const FM = window.framerMotion || {};
       function stripMotionProps(props = {}) {
         const clean = { ...props };
-        ["initial","animate","exit","transition","whileHover","whileInView","viewport","layout","variants"].forEach((k) => delete clean[k]);
+        ["initial","animate","exit","transition","whileHover","whileInView","viewport","layout","variants","drag","dragConstraints","dragElastic","onDragEnd"].forEach(
+          (k) => delete clean[k]
+        );
         return clean;
       }
       function createMotionFallback() {
@@ -249,7 +287,6 @@
       const motion = FM.motion || createMotionFallback();
       const AnimatePresence = FM.AnimatePresence || (({ children }) => React.createElement(React.Fragment, null, children));
 
-      // Utils
       const money = (n) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
 
       function useLockBodyScroll(locked) {
@@ -268,37 +305,6 @@
           window.addEventListener("keydown", onKeyDown);
           return () => window.removeEventListener("keydown", onKeyDown);
         }, [handler, active]);
-      }
-
-      // History trap: en móvil, el botón ATRÁS cierra modal/drawer sin recargar.
-      function useHistoryClose(active, onClose) {
-        const pushedRef = useRef(false);
-
-        useEffect(() => {
-          if (!active) return;
-
-          pushedRef.current = true;
-          history.pushState({ __divineeOverlay: true }, "");
-
-          const onPop = () => {
-            pushedRef.current = false;
-            onClose?.();
-          };
-
-          window.addEventListener("popstate", onPop);
-          return () => window.removeEventListener("popstate", onPop);
-        }, [active, onClose]);
-
-        const close = () => {
-          // si empujamos state, hacemos back para volver a la pantalla anterior
-          if (pushedRef.current) {
-            history.back();
-            return;
-          }
-          onClose?.();
-        };
-
-        return close;
       }
 
       function useSpotlight() {
@@ -330,6 +336,44 @@
             cancelAnimationFrame(raf);
           };
         }, []);
+      }
+
+      function useHistoryClose(active, onClose) {
+        const pushedRef = useRef(false);
+
+        useEffect(() => {
+          if (!active) return;
+          pushedRef.current = true;
+          history.pushState({ __divineeOverlay: true }, "");
+
+          const onPop = () => {
+            pushedRef.current = false;
+            onClose?.();
+          };
+
+          window.addEventListener("popstate", onPop);
+          return () => window.removeEventListener("popstate", onPop);
+        }, [active, onClose]);
+
+        const close = () => {
+          if (pushedRef.current) {
+            history.back();
+            return;
+          }
+          onClose?.();
+        };
+
+        return close;
+      }
+
+      function useIsMobile() {
+        const [isMobile, setIsMobile] = useState(() => window.innerWidth < 640);
+        useEffect(() => {
+          const onResize = () => setIsMobile(window.innerWidth < 640);
+          window.addEventListener("resize", onResize);
+          return () => window.removeEventListener("resize", onResize);
+        }, []);
+        return isMobile;
       }
 
       // Data
@@ -427,19 +471,15 @@
         },
       ];
 
-      // Header premium (logo izquierda)
+      // Header premium
       function Header({ onNavigate, onOpenCart, cartCount }) {
         const [logoSrc, setLogoSrc] = useState(LOGO_LOCAL);
 
         return (
           <header className="fixed left-0 top-0 z-40 w-full">
             <div className="mx-auto max-w-6xl px-4 md:px-6">
-              <div
-                className="mt-3 rounded-2xl glass ring-gold"
-                style={{ paddingTop: "env(safe-area-inset-top)" }}
-              >
+              <div className="mt-3 rounded-2xl glass ring-gold" style={{ paddingTop: "env(safe-area-inset-top)" }}>
                 <div className="flex items-center justify-between gap-3 px-4 py-3 md:px-6">
-                  {/* Left: logo */}
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="rounded-xl border border-divineLine2 bg-black/25 p-2 shadow-glow">
                       <img
@@ -451,14 +491,12 @@
                         onError={() => { if (logoSrc !== LOGO_REMOTE) setLogoSrc(LOGO_REMOTE); }}
                       />
                     </div>
-
                     <div className="hidden md:block min-w-0">
                       <div className="text-xs tracking-luxe text-divineGold/95">{BRAND_NAME.toUpperCase()}</div>
                       <div className="text-[10px] tracking-[0.35em] text-divineCream/60">GOURMET BAR</div>
                     </div>
                   </div>
 
-                  {/* Center nav (desktop) */}
                   <nav className="hidden md:flex items-center gap-4 text-xs tracking-[0.22em] text-divineCream/80">
                     <button onClick={() => onNavigate("burgers")} className="nav-link hover:text-divineGold transition">HAMBURGUESAS</button>
                     <button onClick={() => onNavigate("desserts")} className="nav-link hover:text-divineGold transition">POSTRES</button>
@@ -466,15 +504,13 @@
                     <button onClick={() => onNavigate("atelier")} className="nav-link hover:text-divineGold transition">ATELIER</button>
                   </nav>
 
-                  {/* Right actions */}
                   <div className="flex items-center gap-2">
-                    <button onClick={onOpenCart} className="btn-ghost px-4 py-2">
+                    <button onClick={onOpenCart} className="btn-ghost px-4 py-2" type="button">
                       CARRITO {cartCount > 0 ? `(${cartCount})` : ""}
                     </button>
                   </div>
                 </div>
 
-                {/* Mobile horizontal nav (no amontonado) */}
                 <div className="md:hidden px-4 pb-3">
                   <div className="mobile-scroll flex gap-2">
                     {[
@@ -487,6 +523,7 @@
                         key={key}
                         onClick={() => onNavigate(key)}
                         className="whitespace-nowrap rounded-full border border-divineLine2 bg-black/25 px-4 py-2 text-[11px] tracking-[0.22em] text-divineCream/75 hover:text-divineGold hover:border-divineGold/40 transition backdrop-blur"
+                        type="button"
                       >
                         {label.toUpperCase()}
                       </button>
@@ -525,7 +562,7 @@
             transition={{ type: "spring", stiffness: 260, damping: 22 }}
             className="group overflow-hidden rounded-2xl border border-divineLine bg-divinePanel shadow-divine"
           >
-            <button onClick={onClick} className="block w-full text-left">
+            <button onClick={onClick} className="block w-full text-left" type="button">
               <div className="relative aspect-[4/3] overflow-hidden card-premium">
                 <img
                   src={product.img}
@@ -548,8 +585,13 @@
                 <div className="mt-4 flex items-center justify-between gap-3">
                   <span className="text-xs tracking-[0.22em] text-divineCream/55">{BRAND_NAME.toUpperCase()}</span>
                   <button
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAdd?.(); }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onAdd?.();
+                    }}
                     className="rounded-xl border border-divineLine2 bg-black/25 px-3 py-2 text-xs tracking-[0.22em] text-divineCream/80 hover:bg-black/35 hover:text-divineGold hover:border-divineGold/50 transition"
+                    type="button"
                   >
                     AÑADIR
                   </button>
@@ -560,16 +602,58 @@
         );
       }
 
-      // 3D Viewer para producto (móvil friendly)
+      // ---------- Better 3D (product viewer) ----------
+      function makeNoiseTexture({ size = 256, alpha = 1, contrast = 0.9 } = {}) {
+        const c = document.createElement("canvas");
+        c.width = c.height = size;
+        const ctx = c.getContext("2d", { willReadFrequently: true });
+
+        const img = ctx.createImageData(size, size);
+        for (let i = 0; i < img.data.length; i += 4) {
+          const v = Math.floor(120 + (Math.random() - 0.5) * 255 * contrast);
+          img.data[i] = v;
+          img.data[i + 1] = v;
+          img.data[i + 2] = v;
+          img.data[i + 3] = Math.floor(255 * alpha);
+        }
+        ctx.putImageData(img, 0, 0);
+
+        const tex = new THREE.CanvasTexture(c);
+        tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+        tex.repeat.set(3, 3);
+        tex.needsUpdate = true;
+        return tex;
+      }
+
+      function fitCameraToObject(camera, object, offset = 1.6) {
+        const box = new THREE.Box3().setFromObject(object);
+        const size = new THREE.Vector3();
+        const center = new THREE.Vector3();
+        box.getSize(size);
+        box.getCenter(center);
+
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const fov = camera.fov * (Math.PI / 180);
+        let cameraZ = Math.abs((maxDim / 2) / Math.tan(fov / 2)) * offset;
+
+        camera.position.z = cameraZ;
+        camera.position.y = center.y + maxDim * 0.25;
+        camera.position.x = center.x;
+        camera.lookAt(center);
+        camera.updateProjectionMatrix();
+      }
+
       function ThreeBurgerViewer() {
         const mountRef = useRef(null);
 
         const burgerRef = useRef(null);
         const cameraRef = useRef(null);
         const rafRef = useRef(null);
+        const rendererRef = useRef(null);
+        const sceneRef = useRef(null);
 
         const yawRef = useRef(0);
-        const pitchRef = useRef(0);
+        const pitchRef = useRef(-0.10);
 
         const isDraggingRef = useRef(false);
         const dragActivatedRef = useRef(false);
@@ -598,86 +682,145 @@
 
             const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-            const { w, h } = getSize();
-            renderer.setSize(w, h);
+            renderer.outputColorSpace = THREE.SRGBColorSpace;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.15;
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            const { w, h } = getSize();
+            renderer.setSize(w, h);
 
             renderer.domElement.style.width = "100%";
             renderer.domElement.style.height = "100%";
             renderer.domElement.style.display = "block";
             renderer.domElement.style.touchAction = "pan-y";
+
             mount.appendChild(renderer.domElement);
 
             const scene = new THREE.Scene();
-            scene.fog = new THREE.Fog(0x0a0a0f, 9, 18);
+            sceneRef.current = scene;
 
             const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
-            camera.position.set(0, 1.25, 3.4);
             cameraRef.current = camera;
 
-            scene.add(new THREE.HemisphereLight(0xf5efe6, 0x07070a, 0.55));
+            // Lights (more premium)
+            scene.add(new THREE.AmbientLight(0xffffff, 0.15));
+            const hemi = new THREE.HemisphereLight(0xf5efe6, 0x07070a, 0.55);
+            scene.add(hemi);
 
-            const key = new THREE.DirectionalLight(0xffffff, 1.1);
-            key.position.set(3.5, 5.2, 2.8);
+            const key = new THREE.SpotLight(0xffffff, 2.2, 30, Math.PI / 6, 0.35, 1.2);
+            key.position.set(4.2, 6.0, 3.2);
             key.castShadow = true;
             key.shadow.mapSize.set(1024, 1024);
-            key.shadow.camera.near = 0.5;
-            key.shadow.camera.far = 20;
-            key.shadow.camera.left = -4;
-            key.shadow.camera.right = 4;
-            key.shadow.camera.top = 4;
-            key.shadow.camera.bottom = -4;
             scene.add(key);
 
-            const rim = new THREE.DirectionalLight(0xc7a35c, 0.7);
-            rim.position.set(-4.5, 2.0, -2.5);
+            const fill = new THREE.DirectionalLight(0xe6d3a3, 0.65);
+            fill.position.set(-4.2, 2.2, 2.5);
+            scene.add(fill);
+
+            const rim = new THREE.DirectionalLight(0xc7a35c, 0.85);
+            rim.position.set(-3.8, 2.0, -3.0);
             scene.add(rim);
 
-            const ground = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.ShadowMaterial({ opacity: 0.22 }));
+            // Ground
+            const ground = new THREE.Mesh(
+              new THREE.PlaneGeometry(30, 30),
+              new THREE.ShadowMaterial({ opacity: 0.22 })
+            );
             ground.rotation.x = -Math.PI / 2;
-            ground.position.y = -1.1;
+            ground.position.y = -1.15;
             ground.receiveShadow = true;
             scene.add(ground);
 
-            // Placeholder burger
+            // Burger placeholder but improved geometry/materials
+            const bunNoise = makeNoiseTexture({ size: 256, alpha: 1, contrast: 0.45 });
+            const meatNoise = makeNoiseTexture({ size: 256, alpha: 1, contrast: 0.65 });
+
+            const bunMat = new THREE.MeshPhysicalMaterial({
+              color: 0xc7a35c,
+              roughness: 0.55,
+              metalness: 0.02,
+              clearcoat: 0.35,
+              clearcoatRoughness: 0.55,
+              bumpMap: bunNoise,
+              bumpScale: 0.08,
+            });
+
+            const meatMat = new THREE.MeshStandardMaterial({
+              color: 0x341b12,
+              roughness: 0.92,
+              metalness: 0.01,
+              bumpMap: meatNoise,
+              bumpScale: 0.14,
+            });
+
+            const cheeseMat = new THREE.MeshPhysicalMaterial({
+              color: 0xf2c24f,
+              roughness: 0.38,
+              metalness: 0.02,
+              clearcoat: 0.25,
+              clearcoatRoughness: 0.35,
+            });
+
+            const lettuceMat = new THREE.MeshStandardMaterial({ color: 0x3f8f5a, roughness: 0.85 });
+            const tomatoMat = new THREE.MeshStandardMaterial({ color: 0xb33b2e, roughness: 0.68 });
+
             const burger = new THREE.Group();
-            burger.position.set(0, -0.35, 0);
+            burger.position.set(0, -0.45, 0);
 
-            const matBun = new THREE.MeshStandardMaterial({ color: 0xc7a35c, roughness: 0.52, metalness: 0.08 });
-            const matMeat = new THREE.MeshStandardMaterial({ color: 0x3b2016, roughness: 0.86, metalness: 0.02 });
-            const matCheese = new THREE.MeshStandardMaterial({ color: 0xf2c24f, roughness: 0.35, metalness: 0.05 });
-            const matLettuce = new THREE.MeshStandardMaterial({ color: 0x3f8f5a, roughness: 0.78 });
-            const matTomato = new THREE.MeshStandardMaterial({ color: 0xb33b2e, roughness: 0.62 });
+            // Bottom bun (slightly beveled)
+            const bottom = new THREE.Mesh(new THREE.CylinderGeometry(0.92, 1.02, 0.26, 64), bunMat);
+            bottom.castShadow = bottom.receiveShadow = true;
+            bottom.position.y = 0.00;
+            burger.add(bottom);
 
-            function layer(geo, mat, y) {
-              const m = new THREE.Mesh(geo, mat);
-              m.position.y = y;
-              m.castShadow = true;
-              m.receiveShadow = true;
-              burger.add(m);
-              return m;
-            }
+            // Patty
+            const patty = new THREE.Mesh(new THREE.CylinderGeometry(1.03, 1.03, 0.28, 64), meatMat);
+            patty.castShadow = patty.receiveShadow = true;
+            patty.position.y = 0.24;
+            burger.add(patty);
 
-            layer(new THREE.CylinderGeometry(0.92, 0.86, 0.35, 56), matBun, 1.0);
-            layer(new THREE.CylinderGeometry(0.98, 0.98, 0.08, 56), matCheese, 0.72);
-            layer(new THREE.CylinderGeometry(1.0, 1.0, 0.26, 56), matMeat, 0.53);
-            const lettuce = layer(new THREE.TorusGeometry(0.78, 0.12, 14, 80), matLettuce, 0.22);
-            lettuce.rotation.x = Math.PI / 2;
-            layer(new THREE.CylinderGeometry(1.02, 1.02, 0.07, 56), matCheese, 0.32);
+            // Cheese
+            const cheese = new THREE.Mesh(new THREE.CylinderGeometry(1.06, 1.06, 0.08, 64), cheeseMat);
+            cheese.castShadow = cheese.receiveShadow = true;
+            cheese.position.y = 0.42;
+            burger.add(cheese);
 
+            // Lettuce ring
+            const ring = new THREE.Mesh(new THREE.TorusGeometry(0.78, 0.12, 14, 90), lettuceMat);
+            ring.castShadow = ring.receiveShadow = true;
+            ring.position.y = 0.50;
+            ring.rotation.x = Math.PI / 2;
+            burger.add(ring);
+
+            // Tomato slices
             for (let i = 0; i < 3; i++) {
-              const t = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.06, 40), matTomato);
-              t.position.set(Math.cos(i * 2.2) * 0.45, 0.12, Math.sin(i * 2.2) * 0.45);
+              const t = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.06, 48), tomatoMat);
+              t.castShadow = t.receiveShadow = true;
+              t.position.set(Math.cos(i * 2.2) * 0.45, 0.56, Math.sin(i * 2.2) * 0.45);
               t.rotation.x = Math.PI / 2;
-              t.castShadow = true;
               burger.add(t);
             }
-            layer(new THREE.CylinderGeometry(0.9, 0.96, 0.22, 56), matBun, -0.02);
+
+            // Top bun: sphere dome + base
+            const dome = new THREE.Mesh(new THREE.SphereGeometry(0.95, 64, 48, 0, Math.PI * 2, 0, Math.PI / 1.9), bunMat);
+            dome.scale.set(1.0, 0.62, 1.0);
+            dome.castShadow = dome.receiveShadow = true;
+            dome.position.y = 0.95;
+            burger.add(dome);
+
+            const topBase = new THREE.Mesh(new THREE.CylinderGeometry(0.86, 0.90, 0.12, 64), bunMat);
+            topBase.castShadow = topBase.receiveShadow = true;
+            topBase.position.y = 0.78;
+            burger.add(topBase);
 
             scene.add(burger);
             burgerRef.current = burger;
 
+            fitCameraToObject(camera, burger, 1.55);
+
+            // Controls: allow scroll vertical, rotate on horizontal drag
             const el = renderer.domElement;
             const DRAG_THRESHOLD = 10;
 
@@ -706,24 +849,15 @@
 
               lastRef.current = { x: e.clientX, y: e.clientY };
               yawRef.current += dx * 0.007;
-              pitchRef.current += dy * 0.007;
-              pitchRef.current = Math.max(-1.15, Math.min(1.15, pitchRef.current));
+              pitchRef.current += dy * 0.004;
+              pitchRef.current = Math.max(-0.65, Math.min(0.35, pitchRef.current));
             };
 
             const onUp = () => { isDraggingRef.current = false; dragActivatedRef.current = false; };
 
-            const onWheel = (e) => {
-              e.preventDefault();
-              const cam = cameraRef.current;
-              if (!cam) return;
-              cam.position.z += e.deltaY * 0.002;
-              cam.position.z = Math.max(2.2, Math.min(5.2, cam.position.z));
-            };
-
             el.addEventListener("pointerdown", onDown, { passive: true });
             el.addEventListener("pointermove", onMove, { passive: true });
             window.addEventListener("pointerup", onUp, { passive: true });
-            el.addEventListener("wheel", onWheel, { passive: false });
 
             const onResize = () => {
               const { w: nw, h: nh } = getSize();
@@ -733,10 +867,12 @@
             };
             window.addEventListener("resize", onResize);
 
+            rendererRef.current = renderer;
+
             const animate = () => {
               rafRef.current = requestAnimationFrame(animate);
               if (burgerRef.current) {
-                if (autoRotateRef.current && !dragActivatedRef.current) yawRef.current += 0.0045;
+                if (autoRotateRef.current && !dragActivatedRef.current) yawRef.current += 0.004;
                 burgerRef.current.rotation.y = yawRef.current;
                 burgerRef.current.rotation.x = pitchRef.current;
                 burgerRef.current.rotation.z = rollRef.current;
@@ -751,9 +887,10 @@
               el.removeEventListener("pointerdown", onDown);
               el.removeEventListener("pointermove", onMove);
               window.removeEventListener("pointerup", onUp);
-              el.removeEventListener("wheel", onWheel);
               renderer.dispose();
               if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement);
+              bunNoise.dispose?.();
+              meatNoise.dispose?.();
             };
           } catch (err) {
             setThreeError(err?.message || String(err));
@@ -762,10 +899,10 @@
 
         if (threeError) {
           return (
-            <div className="h-[260px] md:h-[420px] lg:h-[560px] w-full rounded-2xl border border-divineLine bg-black/20 p-4">
+            <div className="h-[280px] md:h-[440px] w-full rounded-2xl border border-divineLine bg-black/20 p-4">
               <div className="text-xs tracking-[0.28em] text-divineGold/90">VISOR 360°</div>
               <div className="mt-2 text-sm text-divineCream/70">No se pudo cargar el visor 3D.</div>
-              <div className="mt-2 text-xs text-divineCream/50">Detalle: {threeError}</div>
+              <div className="mt-2 text-xs text-divineCream/50">{threeError}</div>
             </div>
           );
         }
@@ -773,74 +910,185 @@
         return (
           <div className="relative h-full w-full">
             <div className="absolute left-4 top-4 z-10 rounded-full border border-divineLine2 bg-black/35 px-3 py-1 text-[10px] tracking-[0.28em] text-divineCream/85 backdrop-blur">
-              VISOR 360°
+              360°
             </div>
 
             <div className="absolute bottom-3 left-3 right-3 z-10 flex flex-col gap-2">
               <div className="flex flex-wrap gap-2">
-                <button onClick={() => setAutoRotate((s) => !s)} className="btn-ghost py-2 px-4">
+                <button onClick={() => setAutoRotate((s) => !s)} className="btn-ghost py-2 px-4" type="button">
                   {autoRotate ? "PAUSAR" : "AUTO"}
                 </button>
-                <button onClick={() => { yawRef.current = 0; pitchRef.current = 0; setRoll(0); }} className="btn-ghost py-2 px-4">
+                <button onClick={() => { yawRef.current = 0; pitchRef.current = -0.10; setRoll(0); }} className="btn-ghost py-2 px-4" type="button">
                   REINICIAR
                 </button>
               </div>
 
               <div className="flex items-center gap-3 rounded-2xl border border-divineLine2 bg-black/35 px-3 py-2 backdrop-blur">
                 <div className="text-[10px] tracking-[0.28em] text-divineCream/60">GIRO Z</div>
-                <input type="range" min={-3.1416} max={3.1416} step={0.01} value={roll}
+                <input
+                  type="range"
+                  min={-3.1416}
+                  max={3.1416}
+                  step={0.01}
+                  value={roll}
                   onChange={(e) => setRoll(parseFloat(e.target.value))}
-                  className="w-full accent-[#C7A35C]" />
-              </div>
-
-              <div className="text-[10px] tracking-[0.28em] text-divineCream/55">
-                Tip móvil: arrastra horizontal para rotar • desliza vertical para hacer scroll
+                  className="w-full accent-[#C7A35C]"
+                />
               </div>
             </div>
 
-            <div ref={mountRef} className="h-[260px] md:h-[420px] lg:h-[560px] w-full bg-gradient-to-b from-black/0 to-black/35"></div>
+            <div ref={mountRef} className="h-[280px] md:h-[440px] w-full bg-gradient-to-b from-black/0 to-black/35"></div>
           </div>
         );
       }
 
-      // Modal premium: sticky top bar + back closes modal
-      function ProductModal({ product, onClose, onAdd }) {
-        useLockBodyScroll(true);
-        useEscape(() => close(), true);
+      // ---------- Sheet (mobile) ----------
+      function BottomSheet({ title, subtitle, onClose, children, cta }) {
         const close = useHistoryClose(true, onClose);
-
-        const [showIngredients, setShowIngredients] = useState(true);
+        useEscape(() => close(), true);
 
         return (
           <motion.div className="fixed inset-0 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} aria-modal="true" role="dialog">
             <div className="absolute inset-0 bg-black/70" onClick={close}></div>
 
-            <div className="absolute inset-0 flex items-center justify-center p-2 sm:p-4 md:p-6">
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 260, damping: 28 }}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={0.18}
+              onDragEnd={(e, info) => {
+                const offset = info?.offset?.y ?? 0;
+                const velocity = info?.velocity?.y ?? 0;
+                if (offset > 120 || velocity > 900) close();
+              }}
+              className="absolute left-0 right-0 bottom-0 rounded-t-3xl border border-divineLine2 bg-divineInk shadow-divine"
+              style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-center pt-3">
+                <div className="sheet-handle"></div>
+              </div>
+
+              <div className="px-4 pt-3 pb-3 border-b border-divineLine2 bg-black/20 backdrop-blur">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-[10px] tracking-[0.35em] text-divineGold/90">{title}</div>
+                    {subtitle && <div className="mt-1 text-sm text-divineCream/80 truncate">{subtitle}</div>}
+                  </div>
+                  <button className="btn-ghost py-2 px-4" onClick={close} type="button">✕ CERRAR</button>
+                </div>
+              </div>
+
+              <div className="max-h-[72vh] overflow-y-auto scroll-smooth-ios overscroll-contain px-4 py-4">
+                {children}
+              </div>
+
+              {cta && (
+                <div className="px-4 pt-2">
+                  {cta}
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        );
+      }
+
+      // ---------- Product modal: desktop modal / mobile sheet ----------
+      function ProductModal({ product, onClose, onAdd }) {
+        const isMobile = useIsMobile();
+        useLockBodyScroll(true);
+
+        if (isMobile) {
+          return (
+            <BottomSheet
+              title="COLECCIÓN DIVINÉE"
+              subtitle={product.name}
+              onClose={onClose}
+              cta={
+                <button onClick={onAdd} className="w-full btn-primary" type="button">
+                  AÑADIR AL CARRITO · {money(product.price)}
+                </button>
+              }
+            >
+              <div className="rounded-2xl border border-divineLine2 bg-black/20 overflow-hidden">
+                <ThreeBurgerViewer />
+              </div>
+
+              <div className="mt-4">
+                <div className="text-sm text-divineCream/70">{product.description}</div>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <span className="rounded-full border border-divineLine2 bg-divinePanel px-3 py-1 text-xs text-divineCream/80">
+                    Peso: <span className="text-divineCream">{product.grams}g</span>
+                  </span>
+                  <span className="rounded-full border border-divineLine2 bg-divinePanel px-3 py-1 text-xs text-divineCream/80">
+                    Precio: <span className="text-divineGold font-semibold">{money(product.price)}</span>
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-4 rounded-2xl border border-divineLine2 bg-divinePanel p-4">
+                <div className="text-xs tracking-[0.28em] text-divineCream/60">INGREDIENTES</div>
+                <ul className="mt-3 space-y-2 text-sm text-divineCream/75">
+                  {product.ingredients?.map((ing) => (
+                    <li key={ing} className="flex items-center justify-between">
+                      <span>{ing}</span>
+                      <span className="text-divineGold/60">•</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="mt-4 rounded-2xl border border-divineLine2 bg-black/25 p-4">
+                <div className="text-xs tracking-[0.28em] text-divineCream/60">NUTRICIÓN</div>
+                <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                  {Object.entries(product.nutrition || {}).map(([k, v]) => (
+                    <div key={k} className="flex items-center justify-between rounded-xl border border-divineLine bg-divinePanel px-3 py-2">
+                      <span className="text-divineCream/70">{String(k).toUpperCase()}</span>
+                      <span className="font-semibold text-divineCream">{v}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </BottomSheet>
+          );
+        }
+
+        // Desktop modal
+        const close = useHistoryClose(true, onClose);
+        useEscape(() => close(), true);
+
+        return (
+          <motion.div className="fixed inset-0 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} aria-modal="true" role="dialog">
+            <div className="absolute inset-0 bg-black/70" onClick={close}></div>
+
+            <div className="absolute inset-0 flex items-center justify-center p-4 md:p-6">
               <motion.div
-                initial={{ y: 22, opacity: 0, scale: 0.988 }}
+                initial={{ y: 18, opacity: 0, scale: 0.99 }}
                 animate={{ y: 0, opacity: 1, scale: 1 }}
-                exit={{ y: 16, opacity: 0, scale: 0.988 }}
-                transition={{ duration: 0.32, ease: [0.2, 0.8, 0.2, 1] }}
-                className="relative w-full max-w-5xl h-[96vh] sm:h-auto sm:max-h-[92vh] overflow-hidden rounded-3xl border border-divineLine2 bg-divineInk shadow-divine"
+                exit={{ y: 14, opacity: 0, scale: 0.99 }}
+                transition={{ duration: 0.28, ease: [0.2, 0.8, 0.2, 1] }}
+                className="relative w-full max-w-5xl max-h-[92vh] overflow-hidden rounded-3xl border border-divineLine2 bg-divineInk shadow-divine"
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Sticky top bar always visible */}
-                <div className="sticky top-0 z-20 border-b border-divineLine2 bg-black/35 backdrop-blur px-4 py-3" style={{ paddingTop: "calc(0.75rem + env(safe-area-inset-top))" }}>
+                <div className="sticky top-0 z-20 border-b border-divineLine2 bg-black/35 backdrop-blur px-5 py-3">
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <div className="text-[10px] tracking-[0.35em] text-divineGold/90">COLECCIÓN DIVINÉE</div>
                       <div className="truncate text-sm font-semibold text-divineCream">{product.name}</div>
                     </div>
-                    <button onClick={close} className="btn-ghost py-2 px-4" type="button">
-                      ✕ CERRAR
-                    </button>
+                    <button onClick={close} className="btn-ghost py-2 px-4" type="button">✕ CERRAR</button>
                   </div>
                 </div>
 
-                <div className="max-h-[calc(96vh-64px)] sm:max-h-[92vh] overflow-y-auto scroll-smooth-ios overscroll-contain">
+                <div className="max-h-[92vh] overflow-y-auto scroll-smooth-ios overscroll-contain">
                   <div className="grid grid-cols-1 lg:grid-cols-2">
-                    <div className="relative">
-                      <ThreeBurgerViewer />
+                    <div className="relative p-5">
+                      <div className="rounded-2xl border border-divineLine2 bg-black/20 overflow-hidden">
+                        <ThreeBurgerViewer />
+                      </div>
                     </div>
 
                     <div className="p-5 lg:p-7">
@@ -854,45 +1102,19 @@
                         <span className="rounded-full border border-divineLine2 bg-divinePanel px-3 py-1 text-xs text-divineCream/80">
                           Precio: <span className="text-divineGold font-semibold">{money(product.price)}</span>
                         </span>
-
-                        <button onClick={onAdd} className="ml-auto btn-primary" type="button">
-                          AÑADIR
-                        </button>
+                        <button onClick={onAdd} className="ml-auto btn-primary" type="button">AÑADIR</button>
                       </div>
 
-                      <div className="mt-6">
-                        <button
-                          onClick={() => setShowIngredients((s) => !s)}
-                          className="flex w-full items-center justify-between rounded-2xl border border-divineLine2 bg-divinePanel px-4 py-3 text-left hover:border-divineGold/40 transition"
-                          type="button"
-                        >
-                          <div>
-                            <div className="text-xs tracking-[0.28em] text-divineCream/60">DETALLES</div>
-                            <div className="mt-1 text-sm font-semibold">Ingredientes</div>
-                          </div>
-                          <span className="text-xs tracking-[0.22em] text-divineGold">{showIngredients ? "OCULTAR" : "MOSTRAR"}</span>
-                        </button>
-
-                        <AnimatePresence initial={false}>
-                          {showIngredients && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.25 }}
-                              className="overflow-hidden"
-                            >
-                              <ul className="mt-3 space-y-2 rounded-2xl border border-divineLine bg-black/25 p-4 text-sm text-divineCream/75">
-                                {product.ingredients?.map((ing) => (
-                                  <li key={ing} className="flex items-center justify-between">
-                                    <span>{ing}</span>
-                                    <span className="text-divineGold/60">•</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                      <div className="mt-6 rounded-2xl border border-divineLine2 bg-divinePanel p-4">
+                        <div className="text-xs tracking-[0.28em] text-divineCream/60">INGREDIENTES</div>
+                        <ul className="mt-3 space-y-2 text-sm text-divineCream/75">
+                          {product.ingredients?.map((ing) => (
+                            <li key={ing} className="flex items-center justify-between">
+                              <span>{ing}</span>
+                              <span className="text-divineGold/60">•</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
 
                       <div className="mt-6 rounded-2xl border border-divineLine2 bg-black/25 p-4">
@@ -905,19 +1127,11 @@
                             </div>
                           ))}
                         </div>
-                        <p className="mt-3 text-xs text-divineCream/50">Valores aproximados (placeholder).</p>
                       </div>
 
-                      <div style={{ height: "calc(1.25rem + env(safe-area-inset-bottom))" }}></div>
+                      <div className="h-4"></div>
                     </div>
                   </div>
-                </div>
-
-                {/* Bottom sticky CTA on mobile */}
-                <div className="sticky bottom-0 z-20 border-t border-divineLine2 bg-black/40 backdrop-blur p-3 sm:hidden" style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}>
-                  <button onClick={onAdd} className="w-full btn-primary" type="button">
-                    AÑADIR AL CARRITO · {money(product.price)}
-                  </button>
                 </div>
               </motion.div>
             </div>
@@ -927,7 +1141,12 @@
 
       function CartButton({ cartCount, onClick }) {
         return (
-          <button onClick={onClick} className="fixed z-40 rounded-2xl border border-divineLine2 bg-black/35 px-4 py-3 shadow-glow backdrop-blur hover:brightness-110 transition floating-safe" aria-label="Abrir carrito" type="button">
+          <button
+            onClick={onClick}
+            className="fixed z-40 rounded-2xl border border-divineLine2 bg-black/35 px-4 py-3 shadow-glow backdrop-blur hover:brightness-110 transition floating-safe"
+            aria-label="Abrir carrito"
+            type="button"
+          >
             <div className="flex items-center gap-3">
               <div className="text-xs tracking-[0.28em] text-divineCream/75">CARRITO</div>
               <div className="rounded-full bg-divineGold px-2 py-1 text-xs font-semibold text-black">{cartCount}</div>
@@ -938,8 +1157,8 @@
 
       function CartDrawer({ items, total, onClose, onQty }) {
         useLockBodyScroll(true);
-        useEscape(() => close(), true);
         const close = useHistoryClose(true, onClose);
+        useEscape(() => close(), true);
 
         return (
           <motion.div className="fixed inset-0 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} aria-modal="true" role="dialog">
@@ -965,7 +1184,9 @@
 
                 <div className="mt-6 space-y-3">
                   {items.length === 0 ? (
-                    <div className="rounded-2xl border border-divineLine bg-divinePanel p-4 text-sm text-divineCream/70">Tu carrito está vacío.</div>
+                    <div className="rounded-2xl border border-divineLine bg-divinePanel p-4 text-sm text-divineCream/70">
+                      Tu carrito está vacío.
+                    </div>
                   ) : (
                     items.map((it) => (
                       <div key={it.id} className="rounded-2xl border border-divineLine2 bg-divinePanel p-4">
@@ -1015,7 +1236,8 @@
       }
 
       /* =========================
-         ATELIER PREMIUM (Builder) + Preview 3D REAL
+         ATELIER PREMIUM
+         (mejor 3D + animación de armado)
       ========================= */
 
       const BURGER_BASE = 2.95;
@@ -1120,13 +1342,7 @@
                 Capas: <span className="text-divineCream">{count}</span>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={onAdd}
-              className="btn-ghost px-4 py-2"
-              disabled={disabled}
-              style={{ opacity: disabled ? 0.55 : 1 }}
-            >
+            <button type="button" onClick={onAdd} className="btn-ghost px-4 py-2" disabled={disabled} style={{ opacity: disabled ? 0.55 : 1 }}>
               + <span className="ml-1">{addLabel}</span>
             </button>
           </div>
@@ -1167,9 +1383,10 @@
         );
       }
 
-      // Preview 3D premium en vivo (sin romper scroll)
+      // Premium preview 3D (animated stacking)
       function AtelierBurgerPreview3D({ bunId, proteinsCount, cheesesCount, toppings }) {
         const mountRef = useRef(null);
+
         const sceneRef = useRef(null);
         const rendererRef = useRef(null);
         const cameraRef = useRef(null);
@@ -1177,22 +1394,30 @@
         const rafRef = useRef(null);
 
         const yawRef = useRef(0);
-        const pitchRef = useRef(0);
+        const pitchRef = useRef(-0.08);
         const draggingRef = useRef(false);
         const dragActivatedRef = useRef(false);
         const lastRef = useRef({ x: 0, y: 0 });
 
         const [err, setErr] = useState(null);
 
-        const keySig = useMemo(() => {
-          return JSON.stringify({ bunId, proteinsCount, cheesesCount, toppings: toppings.slice().sort() });
-        }, [bunId, proteinsCount, cheesesCount, toppings]);
+        const keySig = useMemo(() => JSON.stringify({ bunId, proteinsCount, cheesesCount, toppings: toppings.slice().sort() }), [bunId, proteinsCount, cheesesCount, toppings]);
 
-        function bunColor() {
+        function bunColorHex() {
           if (bunId === "lettuce") return 0x2f7a4b;
           if (bunId === "pretzel") return 0x7a5a3b;
           if (bunId === "ciabatta") return 0xc7b097;
           return 0xc7a35c;
+        }
+
+        function createLayer(mesh, targetY) {
+          mesh.userData.targetY = targetY;
+          mesh.userData.vy = 0;
+          mesh.position.y = targetY + 0.55; // start above then drop
+          mesh.scale.setScalar(0.92);
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+          return mesh;
         }
 
         useEffect(() => {
@@ -1209,42 +1434,54 @@
 
             const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-            const { w, h } = getSize();
-            renderer.setSize(w, h);
+            renderer.outputColorSpace = THREE.SRGBColorSpace;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.2;
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            const { w, h } = getSize();
+            renderer.setSize(w, h);
 
             renderer.domElement.style.width = "100%";
             renderer.domElement.style.height = "100%";
             renderer.domElement.style.display = "block";
             renderer.domElement.style.touchAction = "pan-y";
+
             mount.appendChild(renderer.domElement);
 
             const scene = new THREE.Scene();
-            scene.fog = new THREE.Fog(0x0a0a0f, 7, 16);
+            scene.fog = new THREE.Fog(0x0a0a0f, 8, 18);
 
             const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
             camera.position.set(0, 1.0, 3.2);
 
-            scene.add(new THREE.HemisphereLight(0xf5efe6, 0x07070a, 0.65));
-            const key = new THREE.DirectionalLight(0xffffff, 1.15);
-            key.position.set(3.5, 4.5, 2.8);
+            // lights
+            scene.add(new THREE.AmbientLight(0xffffff, 0.16));
+            scene.add(new THREE.HemisphereLight(0xf5efe6, 0x07070a, 0.60));
+
+            const key = new THREE.SpotLight(0xffffff, 2.3, 30, Math.PI / 6, 0.35, 1.2);
+            key.position.set(4.5, 6.0, 3.2);
             key.castShadow = true;
             key.shadow.mapSize.set(1024, 1024);
             scene.add(key);
 
-            const rim = new THREE.DirectionalLight(0xc7a35c, 0.75);
-            rim.position.set(-4.5, 2.0, -2.5);
+            const rim = new THREE.DirectionalLight(0xc7a35c, 0.85);
+            rim.position.set(-4.0, 2.2, -3.2);
             scene.add(rim);
+
+            const fill = new THREE.DirectionalLight(0xe6d3a3, 0.55);
+            fill.position.set(-4.2, 2.2, 2.5);
+            scene.add(fill);
 
             const ground = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.ShadowMaterial({ opacity: 0.20 }));
             ground.rotation.x = -Math.PI / 2;
-            ground.position.y = -1.0;
+            ground.position.y = -1.15;
             ground.receiveShadow = true;
             scene.add(ground);
 
             const group = new THREE.Group();
-            group.position.set(0, -0.25, 0);
+            group.position.set(0, -0.55, 0);
             scene.add(group);
 
             sceneRef.current = scene;
@@ -1252,7 +1489,7 @@
             cameraRef.current = camera;
             groupRef.current = group;
 
-            // drag rotate (solo horizontal activa)
+            // Drag rotate (horizontal to activate)
             const el = renderer.domElement;
             const DRAG_THRESHOLD = 10;
 
@@ -1261,6 +1498,7 @@
               dragActivatedRef.current = false;
               lastRef.current = { x: e.clientX, y: e.clientY };
             };
+
             const onMove = (e) => {
               if (!draggingRef.current) return;
               const dx = e.clientX - lastRef.current.x;
@@ -1281,9 +1519,10 @@
 
               lastRef.current = { x: e.clientX, y: e.clientY };
               yawRef.current += dx * 0.007;
-              pitchRef.current += dy * 0.005;
-              pitchRef.current = Math.max(-0.65, Math.min(0.45, pitchRef.current));
+              pitchRef.current += dy * 0.004;
+              pitchRef.current = Math.max(-0.55, Math.min(0.25, pitchRef.current));
             };
+
             const onUp = () => { draggingRef.current = false; dragActivatedRef.current = false; };
 
             el.addEventListener("pointerdown", onDown, { passive: true });
@@ -1298,13 +1537,31 @@
             };
             window.addEventListener("resize", onResize);
 
+            // render loop with "drop" animation
             const animate = () => {
               rafRef.current = requestAnimationFrame(animate);
+
               if (groupRef.current) {
-                if (!dragActivatedRef.current) yawRef.current += 0.0035;
+                if (!dragActivatedRef.current) yawRef.current += 0.0032;
                 groupRef.current.rotation.y = yawRef.current;
                 groupRef.current.rotation.x = pitchRef.current;
+
+                for (const child of groupRef.current.children) {
+                  if (child?.userData?.targetY == null) continue;
+                  const target = child.userData.targetY;
+
+                  // spring-ish
+                  const y = child.position.y;
+                  const dy = target - y;
+                  child.userData.vy = (child.userData.vy || 0) * 0.78 + dy * 0.18;
+                  child.position.y = y + child.userData.vy;
+
+                  const s = child.scale.x;
+                  const ds = 1 - s;
+                  child.scale.setScalar(s + ds * 0.12);
+                }
               }
+
               renderer.render(scene, camera);
             };
             animate();
@@ -1323,79 +1580,120 @@
           }
         }, []);
 
-        // rebuild stack when selections change
+        // rebuild stack each change
         useEffect(() => {
-          if (!groupRef.current) return;
+          if (!groupRef.current || !cameraRef.current) return;
 
           const group = groupRef.current;
           while (group.children.length) group.remove(group.children[0]);
 
-          const bunMat = new THREE.MeshStandardMaterial({ color: bunColor(), roughness: 0.55, metalness: 0.08 });
-          const meatMat = new THREE.MeshStandardMaterial({ color: 0x3b2016, roughness: 0.86, metalness: 0.02 });
-          const cheeseMat = new THREE.MeshStandardMaterial({ color: 0xf2c24f, roughness: 0.35, metalness: 0.03 });
-          const greenMat = new THREE.MeshStandardMaterial({ color: 0x3f8f5a, roughness: 0.8 });
-          const redMat = new THREE.MeshStandardMaterial({ color: 0xb33b2e, roughness: 0.65 });
-          const darkMat = new THREE.MeshStandardMaterial({ color: 0x1b1b20, roughness: 0.9 });
+          const bunNoise = makeNoiseTexture({ size: 256, alpha: 1, contrast: 0.45 });
+          const meatNoise = makeNoiseTexture({ size: 256, alpha: 1, contrast: 0.65 });
 
-          const add = (mesh) => { mesh.castShadow = true; mesh.receiveShadow = true; group.add(mesh); return mesh; };
+          const bunMat = new THREE.MeshPhysicalMaterial({
+            color: bunColorHex(),
+            roughness: 0.55,
+            metalness: 0.02,
+            clearcoat: 0.35,
+            clearcoatRoughness: 0.55,
+            bumpMap: bunNoise,
+            bumpScale: 0.08,
+          });
 
-          let y = 0;
+          const meatMat = new THREE.MeshStandardMaterial({
+            color: 0x341b12,
+            roughness: 0.92,
+            metalness: 0.01,
+            bumpMap: meatNoise,
+            bumpScale: 0.14,
+          });
 
-          // bottom bun
-          const bunBottom = add(new THREE.Mesh(new THREE.CylinderGeometry(0.92, 0.98, 0.22, 56), bunMat));
-          bunBottom.position.y = y; y += 0.18;
+          const cheeseMat = new THREE.MeshPhysicalMaterial({
+            color: 0xf2c24f,
+            roughness: 0.38,
+            metalness: 0.02,
+            clearcoat: 0.25,
+            clearcoatRoughness: 0.35,
+          });
 
-          // proteins + cheeses interleaved (more “real”)
+          const greenMat = new THREE.MeshStandardMaterial({ color: 0x3f8f5a, roughness: 0.85 });
+          const redMat = new THREE.MeshStandardMaterial({ color: 0xb33b2e, roughness: 0.68 });
+          const darkMat = new THREE.MeshStandardMaterial({ color: 0x1b1b20, roughness: 0.92 });
+
+          const add = (mesh) => { group.add(mesh); return mesh; };
+
+          let y = 0.00;
+
+          // Bottom bun
+          add(createLayer(new THREE.Mesh(new THREE.CylinderGeometry(0.92, 1.02, 0.26, 64), bunMat), y));
+          y += 0.18;
+
+          // Proteins + cheeses interleaved
           for (let i = 0; i < proteinsCount; i++) {
-            const meat = add(new THREE.Mesh(new THREE.CylinderGeometry(1.02, 1.02, 0.26, 56), meatMat));
-            meat.position.y = y; y += 0.20;
+            add(createLayer(new THREE.Mesh(new THREE.CylinderGeometry(1.04, 1.04, 0.28, 64), meatMat), y));
+            y += 0.22;
 
             if (cheesesCount > 0 && i < cheesesCount) {
-              const cheese = add(new THREE.Mesh(new THREE.CylinderGeometry(1.05, 1.05, 0.07, 56), cheeseMat));
-              cheese.position.y = y; y += 0.08;
+              add(createLayer(new THREE.Mesh(new THREE.CylinderGeometry(1.07, 1.07, 0.08, 64), cheeseMat), y));
+              y += 0.08;
             }
           }
 
-          // toppings as simple ingredients
-          const toppingSet = new Set(toppings);
-          if (toppingSet.has("lettuce") || toppingSet.has("arugula")) {
-            const ring = add(new THREE.Mesh(new THREE.TorusGeometry(0.78, 0.12, 14, 80), greenMat));
-            ring.position.y = y + 0.05;
+          // Toppings (simple but better placed)
+          const tset = new Set(toppings);
+
+          if (tset.has("lettuce") || tset.has("arugula")) {
+            const ring = new THREE.Mesh(new THREE.TorusGeometry(0.78, 0.12, 14, 90), greenMat);
             ring.rotation.x = Math.PI / 2;
-            y += 0.08;
+            add(createLayer(ring, y + 0.06));
+            y += 0.10;
           }
 
-          if (toppingSet.has("tomato")) {
+          if (tset.has("tomato")) {
             for (let i = 0; i < 3; i++) {
-              const t = add(new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.06, 40), redMat));
-              t.position.set(Math.cos(i * 2.2) * 0.45, y + 0.04, Math.sin(i * 2.2) * 0.45);
+              const t = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.06, 48), redMat);
               t.rotation.x = Math.PI / 2;
+              t.position.set(Math.cos(i * 2.2) * 0.45, 0, Math.sin(i * 2.2) * 0.45);
+              add(createLayer(t, y + 0.05));
+            }
+            y += 0.10;
+          }
+
+          if (tset.has("pickles")) {
+            for (let i = 0; i < 4; i++) {
+              const p = new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.03, 10, 30), greenMat);
+              p.rotation.x = Math.PI / 2;
+              p.position.set(Math.cos(i * 1.7) * 0.55, 0, Math.sin(i * 1.7) * 0.55);
+              add(createLayer(p, y + 0.03));
             }
             y += 0.08;
           }
 
-          if (toppingSet.has("pickles")) {
-            for (let i = 0; i < 4; i++) {
-              const p = add(new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.03, 10, 30), greenMat));
-              p.position.set(Math.cos(i * 1.7) * 0.55, y + 0.02, Math.sin(i * 1.7) * 0.55);
-              p.rotation.x = Math.PI / 2;
-            }
-            y += 0.06;
-          }
-
-          if (toppingSet.has("bacon")) {
+          if (tset.has("bacon")) {
             for (let i = 0; i < 2; i++) {
-              const b = add(new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.05, 0.18), darkMat));
-              b.position.y = y + 0.03;
-              b.rotation.y = i * 0.8;
+              const b = new THREE.Mesh(new THREE.BoxGeometry(1.08, 0.05, 0.18), darkMat);
+              b.rotation.y = i * 0.85;
+              add(createLayer(b, y + 0.05));
             }
-            y += 0.07;
+            y += 0.10;
           }
 
-          // top bun
-          const bunTop = add(new THREE.Mesh(new THREE.CylinderGeometry(0.92, 0.86, 0.35, 56), bunMat));
-          bunTop.position.y = y + 0.22;
+          // Top bun (dome + base)
+          const topBase = new THREE.Mesh(new THREE.CylinderGeometry(0.86, 0.90, 0.12, 64), bunMat);
+          add(createLayer(topBase, y + 0.12));
 
+          const dome = new THREE.Mesh(new THREE.SphereGeometry(0.95, 64, 48, 0, Math.PI * 2, 0, Math.PI / 1.9), bunMat);
+          dome.scale.set(1.0, 0.62, 1.0);
+          add(createLayer(dome, y + 0.38));
+
+          // Fit camera each rebuild
+          const cam = cameraRef.current;
+          fitCameraToObject(cam, group, 1.55);
+
+          return () => {
+            bunNoise.dispose?.();
+            meatNoise.dispose?.();
+          };
         }, [keySig]);
 
         if (err) {
@@ -1419,7 +1717,7 @@
                 {proteinsCount} carne(s) • {cheesesCount} queso(s)
               </div>
             </div>
-            <div ref={mountRef} className="h-[240px] md:h-[280px] w-full bg-gradient-to-b from-black/0 to-black/35"></div>
+            <div ref={mountRef} className="h-[260px] md:h-[320px] w-full bg-gradient-to-b from-black/0 to-black/35"></div>
           </div>
         );
       }
@@ -1431,7 +1729,7 @@
         const [proteinLayers, setProteinLayers] = useState([0]);
         const [activeProteinLayer, setActiveProteinLayer] = useState(0);
 
-        const [cheeseLayers, setCheeseLayers] = useState([5]); // sin queso
+        const [cheeseLayers, setCheeseLayers] = useState([5]);
         const [activeCheeseLayer, setActiveCheeseLayer] = useState(0);
 
         const [toppings, setToppings] = useState([]);
@@ -1519,13 +1817,7 @@
           const cheesesSel = cheeseLayers.map((idx) => BURGER_CATALOG.cheeses[idx]).filter(Boolean);
           const toppingsSel = toppings.map((id) => BURGER_CATALOG.toppings.find((t) => t.id === id)).filter(Boolean);
 
-          const id = [
-            "custom-burger-premium",
-            bunSel?.id,
-            proteinsSel.map((p) => p.id).join("+"),
-            cheesesSel.map((c) => c.id).join("+"),
-            toppings.slice().sort().join(","),
-          ].join(":");
+          const id = ["custom-burger-premium", bunSel?.id, proteinsSel.map((p) => p.id).join("+"), cheesesSel.map((c) => c.id).join("+"), toppings.slice().sort().join(",")].join(":");
 
           const meta = {
             pan: bunSel?.name,
@@ -1545,9 +1837,7 @@
           setToppings([]);
         }
 
-        const proteinsCount = proteinLayers.length;
         const cheesesCount = Math.max(0, cheeseLayers.filter((idx) => BURGER_CATALOG.cheeses[idx]?.id !== "none").length);
-        const bunId = BURGER_CATALOG.buns[bunIdx]?.id;
 
         return (
           <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
@@ -1556,9 +1846,7 @@
                 <div>
                   <div className="text-xs tracking-[0.35em] text-divineGold/90">ATELIER PREMIUM</div>
                   <h3 className="mt-2 text-xl font-semibold md:text-2xl">Arma tu Hamburguesa</h3>
-                  <p className="mt-1 text-sm text-divineCream/65">
-                    Flechas, capas múltiples y preview 3D real en vivo.
-                  </p>
+                  <p className="mt-1 text-sm text-divineCream/65">Tipo carrusel + capas múltiples + animación de armado.</p>
                 </div>
 
                 <div className="rounded-2xl border border-divineLine2 bg-black/25 px-4 py-3 shadow-glow">
@@ -1568,12 +1856,7 @@
               </div>
 
               <div className="mt-5">
-                <AtelierBurgerPreview3D
-                  bunId={bunId}
-                  proteinsCount={proteinsCount}
-                  cheesesCount={cheesesCount}
-                  toppings={toppings}
-                />
+                <AtelierBurgerPreview3D bunId={BURGER_CATALOG.buns[bunIdx]?.id} proteinsCount={proteinLayers.length} cheesesCount={cheesesCount} toppings={toppings} />
               </div>
 
               <div className="mt-5 grid grid-cols-4 gap-2">
@@ -1601,59 +1884,17 @@
 
                 {step === 1 && (
                   <div className="space-y-4">
-                    <LayersHeader
-                      title="Carnes"
-                      count={proteinLayers.length}
-                      onAdd={addProteinLayer}
-                      addLabel="Agregar otra carne"
-                      disabled={proteinLayers.length >= MAX_PROTEIN_LAYERS}
-                    />
-
-                    <LayersTabs
-                      label="Carne"
-                      layers={proteinLayers}
-                      active={activeProteinLayer}
-                      setActive={setActiveProteinLayer}
-                      onRemove={removeProteinLayer}
-                      min={1}
-                    />
-
-                    <CarouselPicker
-                      title={`Carne ${activeProteinLayer + 1}`}
-                      options={BURGER_CATALOG.proteins}
-                      index={proteinLayers[activeProteinLayer] ?? 0}
-                      onPrev={proteinPrev}
-                      onNext={proteinNext}
-                    />
+                    <LayersHeader title="Carnes" count={proteinLayers.length} onAdd={addProteinLayer} addLabel="Agregar otra carne" disabled={proteinLayers.length >= MAX_PROTEIN_LAYERS} />
+                    <LayersTabs label="Carne" layers={proteinLayers} active={activeProteinLayer} setActive={setActiveProteinLayer} onRemove={removeProteinLayer} min={1} />
+                    <CarouselPicker title={`Carne ${activeProteinLayer + 1}`} options={BURGER_CATALOG.proteins} index={proteinLayers[activeProteinLayer] ?? 0} onPrev={proteinPrev} onNext={proteinNext} />
                   </div>
                 )}
 
                 {step === 2 && (
                   <div className="space-y-4">
-                    <LayersHeader
-                      title="Quesos"
-                      count={cheeseLayers.length}
-                      onAdd={addCheeseLayer}
-                      addLabel="Agregar otro queso"
-                      disabled={cheeseLayers.length >= MAX_CHEESE_LAYERS}
-                    />
-
-                    <LayersTabs
-                      label="Queso"
-                      layers={cheeseLayers}
-                      active={activeCheeseLayer}
-                      setActive={setActiveCheeseLayer}
-                      onRemove={removeCheeseLayer}
-                      min={1}
-                    />
-
-                    <CarouselPicker
-                      title={`Queso ${activeCheeseLayer + 1}`}
-                      options={BURGER_CATALOG.cheeses}
-                      index={cheeseLayers[activeCheeseLayer] ?? 0}
-                      onPrev={cheesePrev}
-                      onNext={cheeseNext}
-                    />
+                    <LayersHeader title="Quesos" count={cheeseLayers.length} onAdd={addCheeseLayer} addLabel="Agregar otro queso" disabled={cheeseLayers.length >= MAX_CHEESE_LAYERS} />
+                    <LayersTabs label="Queso" layers={cheeseLayers} active={activeCheeseLayer} setActive={setActiveCheeseLayer} onRemove={removeCheeseLayer} min={1} />
+                    <CarouselPicker title={`Queso ${activeCheeseLayer + 1}`} options={BURGER_CATALOG.cheeses} index={cheeseLayers[activeCheeseLayer] ?? 0} onPrev={cheesePrev} onNext={cheeseNext} />
                   </div>
                 )}
 
@@ -1721,14 +1962,6 @@
                     <span className="text-divineCream/70">Carnes</span>
                     <span className="text-xs tracking-[0.22em] text-divineCream/55">{proteinLayers.length}</span>
                   </div>
-                  <div className="mt-2 space-y-1">
-                    {proteinLayers.map((idx, i) => (
-                      <div key={i} className="flex justify-between text-sm">
-                        <span className="text-divineCream/70">Carne {i + 1}</span>
-                        <span className="font-semibold">{BURGER_CATALOG.proteins[idx]?.name}</span>
-                      </div>
-                    ))}
-                  </div>
                 </div>
 
                 <div className="rounded-2xl border border-divineLine2 bg-divinePanel px-4 py-3">
@@ -1736,31 +1969,12 @@
                     <span className="text-divineCream/70">Quesos</span>
                     <span className="text-xs tracking-[0.22em] text-divineCream/55">{cheeseLayers.length}</span>
                   </div>
-                  <div className="mt-2 space-y-1">
-                    {cheeseLayers.map((idx, i) => (
-                      <div key={i} className="flex justify-between text-sm">
-                        <span className="text-divineCream/70">Queso {i + 1}</span>
-                        <span className="font-semibold">{BURGER_CATALOG.cheeses[idx]?.name}</span>
-                      </div>
-                    ))}
-                  </div>
                 </div>
 
                 <div className="rounded-2xl border border-divineLine2 bg-divinePanel px-4 py-3">
                   <div className="flex justify-between gap-3">
                     <span className="text-divineCream/70">Toppings</span>
                     <span className="text-xs tracking-[0.22em] text-divineCream/55">{toppings.length}</span>
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {toppings.length ? (
-                      toppings.map((id) => (
-                        <span key={id} className="rounded-full border border-divineLine2 bg-black/20 px-3 py-1 text-xs text-divineCream/75">
-                          {BURGER_CATALOG.toppings.find((t) => t.id === id)?.name || id}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="text-divineCream/55">—</span>
-                    )}
                   </div>
                 </div>
 
@@ -1774,9 +1988,7 @@
         );
       }
 
-      /* =========================
-         Yogurt builder (igual que antes, estable)
-      ========================= */
+      // Yogurt builder (simple + estable)
       const YOGURT_OPTIONS = {
         tamano: [
           { id: "mini", label: "Mini", price: 4.95 },
@@ -1938,7 +2150,9 @@
                     onClick={() => setStep(i)}
                     className={[
                       "rounded-2xl border px-3 py-2 text-[11px] tracking-[0.22em] transition",
-                      step === i ? "border-divineGold/60 bg-black/35 text-divineGold shadow-glow" : "border-divineLine bg-black/25 text-divineCream/70 hover:text-divineGold hover:border-divineGold/40",
+                      step === i
+                        ? "border-divineGold/60 bg-black/35 text-divineGold shadow-glow"
+                        : "border-divineLine bg-black/25 text-divineCream/70 hover:text-divineGold hover:border-divineGold/40",
                     ].join(" ")}
                     type="button"
                   >
@@ -1999,7 +2213,17 @@
         );
       }
 
-      // App
+      function CartButton({ cartCount, onClick }) {
+        return (
+          <button onClick={onClick} className="fixed z-40 rounded-2xl border border-divineLine2 bg-black/35 px-4 py-3 shadow-glow backdrop-blur hover:brightness-110 transition floating-safe" type="button">
+            <div className="flex items-center gap-3">
+              <div className="text-xs tracking-[0.28em] text-divineCream/75">CARRITO</div>
+              <div className="rounded-full bg-divineGold px-2 py-1 text-xs font-semibold text-black">{cartCount}</div>
+            </div>
+          </button>
+        );
+      }
+
       function App() {
         useSpotlight();
 
@@ -2063,15 +2287,9 @@
                   </p>
 
                   <div className="mt-6 flex flex-col sm:flex-row flex-wrap gap-3">
-                    <button className="btn-primary w-full sm:w-auto" onClick={() => scrollTo("burgers")} type="button">
-                      Explorar menú
-                    </button>
-                    <button className="btn-ghost w-full sm:w-auto" onClick={() => scrollTo("atelier")} type="button">
-                      Atelier premium
-                    </button>
-                    <button className="btn-ghost w-full sm:w-auto" onClick={() => scrollTo("yogurt")} type="button">
-                      Yogurt de máquina
-                    </button>
+                    <button className="btn-primary w-full sm:w-auto" onClick={() => scrollTo("burgers")} type="button">Explorar menú</button>
+                    <button className="btn-ghost w-full sm:w-auto" onClick={() => scrollTo("atelier")} type="button">Atelier premium</button>
+                    <button className="btn-ghost w-full sm:w-auto" onClick={() => scrollTo("yogurt")} type="button">Yogurt de máquina</button>
                   </div>
                 </div>
               </motion.section>
@@ -2115,7 +2333,7 @@
               </section>
 
               <section ref={refs.atelier} className="scroll-mt-32">
-                <SectionShell eyebrow="ATELIER" title="Arma tu Hamburguesa" subtitle="Carrusel, capas múltiples y preview 3D premium en vivo.">
+                <SectionShell eyebrow="ATELIER" title="Arma tu Hamburguesa" subtitle="Carrusel + capas múltiples + preview 3D premium con animación de armado.">
                   <BurgerBuilder onAddToCart={addToCart} />
                 </SectionShell>
               </section>
