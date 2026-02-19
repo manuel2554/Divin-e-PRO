@@ -1263,7 +1263,7 @@ function AdminDashboard({ onClose, supabaseClient }) {
                     <div className="text-sm text-divineCream/90 mb-1">
                       <span className="text-divineCream/50">Cliente:</span> {o.customer_name} • 
                       <a 
-                        href={`https://wa.me/${formatPhoneForWa(o.phone)}?text=${encodeURIComponent(`Hola ${o.customer_name}, ¡gracias por elegir Divinée! Te escribimos para confirmarte que tu pedido ${o.tracking_code} ya se está procesando. 🍔✨`)}`}
+                        href={`https://wa.me/${formatPhoneForWa(o.phone)}?text=${encodeURIComponent(`Hola ${o.customer_name}, ¡gracias por elegir Divinée! Te escribimos para confirmarte que tu pedido ${o.tracking_code} ¡Ya se está procesando!. Exquisito. Divino. Divinée🍔✨`)}`}
                         target="_blank" 
                         rel="noopener noreferrer" 
                         className="ml-1 text-divineGold hover:text-divineGold2 transition hover:underline"
@@ -1400,6 +1400,7 @@ function AdminDashboard({ onClose, supabaseClient }) {
   </script>
 </body>
 </html>
+
 
 
 
