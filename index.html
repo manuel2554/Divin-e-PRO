@@ -73,6 +73,8 @@
   <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
   <script src="https://unpkg.com/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+  
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="divine-spotlight"></div>
@@ -90,6 +92,22 @@
     const LOGO_LOCAL = "./assets/logo-divinee.jpg";
     const LOGO_REMOTE = "https://i.postimg.cc/J7czGY3s/Whats_App_Image_2026_02_10_at_2_42_10_PM.jpg";
     const YOGURT_ENABLED = false;
+    
+    // =========================
+    // Configuración de Supabase y Telegram
+    // =========================
+    // 1. SUPABASE (Las llaves que copiaste de la foto)
+    const { createClient } = window.supabase;
+    const supabaseUrl = 'PEGA_AQUI_TU_PROJECT_URL_DE_SUPABASE'; // Ej: https://k0kc9dsil...supabase.co
+    const supabaseKey = 'PEGA_AQUI_TU_API_KEY_PUBLISHABLE';     // Ej: sb_publishable_k0kc...
+    const supabaseClient = createClient(supabaseUrl, supabaseKey);
+
+    // 2. TELEGRAM (Lo que acabas de sacar de BotFather)
+    const TELEGRAM_BOT_TOKEN = "PEGA_AQUI_EL_TOKEN_DEL_BOT";    // Ej: 712345678:AAGdf...
+    const TELEGRAM_CHAT_ID = "PEGA_AQUI_TU_CHAT_ID";            // Ej: 123456789
+
+    // 3. UTILIDAD PARA BOLÍVARES
+    const moneyVES = (usd, rate) => new Intl.NumberFormat("es-VE", { style: "currency", currency: "VES" }).format(usd * rate);
 
     // =========================
     // Motion fallback
@@ -590,18 +608,182 @@
         </motion.div>
       );
     }
+    // =========================
+    // Módulo de Rastreo Real (Supabase)
+    // =========================
+    function TrackingModal({ onClose, supabaseClient }) {
+      const [inputCode, setInputCode] = useState("");
+      const [statusData, setStatusData] = useState(null);
+      const [loading, setLoading] = useState(false);
+      const [errorMsg, setErrorMsg] = useState("");
+
+      const searchOrder = async () => {
+        if (!inputCode) return;
+        setLoading(true); setErrorMsg(""); setStatusData(null);
+
+        const { data, error } = await supabaseClient
+          .from('orders')
+          .select('status, customer_name')
+          .eq('tracking_code', inputCode.trim().toUpperCase())
+          .single();
+
+        if (error || !data) {
+          setErrorMsg("No encontramos este código. Verifica que esté bien escrito (Ej: #DIV-1234).");
+        } else {
+          setStatusData(data);
+        }
+        setLoading(false);
+      };
+
+      return (
+        <BottomSheet title="RASTREO DE PEDIDO" subtitle="Ingresa tu código de orden" onClose={onClose}>
+          <div className="space-y-4">
+            <input type="text" value={inputCode} onChange={(e) => setInputCode(e.target.value)} placeholder="Ej: #DIV-1234" className="w-full bg-black/40 border border-divineLine2 rounded-xl px-4 py-3 text-sm text-divineCream outline-none focus:border-divineGold transition uppercase" />
+            <button className="w-full btn-primary" onClick={searchOrder} disabled={loading}>{loading ? "BUSCANDO..." : "BUSCAR ESTADO"}</button>
+            {errorMsg && <div className="text-red-400 text-sm mt-2">{errorMsg}</div>}
+            {statusData && (
+              <div className="mt-4 p-5 rounded-2xl border border-divineLine2 bg-divinePanel">
+                <div className="text-xs tracking-[0.28em] text-divineCream/60 mb-1">HOLA, {statusData.customer_name.toUpperCase()}</div>
+                <div className="text-sm text-divineCream/80">El estatus actual de tu pedido es:</div>
+                <div className="mt-2 text-2xl font-bold text-divineGold">{statusData.status.toUpperCase()}</div>
+              </div>
+            )}
+          </div>
+        </BottomSheet>
+      );
+    }
     function CartButton({ cartCount, onClick }) {
       return (
         <button onClick={onClick} className="fixed z-40 rounded-2xl border border-divineLine2 bg-black/35 px-4 py-3 shadow-glow backdrop-blur hover:brightness-110 transition floating-safe" aria-label="Abrir carrito" type="button"><div className="flex items-center gap-3"><div className="text-xs tracking-[0.28em] text-divineCream/75">CARRITO</div><div className="rounded-full bg-divineGold px-2 py-1 text-xs font-semibold text-black">{cartCount}</div></div></button>
       );
     }
-    function CartDrawer({ items, total, onClose, onQty }) {
-      useLockBodyScroll(true); const close = useHistoryClose(true, onClose); useEscape(close, true);
+    // =========================
+    // Cart Drawer con Checkout Integrado
+    // =========================
+    function CartDrawer({ items, total, bcvRate, onClose, onQty, onClearCart }) {
+      useLockBodyScroll(true); 
+      const close = useHistoryClose(true, onClose); 
+      useEscape(close, true);
+      
+      const [step, setStep] = useState(0); 
+      const [loading, setLoading] = useState(false);
+      const [orderId, setOrderId] = useState("");
+      const [formData, setFormData] = useState({ name: "", phone: "", address: "", notes: "", ref: "" });
+      
+      const handleInput = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+      const handleCheckout = async () => {
+        setLoading(true);
+        const newOrderId = "#DIV-" + Math.floor(1000 + Math.random() * 9000);
+        
+        // 1. GUARDAR EN SUPABASE
+        const { error } = await supabaseClient.from('orders').insert([{
+            tracking_code: newOrderId, customer_name: formData.name, phone: formData.phone,
+            address: formData.address, notes: formData.notes, items: items, 
+            total_usd: total, bcv_rate: bcvRate, payment_ref: formData.ref, status: 'Pendiente'
+        }]);
+
+        if (error) {
+          alert("Error conectando con la base de datos. Por favor, intenta de nuevo.");
+          setLoading(false); return;
+        }
+
+        // 2. ENVIAR A TELEGRAM
+        let orderText = `🍔 *NUEVO PEDIDO* ${newOrderId}\n\n👤 *Cliente:* ${formData.name}\n📞 *Teléfono:* ${formData.phone}\n📍 *Dirección:* ${formData.address}\n`;
+        if(formData.notes) orderText += `📝 *Nota:* ${formData.notes}\n`;
+        orderText += `\n🛒 *PEDIDO:*\n`;
+        items.forEach(it => {
+          orderText += `• ${it.qty}x ${it.name} - $${(it.price * it.qty).toFixed(2)}\n`;
+          if (it.meta) Object.entries(it.meta).forEach(([k, v]) => { orderText += `   _${k}:_ ${Array.isArray(v) ? v.join(", ") : String(v)}\n`; });
+        });
+        orderText += `\n💰 *Total USD:* $${total.toFixed(2)}`;
+        if (bcvRate) orderText += `\n🇻🇪 *Total BCV:* ${(total * bcvRate).toFixed(2)} Bs`;
+        orderText += `\n💳 *Ref PagoMóvil:* ${formData.ref}`;
+
+        try {
+          await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: orderText, parse_mode: "Markdown" })
+          });
+        } catch (e) { console.log("Telegram falló, pero se guardó en Supabase"); }
+        
+        setOrderId(newOrderId); setStep(3); onClearCart(); setLoading(false);
+      };
+
       return (
         <motion.div className="fixed inset-0 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} aria-modal="true" role="dialog">
           <div className="absolute inset-0 bg-black/70" onClick={close}></div>
-          <motion.aside initial={{ x: 24, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 24, opacity: 0 }} transition={{ duration: 0.28, ease: [0.2, 0.8, 0.2, 1] }} className="absolute right-0 top-0 h-full w-[92vw] max-w-md border-l border-divineLine2 bg-divineInk shadow-divine" onClick={(e) => e.stopPropagation()}>
-            <div className="h-full overflow-y-auto scroll-smooth-ios overscroll-contain p-5 pb-10" style={{ paddingBottom: "calc(2.5rem + env(safe-area-inset-bottom))" }}><div className="flex items-start justify-between"><div><div className="text-xs tracking-[0.35em] text-divineGold/90">{BRAND_NAME.toUpperCase()}</div><h3 className="mt-2 text-xl font-semibold">Carrito</h3><p className="mt-1 text-sm text-divineCream/60">Revisa y ajusta cantidades.</p></div><button onClick={close} className="btn-ghost py-2 px-4" type="button">CERRAR</button></div><div className="mt-6 space-y-3">{items.length === 0 ? (<div className="rounded-2xl border border-divineLine bg-divinePanel p-4 text-sm text-divineCream/70">Tu carrito está vacío.</div>) : (items.map((it) => (<div key={it.id} className="rounded-2xl border border-divineLine2 bg-divinePanel p-4"><div className="flex items-start justify-between gap-3"><div><div className="font-semibold">{it.name}</div><div className="mt-1 text-sm text-divineCream/70">{money(it.price)}</div>{it.meta && (<div className="mt-2 text-xs text-divineCream/55">{Object.entries(it.meta).map(([k, v]) => (<div key={k}><span className="text-divineGold/80">{k}:</span> <span>{Array.isArray(v) ? v.join(", ") : String(v)}</span></div>))}</div>)}</div><div className="text-sm font-semibold text-divineGold">{money(it.price * it.qty)}</div></div><div className="mt-3 flex items-center gap-2"><button className="btn-ghost py-2 px-4" onClick={() => onQty(it.id, it.qty - 1)} type="button">−</button><div className="min-w-10 text-center text-sm">{it.qty}</div><button className="btn-ghost py-2 px-4" onClick={() => onQty(it.id, it.qty + 1)} type="button">+</button><button className="ml-auto btn-ghost py-2 px-4" onClick={() => onQty(it.id, 0)} type="button">ELIMINAR</button></div></div>)))}</div><div className="mt-6 rounded-2xl border border-divineLine2 bg-black/25 p-4"><div className="flex items-center justify-between"><span className="text-sm text-divineCream/70">Total</span><span className="text-lg font-semibold text-divineGold">{money(total)}</span></div><button className="mt-4 w-full btn-primary" disabled={items.length === 0} style={{ opacity: items.length ? 1 : 0.6 }} type="button">PAGAR</button></div></div>
+          <motion.aside initial={{ x: 24, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 24, opacity: 0 }} transition={{ duration: 0.28, ease: [0.2, 0.8, 0.2, 1] }} className="absolute right-0 top-0 h-full w-[92vw] max-w-md border-l border-divineLine2 bg-divineInk shadow-divine flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex-1 overflow-y-auto scroll-smooth-ios p-5 pb-10" style={{ paddingBottom: "calc(2.5rem + env(safe-area-inset-bottom))" }}>
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="text-xs tracking-[0.35em] text-divineGold/90">{BRAND_NAME.toUpperCase()}</div>
+                  <h3 className="mt-2 text-xl font-semibold">{step === 0 ? "Carrito" : step === 1 ? "Tus Datos" : step === 2 ? "Pago Móvil" : "Pedido Confirmado"}</h3>
+                </div>
+                {step !== 3 && <button onClick={close} className="btn-ghost py-2 px-4" type="button">CERRAR</button>}
+              </div>
+
+              {step === 0 && (
+                <>
+                  <div className="mt-6 space-y-3">
+                    {items.length === 0 ? (<div className="rounded-2xl border border-divineLine bg-divinePanel p-4 text-sm text-divineCream/70">Tu carrito está vacío.</div>) : (
+                      items.map((it) => (
+                        <div key={it.id} className="rounded-2xl border border-divineLine2 bg-divinePanel p-4">
+                          <div className="flex items-start justify-between gap-3">
+                            <div><div className="font-semibold">{it.name}</div><div className="mt-1 text-sm text-divineCream/70">{money(it.price)}</div></div>
+                            <div className="text-sm font-semibold text-divineGold">{money(it.price * it.qty)}</div>
+                          </div>
+                          <div className="mt-3 flex items-center gap-2">
+                            <button className="btn-ghost py-2 px-4" onClick={() => onQty(it.id, it.qty - 1)} type="button">−</button>
+                            <div className="min-w-10 text-center text-sm">{it.qty}</div>
+                            <button className="btn-ghost py-2 px-4" onClick={() => onQty(it.id, it.qty + 1)} type="button">+</button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  {items.length > 0 && (
+                    <div className="mt-6 rounded-2xl border border-divineLine2 bg-black/25 p-4">
+                      <div className="flex items-center justify-between"><span className="text-sm text-divineCream/70">Total</span><div className="text-right"><div className="text-lg font-semibold text-divineGold">{money(total)}</div>{bcvRate && <div className="text-xs text-divineCream/60">({moneyVES(total, bcvRate)})</div>}</div></div>
+                      <button className="mt-4 w-full btn-primary" onClick={() => setStep(1)} type="button">PROCESAR COMPRA</button>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {step === 1 && (
+                <div className="mt-6 space-y-4">
+                  <div><label className="text-xs tracking-[0.18em] text-divineCream/60 ml-1">NOMBRE COMPLETO</label><input type="text" name="name" value={formData.name} onChange={handleInput} className="mt-1 w-full bg-black/40 border border-divineLine2 rounded-xl px-4 py-3 text-sm text-divineCream outline-none focus:border-divineGold transition" placeholder="Ej: Carlos Pérez" /></div>
+                  <div><label className="text-xs tracking-[0.18em] text-divineCream/60 ml-1">TELÉFONO</label><input type="tel" name="phone" value={formData.phone} onChange={handleInput} className="mt-1 w-full bg-black/40 border border-divineLine2 rounded-xl px-4 py-3 text-sm text-divineCream outline-none focus:border-divineGold transition" placeholder="Ej: 0412 123 4567" /></div>
+                  <div><label className="text-xs tracking-[0.18em] text-divineCream/60 ml-1">DIRECCIÓN (DELIVERY)</label><textarea name="address" value={formData.address} onChange={handleInput} rows={2} className="mt-1 w-full bg-black/40 border border-divineLine2 rounded-xl px-4 py-3 text-sm text-divineCream outline-none focus:border-divineGold transition" placeholder="Sector, calle, casa/apto..."></textarea></div>
+                  <div><label className="text-xs tracking-[0.18em] text-divineCream/60 ml-1">NOTA ADICIONAL</label><input type="text" name="notes" value={formData.notes} onChange={handleInput} className="mt-1 w-full bg-black/40 border border-divineLine2 rounded-xl px-4 py-3 text-sm text-divineCream outline-none focus:border-divineGold transition" placeholder="Sin cebolla, billete de $20, etc." /></div>
+                  <div className="pt-4 flex gap-3"><button className="btn-ghost flex-1" onClick={() => setStep(0)}>ATRÁS</button><button className="btn-primary flex-1" onClick={() => setStep(2)} disabled={!formData.name || !formData.phone || !formData.address} style={{opacity: (!formData.name || !formData.phone || !formData.address) ? 0.5 : 1}}>PAGAR</button></div>
+                </div>
+              )}
+
+              {step === 2 && (
+                <div className="mt-6 space-y-4">
+                  <div className="rounded-2xl border border-divineLine2 bg-divinePanel p-5 space-y-3">
+                    <div className="text-center pb-2 border-b border-divineLine2"><div className="text-xs tracking-[0.28em] text-divineCream/60 mb-1">TOTAL A TRANSFERIR</div><div className="text-2xl font-semibold text-divineGold">{bcvRate ? moneyVES(total, bcvRate) : money(total)}</div><div className="text-xs text-divineCream/50 mt-1">Ref: {money(total)}</div></div>
+                    <div><span className="text-xs text-divineCream/50 block">Banco</span><span className="font-semibold tracking-wider">BANESCO (0102)</span></div>
+                    <div><span className="text-xs text-divineCream/50 block">Teléfono</span><span className="font-semibold tracking-wider">0412 123 4567</span></div>
+                    <div><span className="text-xs text-divineCream/50 block">Cédula/RIF</span><span className="font-semibold tracking-wider">J-12345678-9</span></div>
+                  </div>
+                  <div><label className="text-xs tracking-[0.18em] text-divineGold ml-1">NÚMERO DE REFERENCIA</label><input type="number" name="ref" value={formData.ref} onChange={handleInput} className="mt-1 w-full bg-black/60 border border-divineGold/50 rounded-xl px-4 py-3 text-lg font-semibold text-divineCream outline-none focus:border-divineGold transition text-center tracking-widest" placeholder="Últimos 4 o 6 dígitos" /></div>
+                  <div className="pt-4 flex gap-3"><button className="btn-ghost flex-1" onClick={() => setStep(1)} disabled={loading}>ATRÁS</button><button className="btn-primary flex-1" onClick={handleCheckout} disabled={!formData.ref || loading} style={{opacity: (!formData.ref || loading) ? 0.5 : 1}}>{loading ? "PROCESANDO..." : "CONFIRMAR PAGO"}</button></div>
+                </div>
+              )}
+
+              {step === 3 && (
+                <div className="mt-10 flex flex-col items-center text-center space-y-4">
+                  <div className="w-16 h-16 rounded-full border-2 border-divineGold text-divineGold flex items-center justify-center text-2xl">✓</div>
+                  <h3 className="text-2xl font-semibold">¡Pedido Recibido!</h3>
+                  <p className="text-sm text-divineCream/70">Estamos verificando tu pago para preparar tu orden.</p>
+                  <div className="w-full mt-6 p-5 rounded-2xl border border-divineLine2 bg-black/30"><div className="text-xs tracking-[0.28em] text-divineCream/60 mb-2">CÓDIGO DE RASTREO</div><div className="text-3xl font-bold tracking-widest text-divineGold">{orderId}</div><p className="mt-3 text-xs text-divineCream/50">Con este código puedes revisar el estado de tu pedido en la página principal.</p></div>
+                  <button className="mt-6 w-full btn-ghost" onClick={close}>VOLVER AL MENÚ</button>
+                </div>
+              )}
+            </div>
           </motion.aside>
         </motion.div>
       );
@@ -949,16 +1131,33 @@ function BurgerBuilder({ onAddToCart }) {
     // =========================
     // App Base
     // =========================
+// =========================
+    // App Base
+    // =========================
     function App() {
       useSpotlight();
       const refs = { burgers: useRef(null), desserts: useRef(null), yogurt: useRef(null), atelier: useRef(null) };
       const [activeBurger, setActiveBurger] = useState(null);
       const [cartOpen, setCartOpen] = useState(false);
       const [cartItems, setCartItems] = useState([]);
+      
+      // ESTOS SON LOS DOS ESTADOS NUEVOS: El del dólar BCV y el de la ventana de rastreo
+      const [bcvRate, setBcvRate] = useState(null);
+      const [trackingModalOpen, setTrackingModalOpen] = useState(false);
+
       const cartCount = useMemo(() => cartItems.reduce((acc, it) => acc + it.qty, 0), [cartItems]);
       const cartTotal = useMemo(() => cartItems.reduce((acc, it) => acc + it.price * it.qty, 0), [cartItems]);
 
+      // ESTO BUSCA LA TASA DEL BCV AUTOMÁTICAMENTE
+      useEffect(() => {
+        fetch("https://ve.dolarapi.com/v1/dolares/oficial")
+          .then(res => res.json())
+          .then(data => setBcvRate(data.promedio))
+          .catch(err => setBcvRate(60.00)); // Respaldo por si falla el internet
+      }, []);
+
       function scrollTo(key) { refs[key]?.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }
+      
       function addToCart(item) {
         setCartItems((prev) => {
           const idx = prev.findIndex((p) => p.id === item.id);
@@ -966,23 +1165,52 @@ function BurgerBuilder({ onAddToCart }) {
           return [...prev, { ...item, qty: 1 }];
         });
       }
+      
       function updateQty(id, qty) { setCartItems((prev) => prev.map((p) => (p.id === id ? { ...p, qty } : p)).filter((p) => p.qty > 0)); }
 
       return (
         <div className="min-h-screen relative z-[1]">
           <Header onNavigate={scrollTo} onOpenCart={() => setCartOpen(true)} cartCount={cartCount} />
+          
           <main className="mx-auto max-w-6xl px-4 pb-28 pt-28 md:pt-28 md:px-6">
             <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }} className="mb-8 md:mb-14">
-              <div className="rounded-3xl hero-grid shadow-divine p-5 md:p-10"><p className="mb-3 text-xs tracking-[0.35em] text-divineGold/90">{BRAND_NAME.toUpperCase()} • GOURMET BAR</p><h1 className="text-3xl font-semibold leading-tight md:text-6xl"><span className="bg-gradient-to-r from-divineCream via-divineCream to-divineGold bg-clip-text text-transparent">Hamburguesas, postres y yogurt griego</span> con estética de lujo.</h1><p className="mt-3 max-w-2xl text-sm text-divineCream/75 md:text-base">Explora el menú y arma tu burger con un configurador premium.</p><div className="mt-5 flex flex-col sm:flex-row flex-wrap gap-3"><button className="btn-primary w-full sm:w-auto" onClick={() => scrollTo("burgers")} type="button">Explorar menú</button><button className="btn-ghost w-full sm:w-auto" onClick={() => scrollTo("atelier")} type="button">Atelier</button></div></div>
+              <div className="rounded-3xl hero-grid shadow-divine p-5 md:p-10">
+                <div className="flex justify-between items-start">
+                  <p className="mb-3 text-xs tracking-[0.35em] text-divineGold/90">{BRAND_NAME.toUpperCase()} • GOURMET BAR</p>
+                  
+                  {/* AQUÍ MOSTRAMOS LA TASA DEL BCV EN PANTALLA */}
+                  {bcvRate && <div className="text-[10px] tracking-[0.28em] text-divineCream/50 border border-divineLine2/30 rounded-full px-3 py-1 bg-black/40">TASA BCV: {bcvRate} Bs</div>}
+                </div>
+                <h1 className="text-3xl font-semibold leading-tight md:text-6xl"><span className="bg-gradient-to-r from-divineCream via-divineCream to-divineGold bg-clip-text text-transparent">Hamburguesas, postres y yogurt griego</span> con estética de lujo.</h1>
+                <p className="mt-3 max-w-2xl text-sm text-divineCream/75 md:text-base">Explora el menú y arma tu burger con un configurador premium.</p>
+                <div className="mt-5 flex flex-col sm:flex-row flex-wrap gap-3">
+                  <button className="btn-primary w-full sm:w-auto" onClick={() => scrollTo("burgers")} type="button">Explorar menú</button>
+                  
+                  {/* AQUÍ ESTÁ EL BOTÓN QUE ABRE EL RASTREO */}
+                  <button className="btn-ghost w-full sm:w-auto" onClick={() => setTrackingModalOpen(true)} type="button">Rastrear Pedido</button>
+                </div>
+              </div>
             </motion.section>
+            
             <section ref={refs.burgers} className="scroll-mt-32"><SectionShell eyebrow="COLECCIÓN DIVINÉE" title="Hamburguesas" subtitle="Cae el modelo al seleccionarlas."><ProductShowcase items={burgers} badge="VER 360°" onOpen={setActiveBurger} onAdd={addToCart} /></SectionShell></section>
             <section ref={refs.desserts} className="scroll-mt-32"><SectionShell eyebrow="EXQUISITE DESSERTS" title="Postres" subtitle="Selección corta, elegante."><ProductShowcase items={desserts} badge="PATISSERIE" onOpen={(p) => addToCart({ ...p, qty: 1 })} onAdd={addToCart} /></SectionShell></section>
             <section ref={refs.yogurt} className="scroll-mt-32"><SectionShell eyebrow="GREEK YOGURT DE MÁQUINA" title="Yogurt" subtitle="Sección desactivada temporalmente."><YogurtComingSoonCard /></SectionShell></section>
             <section ref={refs.atelier} className="scroll-mt-32"><SectionShell eyebrow="ATELIER" title="Arma tu Hamburguesa" subtitle="Configurador en vivo, agrega ingredientes y verás cómo caen."><BurgerBuilder onAddToCart={addToCart} /></SectionShell></section>
           </main>
+
           <CartButton cartCount={cartCount} onClick={() => setCartOpen(true)} />
-          <AnimatePresence>{cartOpen && <CartDrawer items={cartItems} total={cartTotal} onClose={() => setCartOpen(false)} onQty={updateQty} />}</AnimatePresence>
+          
+          <AnimatePresence>
+            {cartOpen && (
+              <CartDrawer items={cartItems} total={cartTotal} bcvRate={bcvRate} onClose={() => setCartOpen(false)} onQty={updateQty} onClearCart={() => setCartItems([])} />
+            )}
+          </AnimatePresence>
           <AnimatePresence>{!!activeBurger && <ProductModal product={activeBurger} onClose={() => setActiveBurger(null)} onAdd={() => addToCart({ id: activeBurger.id, name: activeBurger.name, price: activeBurger.price })} />}</AnimatePresence>
+          
+          {/* AQUÍ SE CARGA LA VENTANA DE RASTREO QUE CONECTAMOS A SUPABASE */}
+          <AnimatePresence>
+            {trackingModalOpen && <TrackingModal onClose={() => setTrackingModalOpen(false)} supabaseClient={supabaseClient} />}
+          </AnimatePresence>
         </div>
       );
     }
@@ -990,6 +1218,7 @@ function BurgerBuilder({ onAddToCart }) {
   </script>
 </body>
 </html>
+
 
 
 
