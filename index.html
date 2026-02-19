@@ -827,7 +827,25 @@ function Header({ onNavigate, onOpenCart, cartCount, onOpenAdmin }) {
 // =========================
     // App Base
     // =========================
-function App() {
+// =========================
+    // Yogurt Coming Soon
+    // =========================
+    
+    function YogurtComingSoonCard() {
+      return (
+        <div className="rounded-3xl border border-divineLine2 bg-black/25 p-6 shadow-divine">
+          <div className="text-[10px] tracking-[0.35em] text-divineGold/90">GREEK YOGURT</div>
+          <div className="mt-2 text-3xl font-semibold">¡MUY PRONTO!</div>
+          <p className="mt-3 text-sm text-divineCream/70">
+            Estamos preparando esta experiencia para ti.
+          </p>
+          <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-divineLine2 bg-black/20 px-4 py-2 text-xs tracking-[0.22em] text-divineCream/65">
+            YOGURT DE MÁQUINA • NO DISPONIBLE
+          </div>
+        </div>
+      );
+    }
+    function App() {
       useSpotlight();
       const refs = { burgers: useRef(null), desserts: useRef(null), yogurt: useRef(null), atelier: useRef(null) };
       const [activeBurger, setActiveBurger] = useState(null);
@@ -918,6 +936,7 @@ function App() {
   </script>
 </body>
 </html>
+
 
 
 
