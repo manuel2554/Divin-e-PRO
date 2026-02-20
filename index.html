@@ -1254,9 +1254,71 @@ function AdminDashboard({ onClose, supabaseClient }) {
 
       const statusColors = { 'Pendiente': 'text-red-400 border-red-400/30', 'Preparando': 'text-yellow-400 border-yellow-400/30', 'En camino': 'text-blue-400 border-blue-400/30', 'Listo para retirar': 'text-purple-400 border-purple-400/30', 'Entregado': 'text-green-400 border-green-400/30', 'Cancelado': 'text-gray-400 border-gray-400/30' };
 
+      // NUEVO: LA MAGIA DE IMPRESIÓN BLINDADA
+      const handlePrintTicket = () => {
+        const content = document.getElementById("invoice-print-area").innerHTML;
+        const printWindow = window.open('', '', 'width=400,height=600');
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>Ticket Divinée - ${invoiceOrder.tracking_code}</title>
+              <style>
+                @page { margin: 0; }
+                body { 
+                  font-family: 'Courier New', Courier, monospace; 
+                  color: black; 
+                  background: white; 
+                  margin: 0; 
+                  padding: 15px; 
+                  width: 80mm; /* El tamaño exacto de una tickera térmica */
+                }
+                .text-center { text-align: center; }
+                .text-right { text-align: right; }
+                .font-bold { font-weight: bold; }
+                .font-semibold { font-weight: 600; }
+                .flex { display: flex; justify-content: space-between; align-items: flex-start; }
+                .mb-6 { margin-bottom: 24px; }
+                .mb-8 { margin-bottom: 32px; }
+                .mb-3 { margin-bottom: 12px; }
+                .mt-1 { margin-top: 4px; }
+                .mt-2 { margin-top: 8px; }
+                .mt-3 { margin-top: 12px; }
+                .pb-6 { padding-bottom: 24px; }
+                .py-4 { padding-top: 16px; padding-bottom: 16px; }
+                .pl-4 { padding-left: 16px; }
+                .border-b-2 { border-bottom: 2px dashed #000; }
+                .border-t-2 { border-top: 2px dashed #000; }
+                .text-xs { font-size: 11px; }
+                .text-sm { font-size: 13px; }
+                .text-base { font-size: 15px; }
+                .text-2xl { font-size: 22px; }
+                .tracking-widest { letter-spacing: 0.15em; }
+                h2 { margin: 0; }
+                p { margin: 0; }
+                .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+                .text-gray-600, .text-gray-500, .text-gray-400 { color: #222; }
+                .space-y-1 > * { margin-bottom: 4px; display: block; }
+              </style>
+            </head>
+            <body>
+              ${content}
+              <script>
+                window.onload = function() {
+                  setTimeout(function() {
+                    window.print();
+                    window.close();
+                  }, 300);
+                }
+              </script>
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+      };
+
       return (
-        <motion.div className="fixed print:absolute print:inset-auto inset-0 z-[60] bg-divineBg print:bg-white overflow-y-auto print:overflow-visible text-divineCream print:text-black" initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }}>
-          <div className="sticky top-0 z-20 bg-black/90 backdrop-blur print:hidden">
+        <motion.div className="fixed inset-0 z-[60] bg-divineBg overflow-y-auto text-divineCream" initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }}>
+          <div className="sticky top-0 z-20 bg-black/90 backdrop-blur">
             <div className="border-b border-divineLine2 px-4 py-4 flex flex-wrap justify-between items-center gap-3">
               <div><div className="text-[10px] tracking-[0.35em] text-divineGold/90">PANEL DE CONTROL</div><h2 className="text-xl font-semibold text-white">Gestión Divinée</h2></div>
               <div className="flex gap-2"><button onClick={fetchData} className="btn-ghost px-3 py-2">↻ ACTUALIZAR</button><button onClick={onClose} className="btn-primary px-3 py-2">CERRAR PANEL</button></div>
@@ -1268,12 +1330,12 @@ function AdminDashboard({ onClose, supabaseClient }) {
             </div>
           </div>
 
-          <div className="p-4 max-w-6xl mx-auto space-y-4 pb-20 print:p-0 print:m-0 print:max-w-full print:block">
-            {loading ? <div className="text-center py-10 text-divineCream/50 print:hidden">Cargando datos...</div> : 
+          <div className="p-4 max-w-6xl mx-auto space-y-4 pb-20">
+            {loading ? <div className="text-center py-10 text-divineCream/50">Cargando datos...</div> : 
              
              tab === 'orders' ? (
               <>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 print:hidden">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                   <div className="bg-divinePanel border border-divineLine2 rounded-2xl p-4 shadow-divine text-center">
                      <div className="text-[10px] tracking-[0.2em] text-divineCream/50 mb-1">VENTAS HOY</div>
                      <div className="text-2xl font-bold text-divineGold">{money(todaySales)}</div>
@@ -1301,41 +1363,35 @@ function AdminDashboard({ onClose, supabaseClient }) {
                     </div>
                     <div className="flex flex-col items-start md:items-end justify-between min-w-[220px] bg-black/20 p-4 rounded-xl border border-divineLine2/20">
                       <div className="w-full text-left md:text-right"><div className="text-xs text-divineCream/50">TOTAL PAGADO</div><div className="text-2xl font-bold text-divineGold">{money(o.total_usd)}</div><div className="text-xs text-divineCream/60 mt-1">Ref: <span className="text-divineCream tracking-widest">{o.payment_ref}</span></div>{o.bcv_rate && <div className="text-[10px] text-divineCream/40 mt-1">Tasa: {o.bcv_rate}</div>}</div>
-                      <div className="w-full mt-4"><div className="text-[10px] tracking-[0.2em] text-divineCream/50 mb-1 text-left md:text-right">ESTATUS ACTUAL</div><select value={o.status} onChange={(e) => updateStatus(o.id, e.target.value)} className={`w-full bg-black/80 border rounded-xl px-3 py-2 text-sm font-semibold outline-none cursor-pointer ${statusColors[o.status] || 'text-divineCream border-divineLine'}`}><option value="Pendiente">Pendiente</option><option value="Preparando">Preparando</option><option value="En camino">En camino</option><option value="Listo para retirar">Listo para retirar</option><option value="Entregado">Entregado</option><option value="Cancelado">Cancelado</option></select><button onClick={() => { setSearchCode(o.tracking_code); setInvoiceOrder(o); setTab('invoice'); }} className="mt-3 text-[11px] tracking-widest text-divineCream/50 hover:text-divineGold transition flex items-center gap-1 md:justify-end w-full print:hidden">📄 GENERAR FACTURA</button></div>
+                      <div className="w-full mt-4"><div className="text-[10px] tracking-[0.2em] text-divineCream/50 mb-1 text-left md:text-right">ESTATUS ACTUAL</div><select value={o.status} onChange={(e) => updateStatus(o.id, e.target.value)} className={`w-full bg-black/80 border rounded-xl px-3 py-2 text-sm font-semibold outline-none cursor-pointer ${statusColors[o.status] || 'text-divineCream border-divineLine'}`}><option value="Pendiente">Pendiente</option><option value="Preparando">Preparando</option><option value="En camino">En camino</option><option value="Listo para retirar">Listo para retirar</option><option value="Entregado">Entregado</option><option value="Cancelado">Cancelado</option></select><button onClick={() => { setSearchCode(o.tracking_code); setInvoiceOrder(o); setTab('invoice'); }} className="mt-3 text-[11px] tracking-widest text-divineCream/50 hover:text-divineGold transition flex items-center gap-1 md:justify-end w-full">📄 GENERAR FACTURA</button></div>
                     </div>
                   </div>
                 ))}
               </>
              ) : tab === 'inventory' ? (
-              <div className="space-y-8 print:hidden">
+              <div className="space-y-8">
                 <div className="bg-divineLine2/10 border border-divineLine2/30 p-4 rounded-2xl text-sm text-divineCream/80">Toca un ingrediente para marcarlo como <b>AGOTADO</b>. Los clientes no podrán seleccionarlo.</div>
                 {Object.entries(BURGER_CATALOG).map(([category, items]) => (<div key={category}><h3 className="text-xs tracking-[0.2em] text-divineGold mb-3 uppercase">{category}</h3><div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">{items.map(item => { if(item.id === 'none') return null; const isOff = disabledItems.includes(item.id); return (<button key={item.id} onClick={() => toggleIngredient(item.id, isOff)} className={`p-3 rounded-xl border text-left transition ${isOff ? 'bg-red-500/10 border-red-500/30' : 'bg-divinePanel border-divineLine hover:border-divineGold/50'}`}><div className={`font-semibold text-sm ${isOff ? 'text-red-400 line-through' : 'text-divineCream'}`}>{item.name}</div><div className="text-[10px] mt-1 text-divineCream/50">{isOff ? '🔴 AGOTADO' : '🟢 DISPONIBLE'}</div></button>) })}</div></div>))}
               </div>
              ) : (
-              <div className="max-w-md mx-auto print:max-w-full print:m-0 print:p-0">
-                
-                {/* MAGIA DE IMPRESIÓN FORZADA */}
-                <style dangerouslySetInnerHTML={{__html: `
-                  @media print {
-                    body * { visibility: hidden !important; }
-                    #invoice-print-area, #invoice-print-area * { visibility: visible !important; color: black !important; }
-                    #invoice-print-area { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; margin: 0 !important; padding: 20px !important; background: white !important; }
-                    .hide-on-print { display: none !important; }
-                  }
-                `}} />
-
-                <form onSubmit={handleSearchInvoice} className="flex gap-2 mb-6 hide-on-print"><input type="text" value={searchCode} onChange={(e) => setSearchCode(e.target.value)} placeholder="Código (Ej: #DIV-1234)" className="flex-1 bg-black/40 border border-divineLine2 rounded-xl px-4 py-3 text-sm text-divineCream outline-none focus:border-divineGold transition uppercase tracking-widest" /><button type="submit" className="btn-primary px-6">BUSCAR</button></form>
+              <div className="max-w-md mx-auto">
+                <form onSubmit={handleSearchInvoice} className="flex gap-2 mb-6"><input type="text" value={searchCode} onChange={(e) => setSearchCode(e.target.value)} placeholder="Código (Ej: #DIV-1234)" className="flex-1 bg-black/40 border border-divineLine2 rounded-xl px-4 py-3 text-sm text-divineCream outline-none focus:border-divineGold transition uppercase tracking-widest" /><button type="submit" className="btn-primary px-6">BUSCAR</button></form>
                 
                 {invoiceOrder ? (
-                  <div id="invoice-print-area" className="bg-white text-black p-6 md:p-8 rounded-2xl shadow-xl font-mono text-sm print:rounded-none print:shadow-none print:p-0">
-                    <div className="text-center mb-6 border-b-2 border-dashed border-black/20 pb-6"><h2 className="text-2xl font-bold tracking-[0.2em]">{BRAND_NAME.toUpperCase()}</h2><p className="text-xs mt-1 text-gray-600">GOURMET BAR</p><p className="text-xs text-gray-600 mt-1">RIF: V-30158858-1</p></div>
-                    <div className="mb-6 space-y-1 text-xs"><div className="flex justify-between"><span>TICKET:</span> <strong className="text-base">{invoiceOrder.tracking_code}</strong></div><div className="flex justify-between"><span>FECHA:</span> <span>{new Date(invoiceOrder.created_at).toLocaleString('es-VE')}</span></div><div className="flex justify-between mt-3"><span>CLIENTE:</span> <span className="font-bold uppercase text-right truncate w-40">{invoiceOrder.customer_name}</span></div><div className="flex justify-between"><span>TLF:</span> <span>{invoiceOrder.phone}</span></div></div>
-                    <div className="mb-6 border-t-2 border-b-2 border-dashed border-black/20 py-4"><div className="flex justify-between font-bold mb-3 text-xs"><span>CANT DESCRIPCIÓN</span><span>TOTAL</span></div>{invoiceOrder.items.map((it, i) => (<div key={i} className="mb-3 text-xs"><div className="flex justify-between font-semibold"><span>{it.qty}x {it.name.replace('Hamburguesa Divinée (Atelier)', 'Atelier')}</span><span>{money(it.price * it.qty)}</span></div>{it.meta && (<div className="text-[10px] text-gray-500 pl-4 mt-1 space-y-0.5">{Object.entries(it.meta).map(([k,v]) => <div key={k}>- {k}: {Array.isArray(v) ? v.join(", ") : String(v)}</div>)}</div>)}</div>))}</div>
-                    <div className="mb-8 space-y-1"><div className="flex justify-between text-base font-bold"><span>TOTAL USD:</span><span>{money(invoiceOrder.total_usd)}</span></div>{invoiceOrder.bcv_rate && (<div className="flex justify-between text-xs text-gray-500 font-bold"><span>TOTAL BCV (TASA {invoiceOrder.bcv_rate}):</span><span>{(invoiceOrder.total_usd * invoiceOrder.bcv_rate).toFixed(2)} Bs</span></div>)}<div className="flex justify-between text-[10px] text-gray-400 mt-2"><span>REF PAGO:</span><span>{invoiceOrder.payment_ref}</span></div></div>
-                    <div className="text-center text-xs text-gray-600 font-bold space-y-1"><p>¡GRACIAS POR SU COMPRA!</p><p>Exquisito. Divino. Divinée🍔✨</p></div>
-                    <button onClick={() => window.print()} className="mt-8 w-full bg-black text-white py-4 rounded-xl font-sans font-bold tracking-widest hover:bg-gray-800 transition shadow-lg hide-on-print">🖨️ IMPRIMIR TICKET</button>
-                  </div>
-                ) : (<div className="text-center py-10 text-divineCream/40 text-sm border border-dashed border-divineLine2 rounded-2xl hide-on-print">Ingresa el código arriba o selecciona un pedido de la lista para generar su factura.</div>)}
+                  <>
+                    <div id="invoice-print-area" className="bg-white text-black p-6 md:p-8 rounded-2xl shadow-xl font-mono text-sm">
+                      <div className="text-center mb-6 border-b-2 border-dashed border-black/20 pb-6"><h2 className="text-2xl font-bold tracking-widest">{BRAND_NAME.toUpperCase()}</h2><p className="text-xs mt-1 text-gray-600">GOURMET BAR</p><p className="text-xs text-gray-600 mt-1">RIF: V-30158858-1</p></div>
+                      <div className="mb-6 space-y-1 text-xs"><div className="flex"><span>TICKET:</span> <strong className="text-base">{invoiceOrder.tracking_code}</strong></div><div className="flex"><span>FECHA:</span> <span>{new Date(invoiceOrder.created_at).toLocaleString('es-VE')}</span></div><div className="flex mt-3"><span>CLIENTE:</span> <span className="font-bold uppercase text-right truncate">{invoiceOrder.customer_name}</span></div><div className="flex"><span>TLF:</span> <span>{invoiceOrder.phone}</span></div></div>
+                      <div className="mb-6 border-t-2 border-b-2 border-dashed border-black/20 py-4"><div className="flex font-bold mb-3 text-xs"><span>CANT DESCRIPCIÓN</span><span>TOTAL</span></div>{invoiceOrder.items.map((it, i) => (<div key={i} className="mb-3 text-xs"><div className="flex font-semibold"><span>{it.qty}x {it.name.replace('Hamburguesa Divinée (Atelier)', 'Atelier')}</span><span>{money(it.price * it.qty)}</span></div>{it.meta && (<div className="text-xs text-gray-500 pl-4 mt-1 space-y-1">{Object.entries(it.meta).map(([k,v]) => <div key={k}>- {k}: {Array.isArray(v) ? v.join(", ") : String(v)}</div>)}</div>)}</div>))}</div>
+                      <div className="mb-8 space-y-1"><div className="flex text-base font-bold"><span>TOTAL USD:</span><span>{money(invoiceOrder.total_usd)}</span></div>{invoiceOrder.bcv_rate && (<div className="flex text-xs text-gray-500 font-bold"><span>TOTAL BCV (TASA {invoiceOrder.bcv_rate}):</span><span>{(invoiceOrder.total_usd * invoiceOrder.bcv_rate).toFixed(2)} Bs</span></div>)}<div className="flex text-xs text-gray-400 mt-2"><span>REF PAGO:</span><span>{invoiceOrder.payment_ref}</span></div></div>
+                      <div className="text-center text-xs text-gray-600 font-bold space-y-1"><p>¡GRACIAS POR SU COMPRA!</p><p>Exquisito. Divino. Divinée🍔✨</p></div>
+                    </div>
+                    
+                    <button onClick={handlePrintTicket} className="mt-8 w-full bg-black text-white py-4 rounded-xl font-sans font-bold tracking-widest hover:bg-gray-800 transition shadow-lg">
+                      🖨️ IMPRIMIR TICKET
+                    </button>
+                  </>
+                ) : (<div className="text-center py-10 text-divineCream/40 text-sm border border-dashed border-divineLine2 rounded-2xl">Ingresa el código arriba o selecciona un pedido de la lista para generar su factura.</div>)}
               </div>
              )
             }
@@ -1515,6 +1571,7 @@ function App() {
   </script>
 </body>
 </html>
+
 
 
 
