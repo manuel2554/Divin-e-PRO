@@ -1203,7 +1203,10 @@ function AdminDashboard({ onClose, supabaseClient }) {
       const [orders, setOrders] = useState([]);
       const [disabledItems, setDisabledItems] = useState([]);
       const [loading, setLoading] = useState(true);
-      const [tab, setTab] = useState('orders'); // 'orders' o 'inventory'
+      const [tab, setTab] = useState('orders'); // 'orders', 'inventory', 'invoice'
+      
+      const [searchCode, setSearchCode] = useState('');
+      const [invoiceOrder, setInvoiceOrder] = useState(null);
 
       useEffect(() => { 
         fetchData(); 
@@ -1243,6 +1246,13 @@ function AdminDashboard({ onClose, supabaseClient }) {
         return cleaned;
       };
 
+      const handleSearchInvoice = (e) => {
+        e?.preventDefault();
+        const found = orders.find(o => o.tracking_code.toUpperCase() === searchCode.toUpperCase());
+        if (found) setInvoiceOrder(found);
+        else alert("Pedido no encontrado. Verifica el código (Ej: #DIV-1234).");
+      };
+
       const statusColors = {
         'Pendiente': 'text-red-400 border-red-400/30',
         'Preparando': 'text-yellow-400 border-yellow-400/30',
@@ -1253,26 +1263,28 @@ function AdminDashboard({ onClose, supabaseClient }) {
       };
 
       return (
-        <motion.div className="fixed inset-0 z-[60] bg-divineBg overflow-y-auto" initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }}>
-          <div className="sticky top-0 z-20 bg-black/90 backdrop-blur">
+        <motion.div className="fixed print:absolute print:inset-auto inset-0 z-[60] bg-divineBg print:bg-white overflow-y-auto print:overflow-visible text-divineCream print:text-black" initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }}>
+          
+          <div className="sticky top-0 z-20 bg-black/90 backdrop-blur print:hidden">
             <div className="border-b border-divineLine2 px-4 py-4 flex flex-wrap justify-between items-center gap-3">
               <div>
                 <div className="text-[10px] tracking-[0.35em] text-divineGold/90">PANEL DE CONTROL</div>
-                <h2 className="text-xl font-semibold">Gestión Divinée</h2>
+                <h2 className="text-xl font-semibold text-white">Gestión Divinée</h2>
               </div>
               <div className="flex gap-2">
                  <button onClick={fetchData} className="btn-ghost px-3 py-2">↻ ACTUALIZAR</button>
                  <button onClick={onClose} className="btn-primary px-3 py-2">CERRAR PANEL</button>
               </div>
             </div>
-            <div className="flex gap-4 px-4 border-b border-divineLine2/50">
-              <button onClick={() => setTab('orders')} className={`py-3 text-xs tracking-widest transition-colors ${tab === 'orders' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>PEDIDOS</button>
-              <button onClick={() => setTab('inventory')} className={`py-3 text-xs tracking-widest transition-colors ${tab === 'inventory' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>INVENTARIO</button>
+            <div className="flex gap-4 px-4 border-b border-divineLine2/50 overflow-x-auto mobile-scroll">
+              <button onClick={() => setTab('orders')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'orders' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>PEDIDOS</button>
+              <button onClick={() => setTab('inventory')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'inventory' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>INVENTARIO</button>
+              <button onClick={() => setTab('invoice')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'invoice' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>FACTURACIÓN</button>
             </div>
           </div>
 
-          <div className="p-4 max-w-6xl mx-auto space-y-4 pb-20">
-            {loading ? <div className="text-center py-10 text-divineCream/50">Cargando datos...</div> : 
+          <div className="p-4 max-w-6xl mx-auto space-y-4 pb-20 print:p-0 print:m-0 print:max-w-full">
+            {loading ? <div className="text-center py-10 text-divineCream/50 print:hidden">Cargando datos...</div> : 
              
              tab === 'orders' ? (
               orders.length === 0 ? <div className="text-center py-10 text-divineCream/50">No hay pedidos registrados aún.</div> :
@@ -1314,12 +1326,16 @@ function AdminDashboard({ onClose, supabaseClient }) {
                         <option value="Entregado">Entregado</option>
                         <option value="Cancelado">Cancelado</option>
                       </select>
+                      
+                      <button onClick={() => { setSearchCode(o.tracking_code); setInvoiceOrder(o); setTab('invoice'); }} className="mt-3 text-[11px] tracking-widest text-divineCream/50 hover:text-divineGold transition flex items-center gap-1 md:justify-end w-full">
+                        📄 GENERAR FACTURA
+                      </button>
                     </div>
                   </div>
                 </div>
               ))
-             ) : (
-              <div className="space-y-8">
+             ) : tab === 'inventory' ? (
+              <div className="space-y-8 print:hidden">
                 <div className="bg-divineLine2/10 border border-divineLine2/30 p-4 rounded-2xl text-sm text-divineCream/80">
                   Toca un ingrediente para marcarlo como <b>AGOTADO</b>. Los clientes no podrán seleccionarlo.
                 </div>
@@ -1340,6 +1356,80 @@ function AdminDashboard({ onClose, supabaseClient }) {
                      </div>
                   </div>
                 ))}
+              </div>
+             ) : (
+              <div className="max-w-md mx-auto print:max-w-full print:m-0 print:p-0">
+                <form onSubmit={handleSearchInvoice} className="flex gap-2 mb-6 print:hidden">
+                  <input type="text" value={searchCode} onChange={(e) => setSearchCode(e.target.value)} placeholder="Código (Ej: #DIV-1234)" className="flex-1 bg-black/40 border border-divineLine2 rounded-xl px-4 py-3 text-sm text-divineCream outline-none focus:border-divineGold transition uppercase tracking-widest" />
+                  <button type="submit" className="btn-primary px-6">BUSCAR</button>
+                </form>
+
+                {invoiceOrder ? (
+                  <div className="bg-white text-black p-6 md:p-8 rounded-2xl shadow-xl font-mono text-sm print:rounded-none print:shadow-none print:p-0">
+                    <div className="text-center mb-6 border-b-2 border-dashed border-black/20 pb-6">
+                      <h2 className="text-2xl font-bold tracking-[0.2em]">{BRAND_NAME.toUpperCase()}</h2>
+                      <p className="text-xs mt-1 text-gray-600">GOURMET BAR</p>
+                      <p className="text-xs text-gray-600 mt-1">RIF: J-12345678-9</p>
+                    </div>
+                    
+                    <div className="mb-6 space-y-1 text-xs">
+                      <div className="flex justify-between"><span>TICKET:</span> <strong className="text-base">{invoiceOrder.tracking_code}</strong></div>
+                      <div className="flex justify-between"><span>FECHA:</span> <span>{new Date(invoiceOrder.created_at).toLocaleString('es-VE')}</span></div>
+                      <div className="flex justify-between mt-3"><span>CLIENTE:</span> <span className="font-bold uppercase text-right truncate w-40">{invoiceOrder.customer_name}</span></div>
+                      <div className="flex justify-between"><span>TLF:</span> <span>{invoiceOrder.phone}</span></div>
+                    </div>
+
+                    <div className="mb-6 border-t-2 border-b-2 border-dashed border-black/20 py-4">
+                      <div className="flex justify-between font-bold mb-3 text-xs">
+                        <span>CANT DESCRIPCIÓN</span>
+                        <span>TOTAL</span>
+                      </div>
+                      {invoiceOrder.items.map((it, i) => (
+                        <div key={i} className="mb-3 text-xs">
+                          <div className="flex justify-between font-semibold">
+                            <span>{it.qty}x {it.name.replace('Hamburguesa Divinée (Atelier)', 'Atelier')}</span>
+                            <span>{money(it.price * it.qty)}</span>
+                          </div>
+                          {it.meta && (
+                            <div className="text-[10px] text-gray-500 pl-4 mt-1 space-y-0.5">
+                              {Object.entries(it.meta).map(([k,v]) => <div key={k}>- {k}: {Array.isArray(v) ? v.join(", ") : String(v)}</div>)}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mb-8 space-y-1">
+                      <div className="flex justify-between text-base font-bold">
+                        <span>TOTAL USD:</span>
+                        <span>{money(invoiceOrder.total_usd)}</span>
+                      </div>
+                      {invoiceOrder.bcv_rate && (
+                        <div className="flex justify-between text-xs text-gray-500 font-bold">
+                          <span>TOTAL BCV (TASA {invoiceOrder.bcv_rate}):</span>
+                          <span>{(invoiceOrder.total_usd * invoiceOrder.bcv_rate).toFixed(2)} Bs</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-[10px] text-gray-400 mt-2">
+                        <span>REF PAGO:</span>
+                        <span>{invoiceOrder.payment_ref}</span>
+                      </div>
+                    </div>
+
+                    <div className="text-center text-xs text-gray-600 font-bold space-y-1">
+                      <p>¡GRACIAS POR SU COMPRA!</p>
+                      <p>Exquisito. Divino. Divinée🍔✨</p>
+                    </div>
+                    
+                    <button onClick={() => window.print()} className="mt-8 w-full bg-black text-white py-4 rounded-xl font-sans font-bold tracking-widest print:hidden hover:bg-gray-800 transition shadow-lg">
+                      🖨️ IMPRIMIR TICKET
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-center py-10 text-divineCream/40 text-sm border border-dashed border-divineLine2 rounded-2xl print:hidden">
+                    Ingresa el código arriba o selecciona un pedido de la lista para generar su factura.
+                  </div>
+                )}
               </div>
              )
             }
@@ -1520,6 +1610,7 @@ function AdminDashboard({ onClose, supabaseClient }) {
   </script>
 </body>
 </html>
+
 
 
 
