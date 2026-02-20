@@ -331,25 +331,28 @@ function Header({ onNavigate, onOpenCart, cartCount, onOpenAdmin }) {
         </div>
       );
     }
-function ProductCard({ product, badge, onClick, onAdd }) {
+function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
       return (
-        <motion.div whileHover={{ y: -6 }} transition={{ type: "spring", stiffness: 260, damping: 22 }} className="group overflow-hidden rounded-2xl border border-divineLine bg-divinePanel shadow-divine">
-          {/* AQUÍ ESTÁ EL CAMBIO: Cambiamos <button> por <div className="cursor-pointer"> */}
-          <div onClick={onClick} className="block w-full text-left cursor-pointer">
+        <motion.div whileHover={!isDisabled ? { y: -6 } : {}} transition={{ type: "spring", stiffness: 260, damping: 22 }} className={`group overflow-hidden rounded-2xl border ${isDisabled ? 'border-red-500/30 bg-black/40' : 'border-divineLine bg-divinePanel'} shadow-divine relative`}>
+          <div onClick={isDisabled ? undefined : onClick} className={`block w-full text-left ${isDisabled ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}>
             <div className="relative aspect-[4/3] overflow-hidden card-premium">
-              <img src={product.img} alt={product.name} className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.08]" loading="lazy" />
+              <img src={product.img} alt={product.name} className={`h-full w-full object-cover transition duration-700 ${isDisabled ? 'grayscale' : 'group-hover:scale-[1.08]'}`} loading="lazy" />
               <div className="absolute left-3 top-3 rounded-full border border-divineLine2 bg-black/35 px-3 py-1 text-[10px] tracking-[0.28em] text-divineCream/85 backdrop-blur">{badge}</div>
               <div className="absolute right-3 top-3 rounded-full border border-divineLine2 bg-black/35 px-3 py-1 text-[10px] tracking-[0.12em] text-divineGold/95 backdrop-blur">{money(product.price)}</div>
+              
+              {isDisabled && (
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-10">
+                  <span className="text-red-400 font-bold tracking-widest border-2 border-red-500/50 bg-black/90 px-5 py-2 rounded-xl transform -rotate-12 shadow-[0_0_15px_rgba(239,68,68,0.3)]">AGOTADO</span>
+                </div>
+              )}
             </div>
-            <div className="p-4">
+            <div className="p-4 relative z-0">
               <div className="text-base font-semibold">{product.name}</div>
               <div className="mt-1 text-sm text-divineCream/70 line-clamp-2">{product.description}</div>
               <div className="mt-4 flex items-center justify-between gap-3">
                 <span className="text-xs tracking-[0.22em] text-divineCream/55">{BRAND_NAME.toUpperCase()}</span>
-                
-                {/* ESTE ES EL BOTÓN DE AÑADIR (Ahora ya no está anidado incorrectamente) */}
-                <button onClick={(e) => { e.stopPropagation(); onAdd?.(); }} className="rounded-xl border border-divineLine2 bg-black/25 px-3 py-2 text-xs tracking-[0.22em] text-divineCream/80 hover:bg-black/35 hover:text-divineGold hover:border-divineGold/50 transition" type="button">
-                  AÑADIR
+                <button disabled={isDisabled} onClick={(e) => { e.stopPropagation(); onAdd?.(); }} className={`rounded-xl border px-3 py-2 text-xs tracking-[0.22em] transition ${isDisabled ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'border-divineLine2 bg-black/25 text-divineCream/80 hover:bg-black/35 hover:text-divineGold hover:border-divineGold/50'}`} type="button">
+                  {isDisabled ? 'AGOTADO' : 'AÑADIR'}
                 </button>
               </div>
             </div>
@@ -357,28 +360,32 @@ function ProductCard({ product, badge, onClick, onAdd }) {
         </motion.div>
       );
     }
-    function ProductShowcase({ items, badge, onOpen, onAdd }) {
+
+    function ProductShowcase({ items, badge, onOpen, onAdd, disabledItems = [] }) {
       return (
         <>
           <div className="sm:hidden">
             <div className="mobile-scroll flex gap-3 pb-2 snap-x snap-mandatory">
-              {items.map((p) => (
+              {items.map((p) => {
+                const isOff = disabledItems.includes(p.id);
+                return (
                 <div key={p.id} className="w-[78vw] max-w-[360px] snap-start">
-                  <ProductCard product={p} badge={badge} onClick={() => onOpen(p)} onAdd={() => onAdd({ id: p.id, name: p.name, price: p.price })} />
+                  <ProductCard product={p} badge={badge} isDisabled={isOff} onClick={() => onOpen(p)} onAdd={() => onAdd({ id: p.id, name: p.name, price: p.price })} />
                 </div>
-              ))}
+              )})}
             </div>
             <p className="mt-2 text-xs text-divineCream/50">Desliza horizontal para ver más.</p>
           </div>
           <div className="hidden sm:grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {items.map((p) => (
-              <ProductCard key={p.id} product={p} badge={badge} onClick={() => onOpen(p)} onAdd={() => onAdd({ id: p.id, name: p.name, price: p.price })} />
-            ))}
+            {items.map((p) => {
+              const isOff = disabledItems.includes(p.id);
+              return (
+              <ProductCard key={p.id} product={p} badge={badge} isDisabled={isOff} onClick={() => onOpen(p)} onAdd={() => onAdd({ id: p.id, name: p.name, price: p.price })} />
+            )})}
           </div>
         </>
       );
     }
-
     // =========================
     // 3D Viewer Mejorado (Cae con Físicas y Dinámico)
     // =========================
@@ -1221,7 +1228,6 @@ function AdminDashboard({ onClose, supabaseClient }) {
       const [tab, setTab] = useState('orders'); 
       const [searchCode, setSearchCode] = useState('');
       const [invoiceOrder, setInvoiceOrder] = useState(null);
-      
       const [isStoreOpen, setIsStoreOpen] = useState(true);
 
       useEffect(() => { fetchData(); }, []);
@@ -1279,9 +1285,6 @@ function AdminDashboard({ onClose, supabaseClient }) {
 
       const statusColors = { 'Pendiente': 'text-red-400 border-red-400/30', 'Preparando': 'text-yellow-400 border-yellow-400/30', 'En camino': 'text-blue-400 border-blue-400/30', 'Listo para retirar': 'text-purple-400 border-purple-400/30', 'Entregado': 'text-green-400 border-green-400/30', 'Cancelado': 'text-gray-400 border-gray-400/30' };
 
-      // CORREGIDO: Imprime sin romper la página principal
-// CORREGIDO: Imprime perfecto en Ticketera y en Hoja A4
-      // FACTURA ESTILO APPLE / TICKET PREMIUM
       const handlePrintTicket = () => {
         const content = document.getElementById("invoice-print-area").innerHTML;
         const printWindow = window.open('', '', 'width=600,height=800');
@@ -1291,69 +1294,26 @@ function AdminDashboard({ onClose, supabaseClient }) {
               <title>Ticket Divinée - ${invoiceOrder.tracking_code}</title>
               <style>
                 @page { margin: 0; }
-                body { 
-                  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
-                  color: #000; 
-                  background: #f4f4f4; 
-                  margin: 0; 
-                  padding: 20px; 
-                  display: flex;
-                  justify-content: center;
-                }
-                .ticket-container {
-                  width: 100%;
-                  max-width: 340px; 
-                  background: #fff;
-                  padding: 30px 25px;
-                  border-radius: 12px;
-                  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-                  border-top: 6px solid #000;
-                }
-                .text-center { text-align: center; }
-                .text-right { text-align: right; }
-                .font-bold { font-weight: 800; }
-                .font-semibold { font-weight: 600; }
+                body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #000; background: #f4f4f4; margin: 0; padding: 20px; display: flex; justify-content: center; }
+                .ticket-container { width: 100%; max-width: 340px; background: #fff; padding: 30px 25px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 6px solid #000; }
+                .text-center { text-align: center; } .text-right { text-align: right; }
+                .font-bold { font-weight: 800; } .font-semibold { font-weight: 600; }
                 .flex { display: flex; justify-content: space-between; align-items: flex-start; }
-                .mb-6 { margin-bottom: 24px; }
-                .mb-8 { margin-bottom: 32px; }
-                .mb-3 { margin-bottom: 12px; }
-                .mt-1 { margin-top: 4px; }
-                .mt-2 { margin-top: 8px; }
-                .mt-3 { margin-top: 12px; }
+                .mb-6 { margin-bottom: 24px; } .mb-8 { margin-bottom: 32px; } .mb-3 { margin-bottom: 12px; }
+                .mt-1 { margin-top: 4px; } .mt-2 { margin-top: 8px; } .mt-3 { margin-top: 12px; }
                 .pb-6 { padding-bottom: 24px; border-bottom: 2px dashed #ccc; }
                 .py-4 { padding-top: 16px; padding-bottom: 16px; border-bottom: 2px dashed #ccc; }
                 .pl-4 { padding-left: 16px; }
-                .text-xs { font-size: 12px; color: #555; }
-                .text-sm { font-size: 14px; }
-                .text-base { font-size: 16px; color: #000; }
-                .text-2xl { font-size: 24px; letter-spacing: 0.1em; color: #000; }
-                .tracking-widest { letter-spacing: 0.15em; }
-                h2 { margin: 0; }
-                p { margin: 0; }
+                .text-xs { font-size: 12px; color: #555; } .text-sm { font-size: 14px; }
+                .text-base { font-size: 16px; color: #000; } .text-2xl { font-size: 24px; letter-spacing: 0.1em; color: #000; }
+                h2, p { margin: 0; }
                 .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
                 .space-y-1 > * { margin-bottom: 6px; display: block; }
-                
-                /* Truco para que la impresora térmica lo saque perfecto y no corte hojas */
-                @media print {
-                  body { background: white; padding: 0; display: block; }
-                  .ticket-container { 
-                    box-shadow: none; 
-                    border-radius: 0; 
-                    margin: 0 auto; 
-                    max-width: 80mm; 
-                    padding: 10px; 
-                    border-top: 2px solid #000;
-                    page-break-inside: avoid;
-                  }
-                  .pb-6, .py-4 { border-bottom-color: #000; }
-                  .text-xs { color: #000; }
-                }
+                @media print { body { background: white; padding: 0; display: block; } .ticket-container { box-shadow: none; border-radius: 0; margin: 0 auto; max-width: 80mm; padding: 10px; border-top: 2px solid #000; page-break-inside: avoid; } .pb-6, .py-4 { border-bottom-color: #000; } .text-xs { color: #000; } }
               </style>
             </head>
             <body onload="setTimeout(function(){ window.print(); window.close(); }, 400)">
-              <div class="ticket-container">
-                ${content}
-              </div>
+              <div class="ticket-container">${content}</div>
             </body>
           </html>
         `);
@@ -1376,65 +1336,35 @@ function AdminDashboard({ onClose, supabaseClient }) {
 
           <div className="p-4 max-w-6xl mx-auto space-y-4 pb-20">
             {loading ? <div className="text-center py-10 text-divineCream/50">Cargando datos...</div> : 
-             
              tab === 'orders' ? (
               <>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                  <div className="bg-divinePanel border border-divineLine2 rounded-2xl p-4 shadow-divine text-center">
-                     <div className="text-[10px] tracking-[0.2em] text-divineCream/50 mb-1">VENTAS HOY</div>
-                     <div className="text-2xl font-bold text-divineGold">{money(todaySales)}</div>
-                  </div>
-                  <div className="bg-divinePanel border border-divineLine2 rounded-2xl p-4 shadow-divine text-center">
-                     <div className="text-[10px] tracking-[0.2em] text-divineCream/50 mb-1">PEDIDOS HOY</div>
-                     <div className="text-2xl font-bold text-divineGold">{todayOrders.length}</div>
-                  </div>
-                  <div className="col-span-2 md:col-span-1 bg-divinePanel border border-divineLine2 rounded-2xl p-4 shadow-divine flex flex-col items-center justify-center">
-                     <div className="text-[10px] tracking-[0.2em] text-divineCream/50 mb-2">ESTADO DE LA TIENDA</div>
-                     <button onClick={toggleStore} className={`w-full text-sm font-bold tracking-widest py-2 rounded-xl border transition-colors ${isStoreOpen ? 'bg-green-500/20 text-green-400 border-green-500/50 hover:bg-green-500/30' : 'bg-red-500/20 text-red-400 border-red-500/50 hover:bg-red-500/30'}`}>
-                        {isStoreOpen ? '🟢 ABIERTO' : '🔴 CERRADA'}
-                     </button>
-                  </div>
+                  <div className="bg-divinePanel border border-divineLine2 rounded-2xl p-4 shadow-divine text-center"><div className="text-[10px] tracking-[0.2em] text-divineCream/50 mb-1">VENTAS HOY</div><div className="text-2xl font-bold text-divineGold">{money(todaySales)}</div></div>
+                  <div className="bg-divinePanel border border-divineLine2 rounded-2xl p-4 shadow-divine text-center"><div className="text-[10px] tracking-[0.2em] text-divineCream/50 mb-1">PEDIDOS HOY</div><div className="text-2xl font-bold text-divineGold">{todayOrders.length}</div></div>
+                  <div className="col-span-2 md:col-span-1 bg-divinePanel border border-divineLine2 rounded-2xl p-4 shadow-divine flex flex-col items-center justify-center"><div className="text-[10px] tracking-[0.2em] text-divineCream/50 mb-2">ESTADO DE LA TIENDA</div><button onClick={toggleStore} className={`w-full text-sm font-bold tracking-widest py-2 rounded-xl border transition-colors ${isStoreOpen ? 'bg-green-500/20 text-green-400 border-green-500/50 hover:bg-green-500/30' : 'bg-red-500/20 text-red-400 border-red-500/50 hover:bg-red-500/30'}`}>{isStoreOpen ? '🟢 ABIERTO' : '🔴 CERRADA'}</button></div>
                 </div>
-
                 {orders.length === 0 ? <div className="text-center py-10 text-divineCream/50">No hay pedidos registrados aún.</div> :
                 orders.map(o => (
                   <div key={o.id} className="rounded-2xl border border-divineLine bg-divinePanel p-5 flex flex-col md:flex-row gap-5 justify-between shadow-divine mb-4">
-                    <div className="flex-1">
-                      <div className="flex flex-wrap items-center gap-3 mb-3"><span className="text-lg font-bold text-divineGold">{o.tracking_code}</span><span className="text-xs text-divineCream/50 border border-divineLine px-2 py-1 rounded-full">{new Date(o.created_at).toLocaleString('es-VE')}</span></div>
-                      <div className="text-sm text-divineCream/90 mb-1"><span className="text-divineCream/50">Cliente:</span> {o.customer_name} • <a href={`https://wa.me/${formatPhoneForWa(o.phone)}?text=${encodeURIComponent(`Hola ${o.customer_name}, tu pedido ${o.tracking_code} ya está en proceso. Divinée🍔✨`)}`} target="_blank" rel="noopener noreferrer" className="ml-1 text-divineGold hover:underline">📞 {o.phone}</a></div>
-                      <div className="text-sm text-divineCream/90 mb-3"><span className="text-divineCream/50">Dir:</span> {o.address}</div>
-                      <div className="text-xs text-divineCream/70 bg-black/40 p-3 rounded-xl border border-divineLine2/30"><div className="font-semibold text-divineCream mb-1">CARRITO:</div>{o.items.map((it, i) => <div key={i}>• {it.qty}x {it.name}</div>)}{o.notes && <div className="mt-2 text-divineGold/90">📝 Nota: {o.notes}</div>}</div>
-                    </div>
-                    <div className="flex flex-col items-start md:items-end justify-between min-w-[220px] bg-black/20 p-4 rounded-xl border border-divineLine2/20">
-                      <div className="w-full text-left md:text-right"><div className="text-xs text-divineCream/50">TOTAL PAGADO</div><div className="text-2xl font-bold text-divineGold">{money(o.total_usd)}</div><div className="text-xs text-divineCream/60 mt-1">Ref: <span className="text-divineCream tracking-widest">{o.payment_ref}</span></div>{o.bcv_rate && <div className="text-[10px] text-divineCream/40 mt-1">Tasa: {o.bcv_rate}</div>}</div>
-                      <div className="w-full mt-4"><div className="text-[10px] tracking-[0.2em] text-divineCream/50 mb-1 text-left md:text-right">ESTATUS ACTUAL</div><select value={o.status} onChange={(e) => updateStatus(o.id, e.target.value)} className={`w-full bg-black/80 border rounded-xl px-3 py-2 text-sm font-semibold outline-none cursor-pointer ${statusColors[o.status] || 'text-divineCream border-divineLine'}`}><option value="Pendiente">Pendiente</option><option value="Preparando">Preparando</option><option value="En camino">En camino</option><option value="Listo para retirar">Listo para retirar</option><option value="Entregado">Entregado</option><option value="Cancelado">Cancelado</option></select><button onClick={() => { setSearchCode(o.tracking_code); setInvoiceOrder(o); setTab('invoice'); }} className="mt-3 text-[11px] tracking-widest text-divineCream/50 hover:text-divineGold transition flex items-center gap-1 md:justify-end w-full">📄 GENERAR FACTURA</button></div>
-                    </div>
+                    <div className="flex-1"><div className="flex flex-wrap items-center gap-3 mb-3"><span className="text-lg font-bold text-divineGold">{o.tracking_code}</span><span className="text-xs text-divineCream/50 border border-divineLine px-2 py-1 rounded-full">{new Date(o.created_at).toLocaleString('es-VE')}</span></div><div className="text-sm text-divineCream/90 mb-1"><span className="text-divineCream/50">Cliente:</span> {o.customer_name} • <a href={`https://wa.me/${formatPhoneForWa(o.phone)}?text=${encodeURIComponent(`Hola ${o.customer_name}, tu pedido ${o.tracking_code} ya está en proceso. Divinée🍔✨`)}`} target="_blank" rel="noopener noreferrer" className="ml-1 text-divineGold hover:underline">📞 {o.phone}</a></div><div className="text-sm text-divineCream/90 mb-3"><span className="text-divineCream/50">Dir:</span> {o.address}</div><div className="text-xs text-divineCream/70 bg-black/40 p-3 rounded-xl border border-divineLine2/30"><div className="font-semibold text-divineCream mb-1">CARRITO:</div>{o.items.map((it, i) => <div key={i}>• {it.qty}x {it.name}</div>)}{o.notes && <div className="mt-2 text-divineGold/90">📝 Nota: {o.notes}</div>}</div></div>
+                    <div className="flex flex-col items-start md:items-end justify-between min-w-[220px] bg-black/20 p-4 rounded-xl border border-divineLine2/20"><div className="w-full text-left md:text-right"><div className="text-xs text-divineCream/50">TOTAL PAGADO</div><div className="text-2xl font-bold text-divineGold">{money(o.total_usd)}</div><div className="text-xs text-divineCream/60 mt-1">Ref: <span className="text-divineCream tracking-widest">{o.payment_ref}</span></div>{o.bcv_rate && <div className="text-[10px] text-divineCream/40 mt-1">Tasa: {o.bcv_rate}</div>}</div><div className="w-full mt-4"><div className="text-[10px] tracking-[0.2em] text-divineCream/50 mb-1 text-left md:text-right">ESTATUS ACTUAL</div><select value={o.status} onChange={(e) => updateStatus(o.id, e.target.value)} className={`w-full bg-black/80 border rounded-xl px-3 py-2 text-sm font-semibold outline-none cursor-pointer ${statusColors[o.status] || 'text-divineCream border-divineLine'}`}><option value="Pendiente">Pendiente</option><option value="Preparando">Preparando</option><option value="En camino">En camino</option><option value="Listo para retirar">Listo para retirar</option><option value="Entregado">Entregado</option><option value="Cancelado">Cancelado</option></select><button onClick={() => { setSearchCode(o.tracking_code); setInvoiceOrder(o); setTab('invoice'); }} className="mt-3 text-[11px] tracking-widest text-divineCream/50 hover:text-divineGold transition flex items-center gap-1 md:justify-end w-full">📄 GENERAR FACTURA</button></div></div>
                   </div>
                 ))}
               </>
              ) : tab === 'inventory' ? (
               <div className="space-y-8">
-                <div className="bg-divineLine2/10 border border-divineLine2/30 p-4 rounded-2xl text-sm text-divineCream/80">Toca un ingrediente para marcarlo como <b>AGOTADO</b>. Los clientes no podrán seleccionarlo.</div>
-                {Object.entries(BURGER_CATALOG).map(([category, items]) => (<div key={category}><h3 className="text-xs tracking-[0.2em] text-divineGold mb-3 uppercase">{category}</h3><div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">{items.map(item => { if(item.id === 'none') return null; const isOff = disabledItems.includes(item.id); return (<button key={item.id} onClick={() => toggleIngredient(item.id, isOff)} className={`p-3 rounded-xl border text-left transition ${isOff ? 'bg-red-500/10 border-red-500/30' : 'bg-divinePanel border-divineLine hover:border-divineGold/50'}`}><div className={`font-semibold text-sm ${isOff ? 'text-red-400 line-through' : 'text-divineCream'}`}>{item.name}</div><div className="text-[10px] mt-1 text-divineCream/50">{isOff ? '🔴 AGOTADO' : '🟢 DISPONIBLE'}</div></button>) })}</div></div>))}
+                <div className="bg-divineLine2/10 border border-divineLine2/30 p-4 rounded-2xl text-sm text-divineCream/80">Toca un producto o ingrediente para marcarlo como <b>AGOTADO</b>.</div>
+                
+                <div><h3 className="text-xs tracking-[0.2em] text-divineGold mb-3 uppercase">MENÚ: HAMBURGUESAS</h3><div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">{burgers.map(item => { const isOff = disabledItems.includes(item.id); return (<button key={item.id} onClick={() => toggleIngredient(item.id, isOff)} className={`p-3 rounded-xl border text-left transition ${isOff ? 'bg-red-500/10 border-red-500/30' : 'bg-divinePanel border-divineLine hover:border-divineGold/50'}`}><div className={`font-semibold text-sm ${isOff ? 'text-red-400 line-through' : 'text-divineCream'}`}>{item.name}</div><div className="text-[10px] mt-1 text-divineCream/50">{isOff ? '🔴 AGOTADO' : '🟢 DISPONIBLE'}</div></button>) })}</div></div>
+                <div><h3 className="text-xs tracking-[0.2em] text-divineGold mb-3 uppercase mt-6">MENÚ: POSTRES</h3><div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">{desserts.map(item => { const isOff = disabledItems.includes(item.id); return (<button key={item.id} onClick={() => toggleIngredient(item.id, isOff)} className={`p-3 rounded-xl border text-left transition ${isOff ? 'bg-red-500/10 border-red-500/30' : 'bg-divinePanel border-divineLine hover:border-divineGold/50'}`}><div className={`font-semibold text-sm ${isOff ? 'text-red-400 line-through' : 'text-divineCream'}`}>{item.name}</div><div className="text-[10px] mt-1 text-divineCream/50">{isOff ? '🔴 AGOTADO' : '🟢 DISPONIBLE'}</div></button>) })}</div></div>
+                
+                {Object.entries(BURGER_CATALOG).map(([category, items]) => (<div key={category}><h3 className="text-xs tracking-[0.2em] text-divineGold mb-3 uppercase mt-6">ATELIER: {category}</h3><div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">{items.map(item => { if(item.id === 'none') return null; const isOff = disabledItems.includes(item.id); return (<button key={item.id} onClick={() => toggleIngredient(item.id, isOff)} className={`p-3 rounded-xl border text-left transition ${isOff ? 'bg-red-500/10 border-red-500/30' : 'bg-divinePanel border-divineLine hover:border-divineGold/50'}`}><div className={`font-semibold text-sm ${isOff ? 'text-red-400 line-through' : 'text-divineCream'}`}>{item.name}</div><div className="text-[10px] mt-1 text-divineCream/50">{isOff ? '🔴 AGOTADO' : '🟢 DISPONIBLE'}</div></button>) })}</div></div>))}
               </div>
              ) : (
               <div className="max-w-md mx-auto">
                 <form onSubmit={handleSearchInvoice} className="flex gap-2 mb-6"><input type="text" value={searchCode} onChange={(e) => setSearchCode(e.target.value)} placeholder="Código (Ej: #DIV-1234)" className="flex-1 bg-black/40 border border-divineLine2 rounded-xl px-4 py-3 text-sm text-divineCream outline-none focus:border-divineGold transition uppercase tracking-widest" /><button type="submit" className="btn-primary px-6">BUSCAR</button></form>
-                
                 {invoiceOrder ? (
-                  <>
-                    <div id="invoice-print-area" className="bg-white text-black p-6 md:p-8 rounded-2xl shadow-xl font-mono text-sm">
-                      <div className="text-center mb-6 border-b-2 border-dashed border-black/20 pb-6"><h2 className="text-2xl font-bold tracking-widest">{BRAND_NAME.toUpperCase()}</h2><p className="text-xs mt-1 text-gray-600">GOURMET BAR</p><p className="text-xs text-gray-600 mt-1">RIF: V-30158858-1</p></div>
-                      <div className="mb-6 space-y-1 text-xs"><div className="flex"><span>TICKET:</span> <strong className="text-base">{invoiceOrder.tracking_code}</strong></div><div className="flex"><span>FECHA:</span> <span>{new Date(invoiceOrder.created_at).toLocaleString('es-VE')}</span></div><div className="flex mt-3"><span>CLIENTE:</span> <span className="font-bold uppercase text-right truncate">{invoiceOrder.customer_name}</span></div><div className="flex"><span>TLF:</span> <span>{invoiceOrder.phone}</span></div></div>
-                      <div className="mb-6 border-t-2 border-b-2 border-dashed border-black/20 py-4"><div className="flex font-bold mb-3 text-xs"><span>CANT DESCRIPCIÓN</span><span>TOTAL</span></div>{invoiceOrder.items.map((it, i) => (<div key={i} className="mb-3 text-xs"><div className="flex font-semibold"><span>{it.qty}x {it.name.replace('Hamburguesa Divinée (Atelier)', 'Atelier')}</span><span>{money(it.price * it.qty)}</span></div>{it.meta && (<div className="text-xs text-gray-500 pl-4 mt-1 space-y-1">{Object.entries(it.meta).map(([k,v]) => <div key={k}>- {k}: {Array.isArray(v) ? v.join(", ") : String(v)}</div>)}</div>)}</div>))}</div>
-                      <div className="mb-8 space-y-1"><div className="flex text-base font-bold"><span>TOTAL USD:</span><span>{money(invoiceOrder.total_usd)}</span></div>{invoiceOrder.bcv_rate && (<div className="flex text-xs text-gray-500 font-bold"><span>TOTAL BCV (TASA {invoiceOrder.bcv_rate}):</span><span>{(invoiceOrder.total_usd * invoiceOrder.bcv_rate).toFixed(2)} Bs</span></div>)}<div className="flex text-xs text-gray-400 mt-2"><span>REF PAGO:</span><span>{invoiceOrder.payment_ref}</span></div></div>
-                      <div className="text-center text-xs text-gray-600 font-bold space-y-1"><p>¡GRACIAS POR SU COMPRA!</p><p>Exquisito. Divino. Divinée🍔✨</p></div>
-                    </div>
-                    
-                    <button onClick={handlePrintTicket} className="mt-8 w-full bg-black text-white py-4 rounded-xl font-sans font-bold tracking-widest hover:bg-gray-800 transition shadow-lg">
-                      🖨️ IMPRIMIR TICKET
-                    </button>
-                  </>
+                  <><div id="invoice-print-area" className="bg-white text-black p-6 md:p-8 rounded-2xl shadow-xl font-mono text-sm"><div className="text-center mb-6 border-b-2 border-dashed border-black/20 pb-6"><h2 className="text-2xl font-bold tracking-widest">{BRAND_NAME.toUpperCase()}</h2><p className="text-xs mt-1 text-gray-600">GOURMET BAR</p><p className="text-xs text-gray-600 mt-1">RIF: V-30158858-1</p></div><div className="mb-6 space-y-1 text-xs"><div className="flex"><span>TICKET:</span> <strong className="text-base">{invoiceOrder.tracking_code}</strong></div><div className="flex"><span>FECHA:</span> <span>{new Date(invoiceOrder.created_at).toLocaleString('es-VE')}</span></div><div className="flex mt-3"><span>CLIENTE:</span> <span className="font-bold uppercase text-right truncate">{invoiceOrder.customer_name}</span></div><div className="flex"><span>TLF:</span> <span>{invoiceOrder.phone}</span></div></div><div className="mb-6 border-t-2 border-b-2 border-dashed border-black/20 py-4"><div className="flex font-bold mb-3 text-xs"><span>CANT DESCRIPCIÓN</span><span>TOTAL</span></div>{invoiceOrder.items.map((it, i) => (<div key={i} className="mb-3 text-xs"><div className="flex font-semibold"><span>{it.qty}x {it.name.replace('Hamburguesa Divinée (Atelier)', 'Atelier')}</span><span>{money(it.price * it.qty)}</span></div>{it.meta && (<div className="text-xs text-gray-500 pl-4 mt-1 space-y-1">{Object.entries(it.meta).map(([k,v]) => <div key={k}>- {k}: {Array.isArray(v) ? v.join(", ") : String(v)}</div>)}</div>)}</div>))}</div><div className="mb-8 space-y-1"><div className="flex text-base font-bold"><span>TOTAL USD:</span><span>{money(invoiceOrder.total_usd)}</span></div>{invoiceOrder.bcv_rate && (<div className="flex text-xs text-gray-500 font-bold"><span>TOTAL BCV (TASA {invoiceOrder.bcv_rate}):</span><span>{(invoiceOrder.total_usd * invoiceOrder.bcv_rate).toFixed(2)} Bs</span></div>)}<div className="flex text-xs text-gray-400 mt-2"><span>REF PAGO:</span><span>{invoiceOrder.payment_ref}</span></div></div><div className="text-center text-xs text-gray-600 font-bold space-y-1"><p>¡GRACIAS POR SU COMPRA!</p><p>Exquisito. Divino. Divinée🍔✨</p></div></div><button onClick={handlePrintTicket} className="mt-8 w-full bg-black text-white py-4 rounded-xl font-sans font-bold tracking-widest hover:bg-gray-800 transition shadow-lg">🖨️ IMPRIMIR TICKET</button></>
                 ) : (<div className="text-center py-10 text-divineCream/40 text-sm border border-dashed border-divineLine2 rounded-2xl">Ingresa el código arriba o selecciona un pedido de la lista para generar su factura.</div>)}
               </div>
              )
@@ -1514,8 +1444,8 @@ function App() {
       const [isAdminLogged, setIsAdminLogged] = useState(false);
       const [appLoaded, setAppLoaded] = useState(false);
       
-      // NUEVO: El cliente lee si estás abierto
       const [isStoreOpen, setIsStoreOpen] = useState(true);
+      const [disabledItems, setDisabledItems] = useState([]);
 
       const cartCount = useMemo(() => cartItems.reduce((acc, it) => acc + it.qty, 0), [cartItems]);
       const cartTotal = useMemo(() => cartItems.reduce((acc, it) => acc + it.price * it.qty, 0), [cartItems]);
@@ -1525,11 +1455,13 @@ function App() {
       useEffect(() => {
         fetch("https://ve.dolarapi.com/v1/dolares/oficial").then(res => res.json()).then(data => setBcvRate(data.promedio)).catch(err => setBcvRate(60.00)); 
         
-        // Verifica si la tienda está abierta cada 30 segundos
         const checkStoreStatus = async () => {
           if (window.supabase) {
             const { data } = await supabaseClient.from('store_settings').select('is_open').eq('id', 'divinee').single();
             if (data) setIsStoreOpen(data.is_open);
+            
+            const { data: invData } = await supabaseClient.from('disabled_ingredients').select('id');
+            if (invData) setDisabledItems(invData.map(i => i.id));
           }
         };
         checkStoreStatus();
@@ -1540,11 +1472,8 @@ function App() {
       function scrollTo(key) { refs[key]?.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }
       
       function addToCart(item) {
-        // NUEVO: Bloqueo de seguridad
-        if (!isStoreOpen) {
-          window.showToast("CERRADO POR HOY 🚫", '🚫');
-          return;
-        }
+        if (!isStoreOpen) { window.showToast("CERRADO POR HOY 🚫", '🚫'); return; }
+        if (disabledItems.includes(item.id)) { window.showToast("Este producto está agotado 🚫", '🚫'); return; }
 
         window.showToast(`${item.name} añadido`, '🍔');
         setCartItems((prev) => {
@@ -1559,7 +1488,6 @@ function App() {
       return (
         <div className="min-h-screen relative z-[1]">
           
-          {/* NUEVO: Cartel rojo global si la tienda está cerrada */}
           <AnimatePresence>
             {!isStoreOpen && (
               <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="bg-red-500/90 text-white text-center py-2 text-[10px] md:text-xs font-bold tracking-widest fixed top-0 w-full z-[300] backdrop-blur shadow-glow">
@@ -1585,20 +1513,22 @@ function App() {
                   <h1 className="text-3xl font-semibold leading-tight md:text-6xl"><span className="bg-gradient-to-r from-divineCream via-divineCream to-divineGold bg-clip-text text-transparent">Hamburguesas, postres y yogurt griego</span> con estética de lujo.</h1>
                   <p className="mt-3 max-w-2xl text-sm text-divineCream/75 md:text-base">Explora el menú y arma tu burger con un configurador premium.</p>
                   <div className="mt-5 flex flex-col sm:flex-row flex-wrap gap-3">
-                    <motion.button whileTap={{ scale: 0.95 }} className="btn-primary w-full sm:w-auto" onClick={() => scrollTo("burgers")} type="button">Explorar menú</motion.button>
-                    <motion.button whileTap={{ scale: 0.95 }} className="btn-ghost w-full sm:w-auto" onClick={() => setTrackingModalOpen(true)} type="button">Rastrear Pedido</motion.button>
+                    <button className="btn-primary w-full sm:w-auto" onClick={() => scrollTo("burgers")} type="button">Explorar menú</button>
+                    <button className="btn-ghost w-full sm:w-auto" onClick={() => setTrackingModalOpen(true)} type="button">Rastrear Pedido</button>
                   </div>
                 </div>
               </div>
             </motion.section>
             
-            <section ref={refs.burgers} className="scroll-mt-32"><SectionShell eyebrow="COLECCIÓN DIVINÉE" title="Hamburguesas" subtitle="Exquisito. Divino. Divinée🍔✨."><ProductShowcase items={burgers} badge="VER 360°" onOpen={setActiveBurger} onAdd={addToCart} /></SectionShell></section>
-            <section ref={refs.desserts} className="scroll-mt-32"><SectionShell eyebrow="EXQUISITE DESSERTS" title="Postres" subtitle="Selección corta, elegante."><ProductShowcase items={desserts} badge="PATISSERIE" onOpen={(p) => addToCart({ ...p, qty: 1 })} onAdd={addToCart} /></SectionShell></section>
+            <section ref={refs.burgers} className="scroll-mt-32"><SectionShell eyebrow="COLECCIÓN DIVINÉE" title="Hamburguesas" subtitle="Exquisito. Divino. Divinée🍔✨."><ProductShowcase items={burgers} badge="VER 360°" onOpen={setActiveBurger} onAdd={addToCart} disabledItems={disabledItems} /></SectionShell></section>
+            <section ref={refs.desserts} className="scroll-mt-32"><SectionShell eyebrow="EXQUISITE DESSERTS" title="Postres" subtitle="Selección corta, elegante."><ProductShowcase items={desserts} badge="PATISSERIE" onOpen={(p) => addToCart({ ...p, qty: 1 })} onAdd={addToCart} disabledItems={disabledItems} /></SectionShell></section>
+            
             <section ref={refs.yogurt} className="scroll-mt-32"><SectionShell eyebrow="GREEK YOGURT DE MÁQUINA" title="Yogurt" subtitle="Sección desactivada temporalmente."><YogurtComingSoonCard /></SectionShell></section>
             <section ref={refs.atelier} className="scroll-mt-32"><SectionShell eyebrow="ATELIER" title="Arma tu Hamburguesa" subtitle="Configurador en vivo, agrega ingredientes y verás cómo caen."><BurgerBuilder onAddToCart={addToCart} /></SectionShell></section>
           </main>
 
-          <CartButton cartCount={cartCount} onClick={() => setCartOpen(true)} />
+          <div className="md:hidden"><CartButton cartCount={cartCount} onClick={() => setCartOpen(true)} /></div>
+          
           <a href="https://wa.me/584126835635?text=Hola%20Divin%C3%A9e%2C%20tengo%20una%20duda%20con%20mi%20pedido..." target="_blank" rel="noopener noreferrer" className="fixed z-40 bottom-[calc(1.1rem+env(safe-area-inset-bottom))] left-[calc(1.1rem+env(safe-area-inset-left))] rounded-2xl border border-[#25D366]/50 bg-black/60 px-4 py-3 shadow-glow backdrop-blur hover:bg-[#25D366]/20 transition flex items-center gap-3"><span className="text-xl leading-none">💬</span><span className="text-xs tracking-[0.2em] text-[#25D366] font-semibold hidden sm:inline">AYUDA</span></a>
           
           <AnimatePresence>{cartOpen && <CartDrawer items={cartItems} total={cartTotal} bcvRate={bcvRate} onClose={() => setCartOpen(false)} onQty={updateQty} onClearCart={() => setCartItems([])} />}</AnimatePresence>
@@ -1615,6 +1545,7 @@ function App() {
   </script>
 </body>
 </html>
+
 
 
 
