@@ -835,7 +835,7 @@ function ProductCard({ product, badge, onClick, onAdd }) {
 // =========================
     // Atelier (Burger Builder)
     // =========================
-    const BURGER_BASE = 2.95;
+    const BURGER_BASE = 0.00;
     const BURGER_CATALOG = {
       buns: [
         { id: "brioche", name: "Brioche", price: 1.75, note: "Suave, dorado, premium" },
@@ -863,10 +863,10 @@ function ProductCard({ product, badge, onClick, onAdd }) {
         { id: "none", name: "Sin queso", price: 0.0, note: "Limpio, directo" },
       ],
       toppings: [
-        { id: "bacon", name: "Jamon de Espalda", price: 0.50, group: "Crunch" },
+        { id: "bacon", name: "Jamón de Pierna", price: 0.50, group: "Crunch" },
         { id: "pickles", name: "Pepinillos", price: 0.70, group: "Classic" },
         { id: "lettuce", name: "Lechuga", price: 0.60, group: "Fresh" },
-        { id: "arugula", name: "Jamon Ahumado", price: 0.85, group: "Fresh" },
+        { id: "arugula", name: "Jamón Ahumado", price: 0.85, group: "Fresh" },
         { id: "tomato", name: "Tomate", price: 0.65, group: "Fresh" },
         { id: "mushrooms", name: "Hongos (Champiñones)", price: 1.25, group: "Umami" },
         { id: "caramelOnion", name: "Cebolla caramelizada", price: 0.50, group: "Classic" },
@@ -874,7 +874,7 @@ function ProductCard({ product, badge, onClick, onAdd }) {
         { id: "egg", name: "Huevo", price: 0.60, group: "Luxe" },
         { id: "avocado", name: "Aguacate", price: 0.80, group: "Luxe" },
         { id: "hashbrown", name: "Cebolla", price: 0.20, group: "Crunch" },
-        { id: "divineeSauce", name: "Salsas Divinée", price: 0.50, group: "Sauce" },
+        { id: "divineeSauce", name: "Adi Salsas Divinée", price: 0.50, group: "Sauce" },
         { id: "aioli", name: "Alioli", price: 0.90, group: "Sauce" },
         { id: "bbq", name: "BBQ", price: 0.90, group: "Sauce" },
         { id: "spicyMayo", name: "Mayo spicy", price: 0.95, group: "Sauce" },
@@ -1125,7 +1125,7 @@ function ProductCard({ product, badge, onClick, onAdd }) {
           <div className="mt-8 rounded-2xl border border-divineLine2 bg-divinePanel p-4">
             <div className="text-[10px] tracking-[0.28em] text-divineCream/60 mb-3">DESGLOSE DEL PEDIDO</div>
             <div className="space-y-2 text-sm text-divineCream/75">
-              <div className="flex justify-between"><span>Base Divinée</span><span>{money(BURGER_BASE)}</span></div>
+              <div className="flex justify-between"><span>Salsas Divinée</span><span>{money(BURGER_BASE)}</span></div>
               <div className={`flex justify-between ${isBunDisabled ? 'text-red-400 line-through' : ''}`}><span>{bun?.name}</span><span>{money(bun?.price ?? 0)}</span></div>
               
               {proteinLayers.map((idx, i) => {
@@ -1439,6 +1439,7 @@ function AdminDashboard({ onClose, supabaseClient }) {
   </script>
 </body>
 </html>
+
 
 
 
