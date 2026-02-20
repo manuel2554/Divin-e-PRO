@@ -1281,31 +1281,37 @@ function AdminDashboard({ onClose, supabaseClient }) {
 
       // CORREGIDO: Imprime sin romper la página principal
 // CORREGIDO: Imprime perfecto en Ticketera y en Hoja A4
+      // FACTURA ESTILO APPLE / TICKET PREMIUM
       const handlePrintTicket = () => {
         const content = document.getElementById("invoice-print-area").innerHTML;
-        const printWindow = window.open('', '', 'width=400,height=600');
+        const printWindow = window.open('', '', 'width=600,height=800');
         printWindow.document.write(`
           <html>
             <head>
               <title>Ticket Divinée - ${invoiceOrder.tracking_code}</title>
               <style>
-                @page { margin: 5mm; }
+                @page { margin: 0; }
                 body { 
-                  font-family: 'Courier New', Courier, monospace; 
-                  color: black; 
-                  background: white; 
+                  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+                  color: #000; 
+                  background: #f4f4f4; 
                   margin: 0; 
-                  padding: 10px; 
+                  padding: 20px; 
                   display: flex;
                   justify-content: center;
                 }
                 .ticket-container {
                   width: 100%;
-                  max-width: 320px; /* Ancho perfecto para que no se aplaste ni se vea gigante */
+                  max-width: 340px; 
+                  background: #fff;
+                  padding: 30px 25px;
+                  border-radius: 12px;
+                  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                  border-top: 6px solid #000;
                 }
                 .text-center { text-align: center; }
                 .text-right { text-align: right; }
-                .font-bold { font-weight: bold; }
+                .font-bold { font-weight: 800; }
                 .font-semibold { font-weight: 600; }
                 .flex { display: flex; justify-content: space-between; align-items: flex-start; }
                 .mb-6 { margin-bottom: 24px; }
@@ -1314,23 +1320,37 @@ function AdminDashboard({ onClose, supabaseClient }) {
                 .mt-1 { margin-top: 4px; }
                 .mt-2 { margin-top: 8px; }
                 .mt-3 { margin-top: 12px; }
-                .pb-6 { padding-bottom: 24px; }
-                .py-4 { padding-top: 16px; padding-bottom: 16px; }
+                .pb-6 { padding-bottom: 24px; border-bottom: 2px dashed #ccc; }
+                .py-4 { padding-top: 16px; padding-bottom: 16px; border-bottom: 2px dashed #ccc; }
                 .pl-4 { padding-left: 16px; }
-                .border-b-2 { border-bottom: 2px dashed #000; }
-                .border-t-2 { border-top: 2px dashed #000; }
-                .text-xs { font-size: 12px; }
+                .text-xs { font-size: 12px; color: #555; }
                 .text-sm { font-size: 14px; }
-                .text-base { font-size: 16px; }
-                .text-2xl { font-size: 26px; letter-spacing: 0.1em; }
+                .text-base { font-size: 16px; color: #000; }
+                .text-2xl { font-size: 24px; letter-spacing: 0.1em; color: #000; }
+                .tracking-widest { letter-spacing: 0.15em; }
                 h2 { margin: 0; }
                 p { margin: 0; }
-                .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
-                .text-gray-600, .text-gray-500, .text-gray-400 { color: #333; }
-                .space-y-1 > * { margin-bottom: 5px; display: block; }
+                .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+                .space-y-1 > * { margin-bottom: 6px; display: block; }
+                
+                /* Truco para que la impresora térmica lo saque perfecto y no corte hojas */
+                @media print {
+                  body { background: white; padding: 0; display: block; }
+                  .ticket-container { 
+                    box-shadow: none; 
+                    border-radius: 0; 
+                    margin: 0 auto; 
+                    max-width: 80mm; 
+                    padding: 10px; 
+                    border-top: 2px solid #000;
+                    page-break-inside: avoid;
+                  }
+                  .pb-6, .py-4 { border-bottom-color: #000; }
+                  .text-xs { color: #000; }
+                }
               </style>
             </head>
-            <body onload="setTimeout(function(){ window.print(); window.close(); }, 300)">
+            <body onload="setTimeout(function(){ window.print(); window.close(); }, 400)">
               <div class="ticket-container">
                 ${content}
               </div>
@@ -1595,6 +1615,7 @@ function App() {
   </script>
 </body>
 </html>
+
 
 
 
