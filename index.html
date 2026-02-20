@@ -256,32 +256,65 @@
 function Header({ onNavigate, onOpenCart, cartCount, onOpenAdmin }) {
       return (
         <header className="fixed top-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-xl border-b border-divineLine2/40 transition-all duration-300">
-          <div className="mx-auto max-w-6xl px-4 md:px-6 h-[72px] md:h-20 flex items-center justify-between gap-3 pt-[env(safe-area-inset-top)]">
+          <div className="mx-auto max-w-6xl px-4 md:px-6 pt-[env(safe-area-inset-top)]">
             
-            <button onClick={onOpenAdmin} className="relative group flex items-center justify-center shrink-0">
-               <div className="absolute inset-0 bg-divineGold rounded-full blur-md opacity-20 group-hover:opacity-50 transition duration-500"></div>
-               <img src={LOGO_LOCAL} onError={(e) => e.target.src=LOGO_REMOTE} className="w-11 h-11 md:w-12 md:h-12 object-contain rounded-full border border-divineLine2/80 relative z-10 bg-white shadow-glow" alt="Divinée" />
-            </button>
+            {/* FILA SUPERIOR: Logo y Carrito */}
+            <div className="flex items-center justify-between h-[64px] md:h-20">
+              
+              <div className="flex items-center gap-3">
+                <button onClick={onOpenAdmin} className="relative group flex items-center justify-center shrink-0" title="Panel de Control">
+                   <div className="absolute inset-0 bg-divineGold rounded-full blur-md opacity-20 group-hover:opacity-50 transition duration-500"></div>
+                   <img src={LOGO_LOCAL} onError={(e) => e.target.src=LOGO_REMOTE} className="w-10 h-10 md:w-12 md:h-12 object-contain rounded-full border border-divineLine2/80 relative z-10 bg-white shadow-glow" alt="Divinée" />
+                </button>
+                <div className="hidden md:block">
+                  <div className="text-xs tracking-[0.2em] text-divineGold/95">{BRAND_NAME.toUpperCase()}</div>
+                  <div className="text-[10px] tracking-[0.35em] text-divineCream/60">GOURMET BAR</div>
+                </div>
+              </div>
 
-            <nav className="flex-1 overflow-x-auto no-scrollbar flex items-center gap-1 sm:gap-2 px-2 md:justify-center" style={{ WebkitOverflowScrolling: 'touch' }}>
-               <button onClick={() => onNavigate('burgers')} className="text-[10px] sm:text-[11px] font-semibold tracking-[0.2em] px-4 py-2.5 rounded-full border border-transparent text-divineCream/60 hover:text-divineGold hover:bg-divineLine2/20 transition whitespace-nowrap">
-                 HAMBURGUESAS
-               </button>
-               <button onClick={() => onNavigate('desserts')} className="text-[10px] sm:text-[11px] font-semibold tracking-[0.2em] px-4 py-2.5 rounded-full border border-transparent text-divineCream/60 hover:text-divineGold hover:bg-divineLine2/20 transition whitespace-nowrap">
-                 POSTRES
-               </button>
-               <button onClick={() => onNavigate('atelier')} className="text-[10px] sm:text-[11px] font-semibold tracking-[0.2em] px-5 py-2.5 rounded-full border border-divineGold/40 text-divineGold bg-divineGold/10 hover:bg-divineGold/20 transition whitespace-nowrap shadow-[0_0_15px_rgba(212,175,55,0.15)] flex items-center gap-2">
-                 ✨ ATELIER
-               </button>
-            </nav>
+              {/* Navegación Desktop */}
+              <nav className="hidden md:flex flex-1 justify-center items-center gap-2">
+                 <button onClick={() => onNavigate('burgers')} className="text-[11px] font-semibold tracking-[0.2em] px-4 py-2 rounded-full text-divineCream/60 hover:text-divineGold hover:bg-divineLine2/20 transition">
+                   HAMBURGUESAS
+                 </button>
+                 <button onClick={() => onNavigate('desserts')} className="text-[11px] font-semibold tracking-[0.2em] px-4 py-2 rounded-full text-divineCream/60 hover:text-divineGold hover:bg-divineLine2/20 transition">
+                   POSTRES
+                 </button>
+                 <button onClick={() => onNavigate('atelier')} className="text-[11px] font-semibold tracking-[0.2em] px-5 py-2 rounded-full border border-divineGold/40 text-divineGold bg-divineGold/10 hover:bg-divineGold/20 transition shadow-[0_0_15px_rgba(212,175,55,0.15)] flex items-center gap-2">
+                   ✨ ATELIER
+                 </button>
+                 <button onClick={onOpenAdmin} className="text-[11px] font-semibold tracking-[0.2em] px-4 py-2 rounded-full text-divineCream/40 hover:text-white hover:bg-divineLine2/20 transition">
+                   PANEL
+                 </button>
+              </nav>
 
-            <button onClick={onOpenCart} className="shrink-0 relative flex items-center gap-2 px-4 py-2.5 md:py-3 rounded-full bg-gradient-to-r from-divineGold/20 to-divineGold/5 border border-divineGold/40 text-divineGold hover:from-divineGold/30 hover:to-divineGold/10 transition shadow-[0_0_15px_rgba(212,175,55,0.2)]">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 md:h-5 md:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-              <span className="text-[10px] md:text-xs font-bold tracking-widest hidden sm:inline">CARRITO</span>
-              {cartCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-divineGold text-black text-[11px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-lg border border-black">{cartCount}</span>
-              )}
-            </button>
+              <button onClick={onOpenCart} className="shrink-0 relative flex items-center gap-2 px-4 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-divineGold/20 to-divineGold/5 border border-divineGold/40 text-divineGold hover:from-divineGold/30 hover:to-divineGold/10 transition shadow-[0_0_15px_rgba(212,175,55,0.2)]">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 md:h-5 md:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                <span className="text-[10px] md:text-xs font-bold tracking-widest hidden sm:inline">CARRITO</span>
+                {cartCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-divineGold text-black text-[11px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-lg border border-black">{cartCount}</span>
+                )}
+              </button>
+            </div>
+
+            {/* FILA INFERIOR: Navegación Mobile (Se oculta en PC) */}
+            <div className="md:hidden pb-3">
+              <nav className="flex overflow-x-auto no-scrollbar gap-2" style={{ WebkitOverflowScrolling: 'touch' }}>
+                 <button onClick={() => onNavigate('burgers')} className="shrink-0 text-[10px] font-semibold tracking-[0.2em] px-4 py-2 rounded-full border border-divineLine2 bg-black/40 text-divineCream/75 hover:text-divineGold">
+                   HAMBURGUESAS
+                 </button>
+                 <button onClick={() => onNavigate('desserts')} className="shrink-0 text-[10px] font-semibold tracking-[0.2em] px-4 py-2 rounded-full border border-divineLine2 bg-black/40 text-divineCream/75 hover:text-divineGold">
+                   POSTRES
+                 </button>
+                 <button onClick={() => onNavigate('atelier')} className="shrink-0 text-[10px] font-semibold tracking-[0.2em] px-4 py-2 rounded-full border border-divineGold/50 bg-divineGold/10 text-divineGold">
+                   ✨ ATELIER
+                 </button>
+                 <button onClick={onOpenAdmin} className="shrink-0 text-[10px] font-semibold tracking-[0.2em] px-4 py-2 rounded-full border border-divineLine2 bg-black/40 text-divineCream/40 hover:text-white">
+                   PANEL
+                 </button>
+              </nav>
+            </div>
+
           </div>
         </header>
       );
@@ -1562,6 +1595,7 @@ function App() {
   </script>
 </body>
 </html>
+
 
 
 
