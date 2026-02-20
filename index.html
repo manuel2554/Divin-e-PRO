@@ -1347,58 +1347,7 @@ function AdminDashboard({ onClose, supabaseClient }) {
         </motion.div>
       );
     }
-    
-    // =========================
-    // Notificaciones Premium (Toasts)
-    // =========================
-    window.showToast = (msg, icon = '✨') => window.dispatchEvent(new CustomEvent('add-toast', { detail: { msg, icon } }));
-
-    function ToastContainer() {
-      const [toasts, setToasts] = useState([]);
-      useEffect(() => {
-        const handleToast = (e) => {
-          const id = Date.now() + Math.random();
-          setToasts(prev => [...prev, { id, ...e.detail }]);
-          setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3500);
-        };
-        window.addEventListener('add-toast', handleToast);
-        return () => window.removeEventListener('add-toast', handleToast);
-      }, []);
-
-      return (
-        <div className="fixed top-6 left-0 right-0 z-[100] flex flex-col items-center gap-2 pointer-events-none px-4">
-          <AnimatePresence>
-            {toasts.map(t => (
-              <motion.div key={t.id} initial={{ opacity: 0, y: -30, scale: 0.8 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -20, scale: 0.8 }} className="bg-black/85 backdrop-blur-md border border-divineLine2 shadow-glow text-divineCream px-5 py-3 rounded-full text-[11px] sm:text-xs tracking-widest flex items-center gap-3">
-                <span className="text-lg">{t.icon}</span> {t.msg}
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-      );
-    }
-
-    // =========================
-    // Pantalla de Carga de Lujo (Preloader)
-    // =========================
-    function Preloader({ onComplete }) {
-      useEffect(() => {
-        const t = setTimeout(onComplete, 2200); // La pantalla dura 2.2 segundos
-        return () => clearTimeout(t);
-      }, [onComplete]);
-      return (
-        <motion.div initial={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.8, ease: "easeInOut" }} className="fixed inset-0 z-[200] bg-divineBg flex flex-col items-center justify-center">
-          <div className="relative flex items-center justify-center">
-            <motion.div animate={{ rotate: 360 }} transition={{ duration: 6, repeat: Infinity, ease: "linear" }} className="absolute -inset-6 rounded-full border border-dashed border-divineGold/30"></motion.div>
-            <motion.div animate={{ rotate: -360 }} transition={{ duration: 10, repeat: Infinity, ease: "linear" }} className="absolute -inset-8 rounded-full border border-divineLine2/20"></motion.div>
-            <motion.img initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1 }} src={LOGO_LOCAL} onError={(e) => e.target.src=LOGO_REMOTE} className="w-20 h-20 object-contain rounded-2xl border border-divineLine2 p-2 shadow-glow relative z-10 bg-black/50 backdrop-blur" />
-          </div>
-          <motion.div initial={{ width: 0 }} animate={{ width: 140 }} transition={{ duration: 1.8, ease: "easeInOut" }} className="h-[2px] bg-divineGold mt-10 rounded-full shadow-glow"></motion.div>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="mt-4 text-[10px] tracking-[0.4em] text-divineCream/50">PREPARANDO LA EXPERIENCIA</motion.div>
-        </motion.div>
-      );
-    }
-    
+  
 // =========================
     // Notificaciones Premium (Toasts)
     // =========================
@@ -1571,6 +1520,7 @@ function AdminDashboard({ onClose, supabaseClient }) {
   </script>
 </body>
 </html>
+
 
 
 
