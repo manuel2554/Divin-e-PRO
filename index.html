@@ -209,12 +209,62 @@
     // Data
     // =========================
     const burgers = [
-      { id: "divinee-truffle", name: "Divinée Truffle", description: "Angus premium, crema de trufa, rúcula y brioche tostado.", price: 16.9, grams: 320, img: "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=1600&q=80", ingredients: ["Pan brioche", "Angus 180g", "Gruyère", "Crema de trufa", "Rúcula", "Alioli Divinée"], nutrition: { kcal: 780, proteina_g: 42, carbos_g: 48, grasa_g: 46, sodio_mg: 980 }, modelUrl: "./models/burger.glb", config: [{type:"bunBottom"},{type:"meat"},{type:"cheese"},{type:"lettuce"},{type:"bunTop"}] },
-      { id: "golden-smash", name: "Golden Smash", description: "Doble smash, cheddar añejado, cebolla caramelizada, pepinillos.", price: 15.5, grams: 340, img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1600&q=80", ingredients: ["Potato roll", "Doble smash", "Cheddar añejado", "Cebolla caramelizada", "Pepinillos", "Salsa Divinée"], nutrition: { kcal: 860, proteina_g: 48, carbos_g: 52, grasa_g: 52, sodio_mg: 1120 }, modelUrl: "./models/burger.glb", config: [{type:"bunBottom"},{type:"meat"},{type:"cheese"},{type:"meat"},{type:"cheese"},{type:"generic"},{type:"bunTop"}] },
-      { id: "noir-pepper", name: "Noir Pepper", description: "Costra de pimienta, queso azul suave, aros crujientes y demi-glace.", price: 17.25, grams: 330, img: "https://images.unsplash.com/photo-1550317138-10000687a72b?auto=format&fit=crop&w=1600&q=80", ingredients: ["Pan sésamo", "Res con pimienta", "Queso azul", "Cebolla crujiente", "Demi-glace", "Lechuga"], nutrition: { kcal: 820, proteina_g: 45, carbos_g: 44, grasa_g: 50, sodio_mg: 1040 }, modelUrl: "./models/burger.glb", config: [{type:"bunBottom"},{type:"meat"},{type:"cheese"},{type:"generic"},{type:"lettuce"},{type:"bunTop"}] },
-      { id: "saffron-wagyu", name: "Saffron Wagyu", description: "Blend wagyu, alioli de azafrán, tomate confitado y toque dorado.", price: 21.9, grams: 310, img: "https://images.unsplash.com/photo-1551782450-a2132b4ba21d?auto=format&fit=crop&w=1600&q=80", ingredients: ["Pan brioche", "Blend wagyu", "Cheddar blanco", "Alioli de azafrán", "Tomate confitado", "Microgreens"], nutrition: { kcal: 790, proteina_g: 41, carbos_g: 46, grasa_g: 47, sodio_mg: 960 }, modelUrl: "./models/burger.glb", config: [{type:"bunBottom"},{type:"meat"},{type:"cheese"},{type:"tomato"},{type:"lettuce"},{type:"bunTop"}] },
-      { id: "midnight-umami", name: "Midnight Umami", description: "Duxelles de hongos, glaze de soya, suizo, ajo rostizado.", price: 18.4, grams: 335, img: "https://images.unsplash.com/photo-1596662951482-0c4ba74a6df6?auto=format&fit=crop&w=1600&q=80", ingredients: ["Potato roll", "Carne premium", "Queso suizo", "Duxelles de hongos", "Ajo rostizado", "Glaze de soya"], nutrition: { kcal: 805, proteina_g: 44, carbos_g: 50, grasa_g: 48, sodio_mg: 1090 }, modelUrl: "./models/burger.glb", config: [{type:"bunBottom"},{type:"meat"},{type:"cheese"},{type:"generic"},{type:"bunTop"}] },
-      { id: "velvet-chicken", name: "Velvet Chicken", description: "Pollo crispy, glaze miel-oro, ensalada col y final cítrico.", price: 14.75, grams: 360, img: "https://images.unsplash.com/photo-1606755962773-d324e0a13086?auto=format&fit=crop&w=1600&q=80", ingredients: ["Pan brioche", "Pollo crispy", "Glaze miel-oro", "Coleslaw", "Pepinillos", "Alioli limón"], nutrition: { kcal: 740, proteina_g: 39, carbos_g: 58, grasa_g: 38, sodio_mg: 980 }, modelUrl: "./models/burger.glb", config: [{type:"bunBottom"},{type:"meat"},{type:"generic"},{type:"bunTop"}] },
+      const burgers = [
+      { 
+        id: "clasica-divinee", 
+        name: "Clásica Divinée", 
+        description: "La tradición elevada. Jugosa carne Smash en pan brioche sellado, jamón cheddar, huevo y tocino crujiente con el toque fresco de la casa.", 
+        price: 8.50, 
+        grams: 120, 
+        img: "https://i.postimg.cc/bwqjqMf9/Gemini_Generated_Image_cj43xcj43xcj43xc.png", 
+        ingredients: ["Pan Brioche", "Carne Smash 120g", "Queso", "Jamón Cheddar", "Huevo", "Tocino", "Papas Hilo", "Lechuga y Tomate"], 
+        nutrition: { kcal: 650, proteina_g: 32, carbos_g: 40, grasa_g: 38 }, 
+        config: [{type:"bunBottom"},{type:"meat"},{type:"cheese"},{type:"generic"},{type:"lettuce"},{type:"bunTop"}] 
+      },
+      { 
+        id: "pollo-divino", 
+        name: "Pollo Divino", 
+        description: "Tierna y ligera. Filete de pollo seleccionado a la plancha sobre pan brioche, con el equilibrio perfecto de queso, jamón y huevo.", 
+        price: 7.99, 
+        grams: 120, 
+        img: "https://i.postimg.cc/t49H9fH0/Gemini_Generated_Image_r93243r93243r932.png", 
+        ingredients: ["Pan Brioche", "Filete de Pollo 120g", "Queso", "Jamón", "Huevo", "Tocino", "Papas Hilo"], 
+        nutrition: { kcal: 580, proteina_g: 38, carbos_g: 35, grasa_g: 28 }, 
+        config: [{type:"bunBottom"},{type:"meat"},{type:"cheese"},{type:"generic"},{type:"bunTop"}] 
+      },
+      { 
+        id: "porc-divinee", 
+        name: "Porc Divinée", 
+        description: "Sabor ahumado y premium. Lomo de cerdo de alta selección con queso fundido y tocino en pan brioche artesanal.", 
+        price: 9.20, 
+        grams: 150, 
+        img: "https://i.postimg.cc/fRMhMFQK/Gemini_Generated_Image_d5qhrid5qhrid5qh.png", 
+        ingredients: ["Pan Brioche", "Lomo de Cerdo", "Queso", "Jamón", "Huevo", "Tocino", "Papas Hilo"], 
+        nutrition: { kcal: 710, proteina_g: 35, carbos_g: 38, grasa_g: 42 }, 
+        config: [{type:"bunBottom"},{type:"meat"},{type:"cheese"},{type:"generic"},{type:"bunTop"}] 
+      },
+      { 
+        id: "divinee-mixta", 
+        name: "Divinée Mixta", 
+        description: "La dualidad perfecta. Fusión imponente de lomo de cerdo y lomito de res, diseñada para los que buscan potencia y sabor extremo.", 
+        price: 11.99, 
+        grams: 300, 
+        img: "https://i.postimg.cc/8zTVT3gb/Gemini_Generated_Image_51ak0f51ak0f51ak.png", 
+        ingredients: ["Pan Brioche", "Lomito de Res", "Lomo de Cerdo", "Queso", "Jamón", "Huevo", "Tocino", "Papas Hilo", "Lechuga y Tomate"], 
+        nutrition: { kcal: 890, proteina_g: 52, carbos_g: 42, grasa_g: 55 }, 
+        config: [{type:"bunBottom"},{type:"meat"},{type:"meat"},{type:"cheese"},{type:"lettuce"},{type:"bunTop"}] 
+      },
+      { 
+        id: "divinee-absoluta", 
+        name: "Divinée Absoluta", 
+        description: "La joya de la corona. Cuatro proteínas (Smash, Lomo, Pollo y Chorizo) unidas en una creación monumental sin límites.", 
+        price: 15.99, 
+        grams: 600, 
+        img: "https://i.postimg.cc/Z5JhJgzF/Gemini_Generated_Image_kjudi7kjudi7kjud.png", 
+        ingredients: ["Pan Brioche", "Carne Smash", "Lomo de Cerdo", "Pollo", "Chorizo Premium", "Queso", "Jamón", "Huevo", "Tocino", "Papas Hilo", "Lechuga y Tomate"], 
+        nutrition: { kcal: 1250, proteina_g: 85, carbos_g: 45, grasa_g: 78 }, 
+        config: [{type:"bunBottom"},{type:"meat"},{type:"meat"},{type:"meat"},{type:"meat"},{type:"cheese"},{type:"lettuce"},{type:"bunTop"}] 
+      },
     ];
     const desserts = [
       { id: "noir-cheesecake", name: "Noir Cheesecake", description: "Cheesecake sedoso con cacao oscuro y crumble de avellana.", price: 9.5, img: "https://images.unsplash.com/photo-1541781408260-3c7b8d7a5b61?auto=format&fit=crop&w=1600&q=80" },
@@ -867,14 +917,13 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
         { id: "ciabatta", name: "Ciabatta", price: 1.85, note: "Textura artesanal" },
         { id: "lettuce", name: "Lettuce Wrap", price: 0.95, note: "Fresco, low-carb" },
       ],
-      proteins: [
-        { id: "angus180", name: "Lomito 200g", price: 2.50, note: "Jugosa y potente" },
-        { id: "smash", name: "Smash 100g", price: 2.25, note: "Corte caramelizado" },
-        { id: "wagyuBlend", name: "Chuleta", price: 3.00, note: "Ultra premium" },
-        { id: "chickenCrispy", name: "Pollo Crispy", price: 3.00, note: "Crujiente perfecto" },
-        { id: "chickenGrilled", name: "Pollo Grilled", price: 2.25, note: "Más ligero" },
-        { id: "plant", name: "Plant-based", price: 7.10, note: "Sabor moderno" },
-        { id: "lamb", name: "Cordero", price: 8.40, note: "Gourmet intenso" },
+        proteins: [
+        { id: "angus180", name: "Lomito Premium", price: 3.50, note: "Corte de res tierno" },
+        { id: "smash", name: "Carne Smash", price: 2.50, note: "Corte caramelizado" },
+        { id: "lomoCerdo", name: "Lomo de Cerdo", price: 2.80, note: "Sabor ahumado" },
+        { id: "chorizo", name: "Chorizo Premium", price: 2.50, note: "Toque artesanal" },
+        { id: "chickenGrilled", name: "Pollo a la Plancha", price: 2.25, note: "Ligero y tierno" },
+      ],
       ],
       cheeses: [
         { id: "cheddar", name: "Cheddar Añejo", price: 0.80, note: "Clásico lujo" },
@@ -1545,6 +1594,7 @@ function App() {
   </script>
 </body>
 </html>
+
 
 
 
