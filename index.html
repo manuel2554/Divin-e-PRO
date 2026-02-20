@@ -1197,6 +1197,7 @@ function AdminDashboard({ onClose, supabaseClient }) {
       const [tab, setTab] = useState('orders'); 
       const [searchCode, setSearchCode] = useState('');
       const [invoiceOrder, setInvoiceOrder] = useState(null);
+      
       const [isStoreOpen, setIsStoreOpen] = useState(true);
 
       useEffect(() => { fetchData(); }, []);
@@ -1254,7 +1255,7 @@ function AdminDashboard({ onClose, supabaseClient }) {
 
       const statusColors = { 'Pendiente': 'text-red-400 border-red-400/30', 'Preparando': 'text-yellow-400 border-yellow-400/30', 'En camino': 'text-blue-400 border-blue-400/30', 'Listo para retirar': 'text-purple-400 border-purple-400/30', 'Entregado': 'text-green-400 border-green-400/30', 'Cancelado': 'text-gray-400 border-gray-400/30' };
 
-      // NUEVO: LA MAGIA DE IMPRESIÓN BLINDADA
+      // CORREGIDO: Imprime sin romper la página principal
       const handlePrintTicket = () => {
         const content = document.getElementById("invoice-print-area").innerHTML;
         const printWindow = window.open('', '', 'width=400,height=600');
@@ -1264,14 +1265,7 @@ function AdminDashboard({ onClose, supabaseClient }) {
               <title>Ticket Divinée - ${invoiceOrder.tracking_code}</title>
               <style>
                 @page { margin: 0; }
-                body { 
-                  font-family: 'Courier New', Courier, monospace; 
-                  color: black; 
-                  background: white; 
-                  margin: 0; 
-                  padding: 15px; 
-                  width: 80mm; /* El tamaño exacto de una tickera térmica */
-                }
+                body { font-family: 'Courier New', Courier, monospace; color: black; background: white; margin: 0; padding: 15px; width: 80mm; }
                 .text-center { text-align: center; }
                 .text-right { text-align: right; }
                 .font-bold { font-weight: bold; }
@@ -1300,16 +1294,8 @@ function AdminDashboard({ onClose, supabaseClient }) {
                 .space-y-1 > * { margin-bottom: 4px; display: block; }
               </style>
             </head>
-            <body>
+            <body onload="setTimeout(function(){ window.print(); window.close(); }, 300)">
               ${content}
-              <script>
-                window.onload = function() {
-                  setTimeout(function() {
-                    window.print();
-                    window.close();
-                  }, 300);
-                }
-              </script>
             </body>
           </html>
         `);
@@ -1571,6 +1557,7 @@ function App() {
   </script>
 </body>
 </html>
+
 
 
 
