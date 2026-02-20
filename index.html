@@ -689,7 +689,7 @@ function ProductCard({ product, badge, onClick, onAdd }) {
       
       // NUEVO: Estado para el delivery
       const [deliveryZone, setDeliveryZone] = useState('retiro');
-      const deliveryCost = deliveryZone === 'centro' ? 1.00 : (deliveryZone === 'afueras' ? 2.00 : 0);
+      const deliveryCost = deliveryZone === 'centro' ? 0.00 : (deliveryZone === 'afueras' ? 1.50 : 0);
       const finalTotal = total + deliveryCost;
 
       const handleInput = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -1508,6 +1508,7 @@ function App() {
   </script>
 </body>
 </html>
+
 
 
 
