@@ -1504,23 +1504,35 @@ function AdminDashboard({ onClose, supabaseClient }) {
     // =========================
     // App Base
     // =========================
-    function App() {
+function App() {
       useSpotlight();
       const refs = { burgers: useRef(null), desserts: useRef(null), yogurt: useRef(null), atelier: useRef(null) };
       const [activeBurger, setActiveBurger] = useState(null);
       const [cartOpen, setCartOpen] = useState(false);
-      const [cartItems, setCartItems] = useState([]);
+      
+      // NUEVO: El carrito ahora lee la memoria al abrir la página
+      const [cartItems, setCartItems] = useState(() => {
+        try {
+          const guardado = localStorage.getItem('divinee_cart');
+          return guardado ? JSON.parse(guardado) : [];
+        } catch (e) { return []; }
+      });
+
       const [bcvRate, setBcvRate] = useState(null);
       const [trackingModalOpen, setTrackingModalOpen] = useState(false);
       
       const [adminModalOpen, setAdminModalOpen] = useState(false);
       const [isAdminLogged, setIsAdminLogged] = useState(false);
       
-      // NUEVO: Estado para saber si la app ya cargó
       const [appLoaded, setAppLoaded] = useState(false);
 
       const cartCount = useMemo(() => cartItems.reduce((acc, it) => acc + it.qty, 0), [cartItems]);
       const cartTotal = useMemo(() => cartItems.reduce((acc, it) => acc + it.price * it.qty, 0), [cartItems]);
+
+      // NUEVO: Cada vez que el carrito cambia, lo guardamos en la memoria
+      useEffect(() => {
+        localStorage.setItem('divinee_cart', JSON.stringify(cartItems));
+      }, [cartItems]);
 
       useEffect(() => {
         fetch("https://ve.dolarapi.com/v1/dolares/oficial")
@@ -1532,7 +1544,6 @@ function AdminDashboard({ onClose, supabaseClient }) {
       function scrollTo(key) { refs[key]?.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }
       
       function addToCart(item) {
-        // NUEVO: Dispara la alerta bonita
         window.showToast(`${item.name} añadido`, '🍔');
         
         setCartItems((prev) => {
@@ -1546,7 +1557,6 @@ function AdminDashboard({ onClose, supabaseClient }) {
 
       return (
         <div className="min-h-screen relative z-[1]">
-          {/* NUEVO: Carga los Toasts y el Preloader */}
           <ToastContainer />
           <AnimatePresence>
             {!appLoaded && <Preloader onComplete={() => setAppLoaded(true)} />}
@@ -1558,7 +1568,6 @@ function AdminDashboard({ onClose, supabaseClient }) {
             <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }} className="mb-8 md:mb-14">
               <div className="rounded-3xl hero-grid shadow-divine p-5 md:p-10 relative overflow-hidden">
                 
-                {/* NUEVO: Partículas Doradas flotantes */}
                 <div className="absolute inset-0 pointer-events-none">
                   {[...Array(8)].map((_, i) => (
                     <motion.div key={i} className="absolute w-1 h-1 bg-divineGold rounded-full shadow-glow blur-[1px]"
@@ -1577,7 +1586,6 @@ function AdminDashboard({ onClose, supabaseClient }) {
                   <h1 className="text-3xl font-semibold leading-tight md:text-6xl"><span className="bg-gradient-to-r from-divineCream via-divineCream to-divineGold bg-clip-text text-transparent">Hamburguesas, postres y yogurt griego</span> con estética de lujo.</h1>
                   <p className="mt-3 max-w-2xl text-sm text-divineCream/75 md:text-base">Explora el menú y arma tu burger con un configurador premium.</p>
                   <div className="mt-5 flex flex-col sm:flex-row flex-wrap gap-3">
-                    {/* NUEVO: Botones con el efecto "Magnético/Touch" suave */}
                     <motion.button whileTap={{ scale: 0.95 }} className="btn-primary w-full sm:w-auto" onClick={() => scrollTo("burgers")} type="button">Explorar menú</motion.button>
                     <motion.button whileTap={{ scale: 0.95 }} className="btn-ghost w-full sm:w-auto" onClick={() => setTrackingModalOpen(true)} type="button">Rastrear Pedido</motion.button>
                   </div>
@@ -1597,7 +1605,7 @@ function AdminDashboard({ onClose, supabaseClient }) {
             href="https://wa.me/584126835635?text=Hola%20Divin%C3%A9e%2C%20tengo%20una%20duda%20con%20mi%20pedido..." 
             target="_blank" 
             rel="noopener noreferrer"
-            className="fixed z-40 bottom-[calc(1.1rem+env(safe-area-inset-bottom))] left-[calc(1.1rem+env(safe-area-inset-left))] rounded-2xl border border-[#25D366]/50 bg-black/60 px-4 py-3 shadow-glow backdrop-blur hover:bg-[#25D366]/20 transition flex items-center gap-3"
+            className="fixed z-40 bottom-[calc(1.1rem+env(safe-area-bottom))] left-[calc(1.1rem+env(safe-area-inset-left))] rounded-2xl border border-[#25D366]/50 bg-black/60 px-4 py-3 shadow-glow backdrop-blur hover:bg-[#25D366]/20 transition flex items-center gap-3"
           >
              <span className="text-xl leading-none">💬</span>
              <span className="text-xs tracking-[0.2em] text-[#25D366] font-semibold hidden sm:inline">AYUDA</span>
@@ -1622,6 +1630,7 @@ function AdminDashboard({ onClose, supabaseClient }) {
   </script>
 </body>
 </html>
+
 
 
 
