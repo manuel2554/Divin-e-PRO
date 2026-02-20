@@ -1402,7 +1402,7 @@ function AdminDashboard({ onClose, supabaseClient }) {
               </div>
             </motion.section>
             
-            <section ref={refs.burgers} className="scroll-mt-32"><SectionShell eyebrow="COLECCIÓN DIVINÉE" title="Hamburguesas" subtitle="Cae el modelo al seleccionarlas."><ProductShowcase items={burgers} badge="VER 360°" onOpen={setActiveBurger} onAdd={addToCart} /></SectionShell></section>
+            <section ref={refs.burgers} className="scroll-mt-32"><SectionShell eyebrow="COLECCIÓN DIVINÉE" title="Hamburguesas" subtitle="Exquisito. Divino. Divinée🍔✨."><ProductShowcase items={burgers} badge="VER 360°" onOpen={setActiveBurger} onAdd={addToCart} /></SectionShell></section>
             <section ref={refs.desserts} className="scroll-mt-32"><SectionShell eyebrow="EXQUISITE DESSERTS" title="Postres" subtitle="Selección corta, elegante."><ProductShowcase items={desserts} badge="PATISSERIE" onOpen={(p) => addToCart({ ...p, qty: 1 })} onAdd={addToCart} /></SectionShell></section>
             <section ref={refs.yogurt} className="scroll-mt-32"><SectionShell eyebrow="GREEK YOGURT DE MÁQUINA" title="Yogurt" subtitle="Sección desactivada temporalmente."><YogurtComingSoonCard /></SectionShell></section>
             <section ref={refs.atelier} className="scroll-mt-32"><SectionShell eyebrow="ATELIER" title="Arma tu Hamburguesa" subtitle="Configurador en vivo, agrega ingredientes y verás cómo caen."><BurgerBuilder onAddToCart={addToCart} /></SectionShell></section>
@@ -1439,6 +1439,7 @@ function AdminDashboard({ onClose, supabaseClient }) {
   </script>
 </body>
 </html>
+
 
 
 
