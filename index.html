@@ -254,43 +254,34 @@
     // Components
     // =========================
 function Header({ onNavigate, onOpenCart, cartCount, onOpenAdmin }) {
-      const [logoSrc, setLogoSrc] = useState(LOGO_LOCAL);
-      const NavChip = ({ label, enabled, onClick }) => (
-        <button disabled={!enabled} onClick={enabled ? onClick : undefined} className={["whitespace-nowrap rounded-full border px-4 py-2 text-[11px] tracking-[0.22em] backdrop-blur transition", enabled ? "border-divineLine2 bg-black/25 text-divineCream/75 hover:text-divineGold hover:border-divineGold/40" : "border-divineLine2 bg-black/20 text-divineCream/40 btn-disabled"].join(" ")} type="button">{label}</button>
-      );
       return (
-        <header className="fixed left-0 top-0 z-40 w-full">
-          <div className="mx-auto max-w-6xl px-4 md:px-6">
-            <div className="mt-3 rounded-2xl glass ring-gold" style={{ paddingTop: "env(safe-area-inset-top)" }}>
-              <div className="flex items-center justify-between gap-3 px-4 py-3 md:px-6">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="rounded-xl border border-divineLine2 bg-black/25 p-2 shadow-glow">
-                    <img src={logoSrc} alt={BRAND_NAME} className="h-8 w-auto object-contain" loading="eager" decoding="async" onError={() => { if (logoSrc !== LOGO_REMOTE) setLogoSrc(LOGO_REMOTE); }} />
-                  </div>
-                  <div className="hidden md:block min-w-0">
-                    <div className="text-xs tracking-luxe text-divineGold/95">{BRAND_NAME.toUpperCase()}</div>
-                    <div className="text-[10px] tracking-[0.35em] text-divineCream/60">GOURMET BAR</div>
-                  </div>
-                </div>
-                <nav className="hidden md:flex items-center gap-4 text-xs tracking-[0.22em] text-divineCream/80">
-                  <button onClick={() => onNavigate("burgers")} className="nav-link hover:text-divineGold transition" type="button">HAMBURGUESAS</button>
-                  <button onClick={() => onNavigate("desserts")} className="nav-link hover:text-divineGold transition" type="button">POSTRES</button>
-                  <button onClick={() => onNavigate("atelier")} className="nav-link hover:text-divineGold transition" type="button">ATELIER</button>
-                  <button onClick={onOpenAdmin} className="nav-link hover:text-divineGold transition text-divineGold/60" type="button">PANEL</button>
-                </nav>
-                <div className="flex items-center gap-2">
-                  <button onClick={onOpenCart} className="btn-ghost px-4 py-2" type="button">CARRITO {cartCount > 0 ? `(${cartCount})` : ""}</button>
-                </div>
-              </div>
-              <div className="md:hidden px-4 pb-3">
-                <div className="mobile-scroll flex gap-2">
-                  <NavChip label="HAMBURGUESAS" enabled={true} onClick={() => onNavigate("burgers")} />
-                  <NavChip label="POSTRES" enabled={true} onClick={() => onNavigate("desserts")} />
-                  <NavChip label="ATELIER" enabled={true} onClick={() => onNavigate("atelier")} />
-                  <NavChip label="PANEL" enabled={true} onClick={onOpenAdmin} />
-                </div>
-              </div>
-            </div>
+        <header className="fixed top-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-xl border-b border-divineLine2/40 transition-all duration-300">
+          <div className="mx-auto max-w-6xl px-4 md:px-6 h-[72px] md:h-20 flex items-center justify-between gap-3 pt-[env(safe-area-inset-top)]">
+            
+            <button onClick={onOpenAdmin} className="relative group flex items-center justify-center shrink-0">
+               <div className="absolute inset-0 bg-divineGold rounded-full blur-md opacity-20 group-hover:opacity-50 transition duration-500"></div>
+               <img src={LOGO_LOCAL} onError={(e) => e.target.src=LOGO_REMOTE} className="w-11 h-11 md:w-12 md:h-12 object-contain rounded-full border border-divineLine2/80 relative z-10 bg-white shadow-glow" alt="Divinée" />
+            </button>
+
+            <nav className="flex-1 overflow-x-auto no-scrollbar flex items-center gap-1 sm:gap-2 px-2 md:justify-center" style={{ WebkitOverflowScrolling: 'touch' }}>
+               <button onClick={() => onNavigate('burgers')} className="text-[10px] sm:text-[11px] font-semibold tracking-[0.2em] px-4 py-2.5 rounded-full border border-transparent text-divineCream/60 hover:text-divineGold hover:bg-divineLine2/20 transition whitespace-nowrap">
+                 HAMBURGUESAS
+               </button>
+               <button onClick={() => onNavigate('desserts')} className="text-[10px] sm:text-[11px] font-semibold tracking-[0.2em] px-4 py-2.5 rounded-full border border-transparent text-divineCream/60 hover:text-divineGold hover:bg-divineLine2/20 transition whitespace-nowrap">
+                 POSTRES
+               </button>
+               <button onClick={() => onNavigate('atelier')} className="text-[10px] sm:text-[11px] font-semibold tracking-[0.2em] px-5 py-2.5 rounded-full border border-divineGold/40 text-divineGold bg-divineGold/10 hover:bg-divineGold/20 transition whitespace-nowrap shadow-[0_0_15px_rgba(212,175,55,0.15)] flex items-center gap-2">
+                 ✨ ATELIER
+               </button>
+            </nav>
+
+            <button onClick={onOpenCart} className="shrink-0 relative flex items-center gap-2 px-4 py-2.5 md:py-3 rounded-full bg-gradient-to-r from-divineGold/20 to-divineGold/5 border border-divineGold/40 text-divineGold hover:from-divineGold/30 hover:to-divineGold/10 transition shadow-[0_0_15px_rgba(212,175,55,0.2)]">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 md:h-5 md:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+              <span className="text-[10px] md:text-xs font-bold tracking-widest hidden sm:inline">CARRITO</span>
+              {cartCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-divineGold text-black text-[11px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-lg border border-black">{cartCount}</span>
+              )}
+            </button>
           </div>
         </header>
       );
@@ -1256,6 +1247,7 @@ function AdminDashboard({ onClose, supabaseClient }) {
       const statusColors = { 'Pendiente': 'text-red-400 border-red-400/30', 'Preparando': 'text-yellow-400 border-yellow-400/30', 'En camino': 'text-blue-400 border-blue-400/30', 'Listo para retirar': 'text-purple-400 border-purple-400/30', 'Entregado': 'text-green-400 border-green-400/30', 'Cancelado': 'text-gray-400 border-gray-400/30' };
 
       // CORREGIDO: Imprime sin romper la página principal
+// CORREGIDO: Imprime perfecto en Ticketera y en Hoja A4
       const handlePrintTicket = () => {
         const content = document.getElementById("invoice-print-area").innerHTML;
         const printWindow = window.open('', '', 'width=400,height=600');
@@ -1264,8 +1256,20 @@ function AdminDashboard({ onClose, supabaseClient }) {
             <head>
               <title>Ticket Divinée - ${invoiceOrder.tracking_code}</title>
               <style>
-                @page { margin: 0; }
-                body { font-family: 'Courier New', Courier, monospace; color: black; background: white; margin: 0; padding: 15px; width: 80mm; }
+                @page { margin: 5mm; }
+                body { 
+                  font-family: 'Courier New', Courier, monospace; 
+                  color: black; 
+                  background: white; 
+                  margin: 0; 
+                  padding: 10px; 
+                  display: flex;
+                  justify-content: center;
+                }
+                .ticket-container {
+                  width: 100%;
+                  max-width: 320px; /* Ancho perfecto para que no se aplaste ni se vea gigante */
+                }
                 .text-center { text-align: center; }
                 .text-right { text-align: right; }
                 .font-bold { font-weight: bold; }
@@ -1282,20 +1286,21 @@ function AdminDashboard({ onClose, supabaseClient }) {
                 .pl-4 { padding-left: 16px; }
                 .border-b-2 { border-bottom: 2px dashed #000; }
                 .border-t-2 { border-top: 2px dashed #000; }
-                .text-xs { font-size: 11px; }
-                .text-sm { font-size: 13px; }
-                .text-base { font-size: 15px; }
-                .text-2xl { font-size: 22px; }
-                .tracking-widest { letter-spacing: 0.15em; }
+                .text-xs { font-size: 12px; }
+                .text-sm { font-size: 14px; }
+                .text-base { font-size: 16px; }
+                .text-2xl { font-size: 26px; letter-spacing: 0.1em; }
                 h2 { margin: 0; }
                 p { margin: 0; }
-                .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
-                .text-gray-600, .text-gray-500, .text-gray-400 { color: #222; }
-                .space-y-1 > * { margin-bottom: 4px; display: block; }
+                .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+                .text-gray-600, .text-gray-500, .text-gray-400 { color: #333; }
+                .space-y-1 > * { margin-bottom: 5px; display: block; }
               </style>
             </head>
             <body onload="setTimeout(function(){ window.print(); window.close(); }, 300)">
-              ${content}
+              <div class="ticket-container">
+                ${content}
+              </div>
             </body>
           </html>
         `);
@@ -1557,6 +1562,7 @@ function App() {
   </script>
 </body>
 </html>
+
 
 
 
