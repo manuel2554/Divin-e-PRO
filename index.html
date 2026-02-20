@@ -779,8 +779,8 @@ function ProductCard({ product, badge, onClick, onAdd }) {
                     <label className="text-xs tracking-[0.18em] text-divineCream/60 ml-1">MÉTODO DE ENTREGA</label>
                     <select name="deliveryZone" value={deliveryZone} onChange={(e) => setDeliveryZone(e.target.value)} className="mt-1 w-full bg-black/40 border border-divineLine2 rounded-xl px-4 py-3 text-sm text-divineCream outline-none focus:border-divineGold transition cursor-pointer">
                       <option value="retiro">Retiro por el local ($0.00)</option>
-                      <option value="centro">Delivery: Pueblo Llano Centro (+$1.00)</option>
-                      <option value="afueras">Delivery: Zonas alejadas (+$2.00)</option>
+                      <option value="centro">Delivery: Pueblo Llano Centro (+$0.00)</option>
+                      <option value="afueras">Delivery: Zonas alejadas (+$1.50)</option>
                     </select>
                   </div>
 
@@ -1508,6 +1508,7 @@ function App() {
   </script>
 </body>
 </html>
+
 
 
 
