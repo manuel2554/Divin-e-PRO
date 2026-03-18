@@ -100,22 +100,18 @@
     // =========================
     // Configuración de Supabase y Telegram
     // =========================
-    // 1. SUPABASE (Las llaves que copiaste de la foto)
     const { createClient } = window.supabase;
-    const supabaseUrl = "https://djkmmzbxicsbexeutuzz.supabase.co"; // Ej: https://k0kc9dsil...supabase.co
-    const supabaseKey = "sb_publishable_kOKC9dSiLSqhOQvxjx24yQ_aFP2VYuM"
-;     // Ej: sb_publishable_k0kc...
+    const supabaseUrl = "https://djkmmzbxicsbexeutuzz.supabase.co"; 
+    const supabaseKey = "sb_publishable_kOKC9dSiLSqhOQvxjx24yQ_aFP2VYuM"; 
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
-    // 2. TELEGRAM (Lo que acabas de sacar de BotFather)
-    const TELEGRAM_BOT_TOKEN = "8566482559:AAEKenkBkriNlZAjlyIGBWWzGDTB3sFzyCA";    // Ej: 712345678:AAGdf...
-    const TELEGRAM_CHAT_ID = "1145054461";            // Ej: 123456789
+    const TELEGRAM_BOT_TOKEN = "8566482559:AAEKenkBkriNlZAjlyIGBWWzGDTB3sFzyCA";    
+    const TELEGRAM_CHAT_ID = "1145054461";                
 
-    // 3. UTILIDAD PARA BOLÍVARES
     const moneyVES = (usd, rate) => new Intl.NumberFormat("es-VE", { style: "currency", currency: "VES" }).format(usd * rate);
 
-// =========================
-    // Motion fallback (Corregido para no perder el cursor)
+    // =========================
+    // Motion fallback
     // =========================
     const FM = window.Motion || window.framerMotion || {};
     function stripMotionProps(props = {}) {
@@ -206,14 +202,14 @@
     }
 
     // =========================
-    // Data
+    // Data Inicial (Ahora incluye 'cost' para calcular profit)
     // =========================
-      const burgers = [
+    const DEFAULT_BURGERS = [
       { 
         id: "clasica-divinee", 
         name: "Clásica Divinée", 
         description: "La tradición elevada. Jugosa carne Smash en pan brioche sellado, jamón cheddar, huevo y tocino crujiente con el toque fresco de la casa.", 
-        price: 8.80, 
+        price: 8.80, cost: 4.20,
         grams: 120, 
         img: "https://i.postimg.cc/bwqjqMf9/Gemini_Generated_Image_cj43xcj43xcj43xc.png", 
         ingredients: ["Pan Brioche", "Carne Smash", "Queso", "Jamón Cheddar", "Huevo", "Tocino", "Papas Hilo", "Lechuga y Tomate"], 
@@ -224,7 +220,7 @@
         id: "pollo-divino", 
         name: "Pollo Divino", 
         description: "Tierna y ligera. Filete de pollo seleccionado a la plancha sobre pan brioche, con el equilibrio perfecto de queso, jamón y huevo.", 
-        price: 8.50, 
+        price: 8.50, cost: 3.90,
         grams: 120, 
         img: "https://i.postimg.cc/t49H9fH0/Gemini_Generated_Image_r93243r93243r932.png", 
         ingredients: ["Pan Brioche", "Filete de Pollo", "Queso", "Jamón", "Huevo", "Tocino", "Papas Hilo","Lechuga y Tomate"], 
@@ -235,7 +231,7 @@
         id: "porc-divinee", 
         name: "Porc Divinée", 
         description: "Sabor ahumado y premium. Lomo de cerdo de alta selección con queso fundido y tocino en pan brioche artesanal.", 
-        price: 9.50, 
+        price: 9.50, cost: 4.80,
         grams: 150, 
         img: "https://i.postimg.cc/fRMhMFQK/Gemini_Generated_Image_d5qhrid5qhrid5qh.png", 
         ingredients: ["Pan Brioche", "Lomo de Cerdo", "Queso", "Jamón", "Huevo", "Tocino", "Papas Hilo","Lechuga y Tomate"], 
@@ -246,7 +242,7 @@
         id: "divinee-mixta", 
         name: "Divinée Mixta", 
         description: "La dualidad perfecta. Fusión imponente de lomo de cerdo y lomito de res, diseñada para los que buscan potencia y sabor extremo.", 
-        price: 12.99, 
+        price: 12.99, cost: 6.50,
         grams: 300, 
         img: "https://i.postimg.cc/8zTVT3gb/Gemini_Generated_Image_51ak0f51ak0f51ak.png", 
         ingredients: ["Pan Brioche", "Lomito de Res", "Lomo de Cerdo", "Queso", "Jamón", "Huevo", "Tocino", "Papas Hilo", "Lechuga y Tomate"], 
@@ -257,7 +253,7 @@
         id: "divinee-absoluta", 
         name: "Divinée Absoluta", 
         description: "La joya de la corona. Cuatro proteínas (Smash, Lomo, Pollo y Chorizo) unidas en una creación monumental sin límites.", 
-        price: 16.99, 
+        price: 16.99, cost: 8.50,
         grams: 600, 
         img: "https://i.postimg.cc/Z5JhJgzF/Gemini_Generated_Image_kjudi7kjudi7kjud.png", 
         ingredients: ["Pan Brioche", "Carne Smash", "Lomo de Cerdo", "Pollo", "Chorizo Premium", "Queso", "Jamón", "Huevo", "Tocino", "Papas Hilo", "Lechuga y Tomate"], 
@@ -265,12 +261,59 @@
         config: [{type:"bunBottom"},{type:"meat"},{type:"meat"},{type:"meat"},{type:"meat"},{type:"cheese"},{type:"lettuce"},{type:"bunTop"}] 
       },
     ];
-    const desserts = [
-      { id: "noir-cheesecake", name: "Noir Cheesecake", description: "Cheesecake sedoso con cacao oscuro y crumble de avellana.", price: 9.5, img: "https://images.unsplash.com/photo-1541781408260-3c7b8d7a5b61?auto=format&fit=crop&w=1600&q=80" },
-      { id: "gold-mousse", name: "Gold Mousse", description: "Mousse de vainilla de Madagascar con brillo dorado sutil.", price: 10.25, img: "https://images.unsplash.com/photo-1601972602237-8c79241e468b?auto=format&fit=crop&w=1600&q=80" },
-      { id: "creme-brulee-tart", name: "Tarta Crème Brûlée", description: "Caramelo flameado, núcleo de crema y base mantequilla.", price: 10.75, img: "https://images.unsplash.com/photo-1608198093002-ad4e005484ec?auto=format&fit=crop&w=1600&q=80" },
-      { id: "pistachio-opera", name: "Ópera de Pistacho", description: "Capas de pistacho con notas de espresso y glaseado satinado.", price: 11.5, img: "https://images.unsplash.com/photo-1589308078059-be1415eab4c3?auto=format&fit=crop&w=1600&q=80" },
+
+    const DEFAULT_DESSERTS = [
+      { id: "noir-cheesecake", name: "Noir Cheesecake", description: "Cheesecake sedoso con cacao oscuro y crumble de avellana.", price: 9.5, cost: 4.0, img: "https://images.unsplash.com/photo-1541781408260-3c7b8d7a5b61?auto=format&fit=crop&w=1600&q=80" },
+      { id: "gold-mousse", name: "Gold Mousse", description: "Mousse de vainilla de Madagascar con brillo dorado sutil.", price: 10.25, cost: 4.5, img: "https://images.unsplash.com/photo-1601972602237-8c79241e468b?auto=format&fit=crop&w=1600&q=80" },
+      { id: "creme-brulee-tart", name: "Tarta Crème Brûlée", description: "Caramelo flameado, núcleo de crema y base mantequilla.", price: 10.75, cost: 4.2, img: "https://images.unsplash.com/photo-1608198093002-ad4e005484ec?auto=format&fit=crop&w=1600&q=80" },
+      { id: "pistachio-opera", name: "Ópera de Pistacho", description: "Capas de pistacho con notas de espresso y glaseado satinado.", price: 11.5, cost: 5.0, img: "https://images.unsplash.com/photo-1589308078059-be1415eab4c3?auto=format&fit=crop&w=1600&q=80" },
     ];
+
+    const DEFAULT_CATALOG = {
+      buns: [
+        { id: "brioche", name: "Brioche", price: 1.75, cost: 0.80, note: "Suave, dorado, premium" },
+        { id: "potato", name: "Potato Roll", price: 1.50, cost: 0.60, note: "Esponjoso, balanceado" },
+        { id: "sesame", name: "Sésamo", price: 1.25, cost: 0.50, note: "Clásico, crujiente" },
+        { id: "pretzel", name: "Pretzel", price: 1.95, cost: 0.90, note: "Más denso, elegante" },
+        { id: "ciabatta", name: "Ciabatta", price: 1.85, cost: 0.85, note: "Textura artesanal" },
+        { id: "lettuce", name: "Lettuce Wrap", price: 0.95, cost: 0.30, note: "Fresco, low-carb" },
+      ],
+      proteins: [
+        { id: "angus180", name: "Lomito Premium", price: 3.50, cost: 1.80, note: "Corte de res tierno" },
+        { id: "smash", name: "Carne Smash", price: 2.50, cost: 1.10, note: "Corte caramelizado" },
+        { id: "lomoCerdo", name: "Lomo de Cerdo", price: 3.20, cost: 1.50, note: "Sabor ahumado" },
+        { id: "chorizo", name: "Chorizo Premium", price: 2.50, cost: 1.00, note: "Toque artesanal" },
+        { id: "chickenGrilled", name: "Pollo a la Plancha", price: 2.25, cost: 0.90, note: "Ligero y tierno" },
+      ],
+      cheeses: [
+        { id: "cheddar", name: "Cheddar Añejo", price: 0.80, cost: 0.30, note: "Clásico lujo" },
+        { id: "gruyere", name: "Llanero", price: 0.50, cost: 0.20, note: "Blanco Delicia" },
+        { id: "swiss", name: "Suizo", price: 1.50, cost: 0.60, note: "Suave, elástico" },
+        { id: "blue", name: "Azul Suave", price: 1.95, cost: 0.80, note: "Umami elegante" },
+        { id: "pepperJack", name: "Pepper Jack", price: 1.65, cost: 0.70, note: "Picante sutil" },
+        { id: "none", name: "Sin queso", price: 0.0, cost: 0.0, note: "Limpio, directo" },
+      ],
+      toppings: [
+        { id: "bacon", name: "Jamón de Pierna", price: 0.50, cost: 0.20, group: "Crunch" },
+        { id: "pickles", name: "Pepinillos", price: 0.70, cost: 0.25, group: "Classic" },
+        { id: "lettuce", name: "Lechuga", price: 0.60, cost: 0.15, group: "Fresh" },
+        { id: "arugula", name: "Jamón Ahumado", price: 0.85, cost: 0.35, group: "Fresh" },
+        { id: "tomato", name: "Tomate", price: 0.65, cost: 0.20, group: "Fresh" },
+        { id: "tocino", name: "Tocineta", price: 0.80, cost: 0.35, group: "Crunch" },
+        { id: "mushrooms", name: "Hongos (Champiñones)", price: 1.25, cost: 0.50, group: "Umami" },
+        { id: "caramelOnion", name: "Cebolla caramelizada", price: 0.50, cost: 0.15, group: "Classic" },
+        { id: "crispyOnion", name: "Cebolla crujiente", price: 0.50, cost: 0.15, group: "Crunch" },
+        { id: "egg", name: "Huevo", price: 0.60, cost: 0.20, group: "Luxe" },
+        { id: "avocado", name: "Aguacate", price: 0.80, cost: 0.35, group: "Luxe" },
+        { id: "hashbrown", name: "Cebolla", price: 0.20, cost: 0.05, group: "Crunch" },
+        { id: "papashilo", name: "Papas Hilo", price: 0.60, cost: 0.20, group: "Crunch" },
+        { id: "divineeSauce", name: "Adi Salsas Divinée", price: 0.50, cost: 0.10, group: "Sauce" },
+        { id: "aioli", name: "Alioli", price: 0.90, cost: 0.30, group: "Sauce" },
+        { id: "bbq", name: "BBQ", price: 0.90, cost: 0.30, group: "Sauce" },
+        { id: "spicyMayo", name: "Mayo spicy", price: 0.95, cost: 0.35, group: "Sauce" },
+        { id: "truffle", name: "Trufa", price: 2.40, cost: 1.20, group: "Luxe" },
+      ],
+    };
 
     // =========================
     // Three helpers
@@ -302,7 +345,7 @@
     // =========================
     // Components
     // =========================
-function Header({ onNavigate, onOpenCart, cartCount, onOpenAdmin }) {
+    function Header({ onNavigate, onOpenCart, cartCount, onOpenAdmin }) {
       return (
         <header className="fixed top-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-xl border-b border-divineLine2/40 transition-all duration-300">
           <div className="mx-auto max-w-6xl px-4 md:px-6 pt-[env(safe-area-inset-top)]">
@@ -346,7 +389,7 @@ function Header({ onNavigate, onOpenCart, cartCount, onOpenAdmin }) {
               </button>
             </div>
 
-            {/* FILA INFERIOR: Navegación Mobile (Se oculta en PC) */}
+            {/* FILA INFERIOR: Navegación Mobile */}
             <div className="md:hidden pb-3">
               <nav className="flex overflow-x-auto no-scrollbar gap-2" style={{ WebkitOverflowScrolling: 'touch' }}>
                  <button onClick={() => onNavigate('burgers')} className="shrink-0 text-[10px] font-semibold tracking-[0.2em] px-4 py-2 rounded-full border border-divineLine2 bg-black/40 text-divineCream/75 hover:text-divineGold">
@@ -368,6 +411,7 @@ function Header({ onNavigate, onOpenCart, cartCount, onOpenAdmin }) {
         </header>
       );
     }
+    
     function SectionShell({ eyebrow, title, subtitle, children }) {
       return (
         <div className="mb-10 md:mb-16">
@@ -380,7 +424,8 @@ function Header({ onNavigate, onOpenCart, cartCount, onOpenAdmin }) {
         </div>
       );
     }
-function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
+    
+    function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
       return (
         <motion.div whileHover={!isDisabled ? { y: -6 } : {}} transition={{ type: "spring", stiffness: 260, damping: 22 }} className={`group overflow-hidden rounded-2xl border ${isDisabled ? 'border-red-500/30 bg-black/40' : 'border-divineLine bg-divinePanel'} shadow-divine relative`}>
           <div onClick={isDisabled ? undefined : onClick} className={`block w-full text-left ${isDisabled ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}>
@@ -419,7 +464,7 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
                 const isOff = disabledItems.includes(p.id);
                 return (
                 <div key={p.id} className="w-[78vw] max-w-[360px] snap-start">
-                  <ProductCard product={p} badge={badge} isDisabled={isOff} onClick={() => onOpen(p)} onAdd={() => onAdd({ id: p.id, name: p.name, price: p.price })} />
+                  <ProductCard product={p} badge={badge} isDisabled={isOff} onClick={() => onOpen(p)} onAdd={() => onAdd({ ...p, cost: p.cost })} />
                 </div>
               )})}
             </div>
@@ -429,14 +474,15 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
             {items.map((p) => {
               const isOff = disabledItems.includes(p.id);
               return (
-              <ProductCard key={p.id} product={p} badge={badge} isDisabled={isOff} onClick={() => onOpen(p)} onAdd={() => onAdd({ id: p.id, name: p.name, price: p.price })} />
+              <ProductCard key={p.id} product={p} badge={badge} isDisabled={isOff} onClick={() => onOpen(p)} onAdd={() => onAdd({ ...p, cost: p.cost })} />
             )})}
           </div>
         </>
       );
     }
+    
     // =========================
-    // 3D Viewer Mejorado (Cae con Físicas y Dinámico)
+    // 3D Viewer Mejorado
     // =========================
     function BurgerViewer3D({ heightClass = "h-[280px] md:h-[440px]", modelUrl, showUI = true, burgerConfig = null }) {
       const mountRef = useRef(null);
@@ -497,12 +543,11 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
           scene.add(ground);
 
           const root = new THREE.Group();
-          root.position.set(0, -0.2, 0); // Mejor centrado vertical
+          root.position.set(0, -0.2, 0); 
           scene.add(root);
           const stack = new THREE.Group();
           root.add(stack);
 
-          // Controladores de giro
           const el = renderer.domElement;
           const onDown = (e) => { draggingRef.current = true; lastRef.current = { x: e.clientX, y: e.clientY }; el.setPointerCapture?.(e.pointerId); };
           const onMove = (e) => {
@@ -520,7 +565,6 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
           const onResize = () => { const { w: nw, h: nh } = getSize(); camera.aspect = nw / nh; camera.updateProjectionMatrix(); renderer.setSize(nw, nh); };
           window.addEventListener("resize", onResize);
 
-          // Cache de materiales para optimizar
           const bunNoise = makeNoiseTexture(THREE, { contrast: 0.45 });
           const meatNoise = makeNoiseTexture(THREE, { contrast: 0.65 });
           const matCache = {
@@ -541,13 +585,12 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
               stateRef.current.root.rotation.y = yawRef.current;
               stateRef.current.root.rotation.x = pitchRef.current;
             }
-            // Físicas de caída (Resorte)
             const time = performance.now() * 0.001;
             stateRef.current.animatables.forEach(item => {
               if (time > item.startTime) {
                 const diff = item.targetY - item.mesh.position.y;
-                item.velocity += diff * 0.25; // Rigidez del resorte
-                item.velocity *= 0.65; // Amortiguación
+                item.velocity += diff * 0.25; 
+                item.velocity *= 0.65; 
                 item.mesh.position.y += item.velocity;
               }
             });
@@ -572,11 +615,9 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
         if (!st.THREE || !st.stack) return;
         const { THREE, stack, camera, matCache } = st;
 
-        // Limpiamos la hamburguesa anterior
         while (stack.children.length) stack.remove(stack.children[0]);
         st.animatables = [];
 
-        // Base por defecto si no hay config
         const fallbackConfig = [{ type: 'bunBottom' }, { type: 'meat' }, { type: 'cheese' }, { type: 'lettuce' }, { type: 'tomato' }, { type: 'bunTop' }];
         const currentConfig = burgerConfig || fallbackConfig;
 
@@ -586,21 +627,20 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
             const model = gltf.scene;
             model.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
             model.scale.setScalar(1.2);
-            // La prearmada entera cae
             model.position.y = 5;
             st.animatables.push({ mesh: model, targetY: 0, startTime: performance.now() * 0.001, velocity: 0 });
             stack.add(model);
             
-            model.position.y = 0; // Fake target para calcular centro de camara
+            model.position.y = 0; 
             fitCameraToObject(THREE, camera, stack, 1.4);
-            model.position.y = 5; // Reset a cielo
+            model.position.y = 5; 
           }, undefined, () => buildProcedural(currentConfig));
         } else {
           buildProcedural(currentConfig);
         }
 
         function buildProcedural(config) {
-          let currentY = -0.5; // Empezar de más abajo para mejor centro visual
+          let currentY = -0.5; 
           const anims = [];
           const now = performance.now() * 0.001;
 
@@ -625,16 +665,13 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
               mesh.traverse((m) => { if(m.isMesh){ m.castShadow = true; m.receiveShadow = true; }});
               stack.add(mesh);
               const targetY = currentY + thickness / 2;
-              mesh.position.y = targetY; // set temporal para la cámara
+              mesh.position.y = targetY; 
               anims.push({ mesh, targetY, startTime: now + idx * 0.15, velocity: 0 });
               currentY += thickness;
             }
           });
 
-          // Ajustamos cámara con las piezas en su sitio final
           fitCameraToObject(THREE, camera, stack, 1.4);
-          
-          // Elevamos las piezas al cielo para que caigan una por una!
           anims.forEach(a => { a.mesh.position.y = a.targetY + 6; });
           st.animatables = anims;
         }
@@ -655,8 +692,9 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
         </div>
       );
     }
+    
     // =========================
-    // Modales y Carrito
+    // Modales
     // =========================
     function BottomSheet({ title, subtitle, onClose, children, cta }) {
       const close = useHistoryClose(true, onClose); useEscape(close, true);
@@ -677,6 +715,7 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
         </motion.div>
       );
     }
+
     function ProductModal({ product, onClose, onAdd }) {
       const isMobile = useIsMobile(); useLockBodyScroll(true);
       const viewer = <BurgerViewer3D heightClass={isMobile ? "h-[240px]" : "h-[360px] lg:h-[520px]"} modelUrl={product.modelUrl} burgerConfig={product.config} showUI={true} />;
@@ -686,8 +725,10 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
           <BottomSheet title="COLECCIÓN DIVINÉE" subtitle={product.name} onClose={onClose} cta={<button onClick={onAdd} className="w-full btn-primary" type="button">AÑADIR AL CARRITO · {money(product.price)}</button>}>
             <div className="rounded-2xl border border-divineLine2 bg-black/20 overflow-hidden">{viewer}</div>
             <div className="mt-4 text-sm text-divineCream/70">{product.description}</div>
-            <div className="mt-3 flex flex-wrap items-center gap-2"><span className="rounded-full border border-divineLine2 bg-divinePanel px-3 py-1 text-xs text-divineCream/80">Peso: <span className="text-divineCream">{product.grams}g</span></span><span className="rounded-full border border-divineLine2 bg-divinePanel px-3 py-1 text-xs text-divineCream/80">Precio: <span className="text-divineGold font-semibold">{money(product.price)}</span></span></div>
-            <div className="mt-4 rounded-2xl border border-divineLine2 bg-divinePanel p-4"><div className="text-xs tracking-[0.28em] text-divineCream/60">INGREDIENTES</div><ul className="mt-3 space-y-2 text-sm text-divineCream/75">{product.ingredients?.map((ing) => (<li key={ing} className="flex items-center justify-between"><span>{ing}</span><span className="text-divineGold/60">•</span></li>))}</ul></div>
+            <div className="mt-3 flex flex-wrap items-center gap-2"><span className="rounded-full border border-divineLine2 bg-divinePanel px-3 py-1 text-xs text-divineCream/80">Peso: <span className="text-divineCream">{product.grams || '--'}g</span></span><span className="rounded-full border border-divineLine2 bg-divinePanel px-3 py-1 text-xs text-divineCream/80">Precio: <span className="text-divineGold font-semibold">{money(product.price)}</span></span></div>
+            {product.ingredients && (
+              <div className="mt-4 rounded-2xl border border-divineLine2 bg-divinePanel p-4"><div className="text-xs tracking-[0.28em] text-divineCream/60">INGREDIENTES</div><ul className="mt-3 space-y-2 text-sm text-divineCream/75">{product.ingredients.map((ing) => (<li key={ing} className="flex items-center justify-between"><span>{ing}</span><span className="text-divineGold/60">•</span></li>))}</ul></div>
+            )}
           </BottomSheet>
         );
       }
@@ -698,7 +739,14 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
           <div className="absolute inset-0 flex items-center justify-center p-4 md:p-6">
             <motion.div initial={{ y: 18, opacity: 0, scale: 0.99 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: 14, opacity: 0, scale: 0.99 }} transition={{ duration: 0.28, ease: [0.2, 0.8, 0.2, 1] }} className="relative w-full max-w-5xl max-h-[92vh] overflow-hidden rounded-3xl border border-divineLine2 bg-divineInk shadow-divine" onClick={(e) => e.stopPropagation()}>
               <div className="sticky top-0 z-20 border-b border-divineLine2 bg-black/35 backdrop-blur px-5 py-3"><div className="flex items-center justify-between gap-3"><div className="min-w-0"><div className="text-[10px] tracking-[0.35em] text-divineGold/90">COLECCIÓN DIVINÉE</div><div className="truncate text-sm font-semibold text-divineCream">{product.name}</div></div><button onClick={close} className="btn-ghost py-2 px-4" type="button">✕ CERRAR</button></div></div>
-              <div className="max-h-[92vh] overflow-y-auto scroll-smooth-ios overscroll-contain"><div className="grid grid-cols-1 lg:grid-cols-2"><div className="relative p-5"><div className="rounded-2xl border border-divineLine2 bg-black/20 overflow-hidden">{viewer}</div></div><div className="p-5 lg:p-7"><h3 className="text-2xl font-semibold">{product.name}</h3><p className="mt-2 text-sm text-divineCream/70">{product.description}</p><div className="mt-5 flex flex-wrap items-center gap-3"><span className="rounded-full border border-divineLine2 bg-divinePanel px-3 py-1 text-xs text-divineCream/80">Peso: <span className="text-divineCream">{product.grams}g</span></span><span className="rounded-full border border-divineLine2 bg-divinePanel px-3 py-1 text-xs text-divineCream/80">Precio: <span className="text-divineGold font-semibold">{money(product.price)}</span></span><button onClick={onAdd} className="ml-auto btn-primary" type="button">AÑADIR</button></div><div className="mt-6 rounded-2xl border border-divineLine2 bg-divinePanel p-4"><div className="text-xs tracking-[0.28em] text-divineCream/60">INGREDIENTES</div><ul className="mt-3 space-y-2 text-sm text-divineCream/75">{product.ingredients?.map((ing) => (<li key={ing} className="flex items-center justify-between"><span>{ing}</span><span className="text-divineGold/60">•</span></li>))}</ul></div><div className="mt-6 rounded-2xl border border-divineLine2 bg-black/25 p-4"><div className="text-xs tracking-[0.28em] text-divineCream/60">NUTRICIÓN</div><div className="mt-3 grid grid-cols-2 gap-3 text-sm">{Object.entries(product.nutrition || {}).map(([k, v]) => (<div key={k} className="flex items-center justify-between rounded-xl border border-divineLine bg-divinePanel px-3 py-2"><span className="text-divineCream/70">{String(k).toUpperCase()}</span><span className="font-semibold text-divineCream">{v}</span></div>))}</div></div><div className="h-4"></div></div></div></div>
+              <div className="max-h-[92vh] overflow-y-auto scroll-smooth-ios overscroll-contain"><div className="grid grid-cols-1 lg:grid-cols-2"><div className="relative p-5"><div className="rounded-2xl border border-divineLine2 bg-black/20 overflow-hidden">{viewer}</div></div><div className="p-5 lg:p-7"><h3 className="text-2xl font-semibold">{product.name}</h3><p className="mt-2 text-sm text-divineCream/70">{product.description}</p><div className="mt-5 flex flex-wrap items-center gap-3"><span className="rounded-full border border-divineLine2 bg-divinePanel px-3 py-1 text-xs text-divineCream/80">Peso: <span className="text-divineCream">{product.grams || '--'}g</span></span><span className="rounded-full border border-divineLine2 bg-divinePanel px-3 py-1 text-xs text-divineCream/80">Precio: <span className="text-divineGold font-semibold">{money(product.price)}</span></span><button onClick={onAdd} className="ml-auto btn-primary" type="button">AÑADIR</button></div>
+              {product.ingredients && (
+                <div className="mt-6 rounded-2xl border border-divineLine2 bg-divinePanel p-4"><div className="text-xs tracking-[0.28em] text-divineCream/60">INGREDIENTES</div><ul className="mt-3 space-y-2 text-sm text-divineCream/75">{product.ingredients.map((ing) => (<li key={ing} className="flex items-center justify-between"><span>{ing}</span><span className="text-divineGold/60">•</span></li>))}</ul></div>
+              )}
+              {product.nutrition && (
+                <div className="mt-6 rounded-2xl border border-divineLine2 bg-black/25 p-4"><div className="text-xs tracking-[0.28em] text-divineCream/60">NUTRICIÓN</div><div className="mt-3 grid grid-cols-2 gap-3 text-sm">{Object.entries(product.nutrition).map(([k, v]) => (<div key={k} className="flex items-center justify-between rounded-xl border border-divineLine bg-divinePanel px-3 py-2"><span className="text-divineCream/70">{String(k).toUpperCase()}</span><span className="font-semibold text-divineCream">{v}</span></div>))}</div></div>
+              )}
+              <div className="h-4"></div></div></div></div>
             </motion.div>
           </div>
         </motion.div>
@@ -748,12 +796,14 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
         </BottomSheet>
       );
     }
+    
     function CartButton({ cartCount, onClick }) {
       return (
         <button onClick={onClick} className="fixed z-40 rounded-2xl border border-divineLine2 bg-black/35 px-4 py-3 shadow-glow backdrop-blur hover:brightness-110 transition floating-safe" aria-label="Abrir carrito" type="button"><div className="flex items-center gap-3"><div className="text-xs tracking-[0.28em] text-divineCream/75">CARRITO</div><div className="rounded-full bg-divineGold px-2 py-1 text-xs font-semibold text-black">{cartCount}</div></div></button>
       );
     }
-// =========================
+    
+    // =========================
     // Cart Drawer con Checkout Integrado + Capture
     // =========================
     function CartDrawer({ items, total, bcvRate, onClose, onQty, onClearCart }) {
@@ -767,7 +817,6 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
       const [formData, setFormData] = useState({ name: "", phone: "", address: "", notes: "", ref: "" });
       const [receiptFile, setReceiptFile] = useState(null);
       
-      // NUEVO: Estado para el delivery
       const [deliveryZone, setDeliveryZone] = useState('retiro');
       const deliveryCost = deliveryZone === 'centro' ? 0.00 : (deliveryZone === 'afueras' ? 1.50 : 0);
       const finalTotal = total + deliveryCost;
@@ -781,7 +830,7 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
         const { error } = await supabaseClient.from('orders').insert([{
             tracking_code: newOrderId, customer_name: formData.name, phone: formData.phone,
             address: formData.address, notes: formData.notes, items: items, 
-            total_usd: finalTotal, bcv_rate: bcvRate, // Usa el finalTotal
+            total_usd: finalTotal, bcv_rate: bcvRate,
             payment_ref: formData.ref || "Capture adjunto", 
             status: 'Pendiente'
         }]);
@@ -854,7 +903,6 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
                   <div><label className="text-xs tracking-[0.18em] text-divineCream/60 ml-1">NOMBRE COMPLETO</label><input type="text" name="name" value={formData.name} onChange={handleInput} className="mt-1 w-full bg-black/40 border border-divineLine2 rounded-xl px-4 py-3 text-sm text-divineCream outline-none focus:border-divineGold transition" /></div>
                   <div><label className="text-xs tracking-[0.18em] text-divineCream/60 ml-1">TELÉFONO</label><input type="tel" name="phone" value={formData.phone} onChange={handleInput} className="mt-1 w-full bg-black/40 border border-divineLine2 rounded-xl px-4 py-3 text-sm text-divineCream outline-none focus:border-divineGold transition" /></div>
                   
-                  {/* NUEVO: Selector de Delivery */}
                   <div>
                     <label className="text-xs tracking-[0.18em] text-divineCream/60 ml-1">MÉTODO DE ENTREGA</label>
                     <select name="deliveryZone" value={deliveryZone} onChange={(e) => setDeliveryZone(e.target.value)} className="mt-1 w-full bg-black/40 border border-divineLine2 rounded-xl px-4 py-3 text-sm text-divineCream outline-none focus:border-divineGold transition cursor-pointer">
@@ -898,64 +946,8 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
     }
     
     // =========================
-    // App Base
-    // =========================
-// =========================
-    // App Base
-    // =========================
-// =========================
     // Atelier (Burger Builder)
     // =========================
-    const BURGER_BASE = 0.00;
-    const BURGER_CATALOG = {
-      buns: [
-        { id: "brioche", name: "Brioche", price: 1.75, note: "Suave, dorado, premium" },
-        { id: "potato", name: "Potato Roll", price: 1.50, note: "Esponjoso, balanceado" },
-        { id: "sesame", name: "Sésamo", price: 1.25, note: "Clásico, crujiente" },
-        { id: "pretzel", name: "Pretzel", price: 1.95, note: "Más denso, elegante" },
-        { id: "ciabatta", name: "Ciabatta", price: 1.85, note: "Textura artesanal" },
-        { id: "lettuce", name: "Lettuce Wrap", price: 0.95, note: "Fresco, low-carb" },
-      ],
-        proteins: [
-        { id: "angus180", name: "Lomito Premium", price: 3.50, note: "Corte de res tierno" },
-        { id: "smash", name: "Carne Smash", price: 2.50, note: "Corte caramelizado" },
-        { id: "lomoCerdo", name: "Lomo de Cerdo", price: 3.20, note: "Sabor ahumado" },
-        { id: "chorizo", name: "Chorizo Premium", price: 2.50, note: "Toque artesanal" },
-        { id: "chickenGrilled", name: "Pollo a la Plancha", price: 2.25, note: "Ligero y tierno" },
-      ],
-      cheeses: [
-        { id: "cheddar", name: "Cheddar Añejo", price: 0.80, note: "Clásico lujo" },
-        { id: "gruyere", name: "Llanero", price: 0.50, note: "Blanco Delicia" },
-        { id: "swiss", name: "Suizo", price: 1.50, note: "Suave, elástico" },
-        { id: "blue", name: "Azul Suave", price: 1.95, note: "Umami elegante" },
-        { id: "pepperJack", name: "Pepper Jack", price: 1.65, note: "Picante sutil" },
-        { id: "none", name: "Sin queso", price: 0.0, note: "Limpio, directo" },
-      ],
-      toppings: [
-        { id: "bacon", name: "Jamón de Pierna", price: 0.50, group: "Crunch" },
-        { id: "pickles", name: "Pepinillos", price: 0.70, group: "Classic" },
-        { id: "lettuce", name: "Lechuga", price: 0.60, group: "Fresh" },
-        { id: "arugula", name: "Jamón Ahumado", price: 0.85, group: "Fresh" },
-        { id: "tomato", name: "Tomate", price: 0.65, group: "Fresh" },
-        { id: "tocino", name: "Tocineta", price: 0.80, group: "Crunch" },
-        { id: "mushrooms", name: "Hongos (Champiñones)", price: 1.25, group: "Umami" },
-        { id: "caramelOnion", name: "Cebolla caramelizada", price: 0.50, group: "Classic" },
-        { id: "crispyOnion", name: "Cebolla crujiente", price: 0.50, group: "Crunch" },
-        { id: "egg", name: "Huevo", price: 0.60, group: "Luxe" },
-        { id: "avocado", name: "Aguacate", price: 0.80, group: "Luxe" },
-        { id: "hashbrown", name: "Cebolla", price: 0.20, group: "Crunch" },
-        { id: "papashilo", name: "Papas Hilo", price: 0.60, group: "Crunch" },
-        { id: "divineeSauce", name: "Adi Salsas Divinée", price: 0.50, group: "Sauce" },
-        { id: "aioli", name: "Alioli", price: 0.90, group: "Sauce" },
-        { id: "bbq", name: "BBQ", price: 0.90, group: "Sauce" },
-        { id: "spicyMayo", name: "Mayo spicy", price: 0.95, group: "Sauce" },
-        { id: "truffle", name: "Trufa", price: 2.40, group: "Luxe" },
-      ],
-    };
-
-    const MAX_PROTEIN_LAYERS = 4;
-    const MAX_CHEESE_LAYERS = 4;
-
     function wrapIndex(i, len) {
       if (len <= 0) return 0;
       return (i % len + len) % len;
@@ -1022,7 +1014,7 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
       );
     }
 
-    function BurgerBuilder({ onAddToCart }) {
+    function BurgerBuilder({ onAddToCart, catalog }) {
       const [step, setStep] = useState(0);
       const [bunIdx, setBunIdx] = useState(0);
       const [proteinLayers, setProteinLayers] = useState([0]);
@@ -1032,6 +1024,9 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
       const [toppings, setToppings] = useState([]);
       
       const [disabledItems, setDisabledItems] = useState([]);
+      const MAX_PROTEIN_LAYERS = 4;
+      const MAX_CHEESE_LAYERS = 4;
+      const BURGER_BASE = 0.00;
 
       useEffect(() => {
         const fetchInventory = async () => {
@@ -1042,21 +1037,28 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
         fetchInventory();
       }, []);
 
-      const bun = BURGER_CATALOG.buns[bunIdx];
-      const cheesesCount = Math.max(0, cheeseLayers.filter((idx) => BURGER_CATALOG.cheeses[idx]?.id !== "none").length);
+      const bun = catalog.buns[bunIdx];
+      const cheesesCount = Math.max(0, cheeseLayers.filter((idx) => catalog.cheeses[idx]?.id !== "none").length);
 
-      const price = useMemo(() => {
+      const [price, totalCost] = useMemo(() => {
         const bunP = bun?.price ?? 0;
-        const proteinsP = proteinLayers.reduce((acc, idx) => acc + (BURGER_CATALOG.proteins[idx]?.price ?? 0), 0);
-        const cheesesP = cheeseLayers.reduce((acc, idx) => acc + (BURGER_CATALOG.cheeses[idx]?.price ?? 0), 0);
-        const toppingsP = toppings.reduce((acc, id) => acc + (BURGER_CATALOG.toppings.find((t) => t.id === id)?.price ?? 0), 0);
-        return BURGER_BASE + bunP + proteinsP + cheesesP + toppingsP;
-      }, [bunIdx, proteinLayers, cheeseLayers, toppings]);
+        const bunC = bun?.cost ?? 0;
+        const proteinsP = proteinLayers.reduce((acc, idx) => acc + (catalog.proteins[idx]?.price ?? 0), 0);
+        const proteinsC = proteinLayers.reduce((acc, idx) => acc + (catalog.proteins[idx]?.cost ?? 0), 0);
+        const cheesesP = cheeseLayers.reduce((acc, idx) => acc + (catalog.cheeses[idx]?.price ?? 0), 0);
+        const cheesesC = cheeseLayers.reduce((acc, idx) => acc + (catalog.cheeses[idx]?.cost ?? 0), 0);
+        const toppingsP = toppings.reduce((acc, id) => acc + (catalog.toppings.find((t) => t.id === id)?.price ?? 0), 0);
+        const toppingsC = toppings.reduce((acc, id) => acc + (catalog.toppings.find((t) => t.id === id)?.cost ?? 0), 0);
+        return [
+          BURGER_BASE + bunP + proteinsP + cheesesP + toppingsP,
+          bunC + proteinsC + cheesesC + toppingsC
+        ];
+      }, [bunIdx, proteinLayers, cheeseLayers, toppings, catalog]);
 
       const dynamicConfig = useMemo(() => {
         const conf = [{ type: 'bunBottom' }];
         proteinLayers.forEach(() => conf.push({ type: 'meat' }));
-        cheeseLayers.forEach((idx) => { if (BURGER_CATALOG.cheeses[idx]?.id !== 'none') conf.push({ type: 'cheese' }); });
+        cheeseLayers.forEach((idx) => { if (catalog.cheeses[idx]?.id !== 'none') conf.push({ type: 'cheese' }); });
         toppings.forEach(id => {
           if (id === 'lettuce' || id === 'arugula') conf.push({ type: 'lettuce' });
           else if (id === 'tomato') conf.push({ type: 'tomato' });
@@ -1064,12 +1066,11 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
         });
         conf.push({ type: 'bunTop' });
         return conf;
-      }, [proteinLayers, cheeseLayers, toppings]);
+      }, [proteinLayers, cheeseLayers, toppings, catalog]);
 
-      // LÓGICA DE VALIDACIÓN INVENTARIO
       const isBunDisabled = disabledItems.includes(bun?.id);
-      const hasDisabledProtein = proteinLayers.some(idx => disabledItems.includes(BURGER_CATALOG.proteins[idx]?.id));
-      const hasDisabledCheese = cheeseLayers.some(idx => disabledItems.includes(BURGER_CATALOG.cheeses[idx]?.id));
+      const hasDisabledProtein = proteinLayers.some(idx => disabledItems.includes(catalog.proteins[idx]?.id));
+      const hasDisabledCheese = cheeseLayers.some(idx => disabledItems.includes(catalog.cheeses[idx]?.id));
       const hasDisabledTopping = toppings.some(id => disabledItems.includes(id));
       
       const hasAnyError = isBunDisabled || hasDisabledProtein || hasDisabledCheese || hasDisabledTopping;
@@ -1078,28 +1079,28 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
       const steps = ["PAN", "CARNES", "QUESOS", "TOPPINGS"];
 
       function toggleTopping(id) { setToppings((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])); }
-      function bunPrev() { setBunIdx((i) => wrapIndex(i - 1, BURGER_CATALOG.buns.length)); }
-      function bunNext() { setBunIdx((i) => wrapIndex(i + 1, BURGER_CATALOG.buns.length)); }
-      function proteinPrev() { setProteinLayers((layers) => { const copy = [...layers]; copy[activeProteinLayer] = wrapIndex(copy[activeProteinLayer] - 1, BURGER_CATALOG.proteins.length); return copy; }); }
-      function proteinNext() { setProteinLayers((layers) => { const copy = [...layers]; copy[activeProteinLayer] = wrapIndex(copy[activeProteinLayer] + 1, BURGER_CATALOG.proteins.length); return copy; }); }
+      function bunPrev() { setBunIdx((i) => wrapIndex(i - 1, catalog.buns.length)); }
+      function bunNext() { setBunIdx((i) => wrapIndex(i + 1, catalog.buns.length)); }
+      function proteinPrev() { setProteinLayers((layers) => { const copy = [...layers]; copy[activeProteinLayer] = wrapIndex(copy[activeProteinLayer] - 1, catalog.proteins.length); return copy; }); }
+      function proteinNext() { setProteinLayers((layers) => { const copy = [...layers]; copy[activeProteinLayer] = wrapIndex(copy[activeProteinLayer] + 1, catalog.proteins.length); return copy; }); }
       function addProteinLayer() { setProteinLayers((layers) => { if (layers.length >= MAX_PROTEIN_LAYERS) return layers; return [...layers, layers[layers.length - 1] ?? 0]; }); setActiveProteinLayer((i) => Math.min(i + 1, MAX_PROTEIN_LAYERS - 1)); }
       function removeProteinLayer(i) { setProteinLayers((layers) => layers.filter((_, idx) => idx !== i)); setActiveProteinLayer((cur) => (cur > 0 ? cur - 1 : 0)); }
-      function cheesePrev() { setCheeseLayers((layers) => { const copy = [...layers]; copy[activeCheeseLayer] = wrapIndex(copy[activeCheeseLayer] - 1, BURGER_CATALOG.cheeses.length); return copy; }); }
-      function cheeseNext() { setCheeseLayers((layers) => { const copy = [...layers]; copy[activeCheeseLayer] = wrapIndex(copy[activeCheeseLayer] + 1, BURGER_CATALOG.cheeses.length); return copy; }); }
+      function cheesePrev() { setCheeseLayers((layers) => { const copy = [...layers]; copy[activeCheeseLayer] = wrapIndex(copy[activeCheeseLayer] - 1, catalog.cheeses.length); return copy; }); }
+      function cheeseNext() { setCheeseLayers((layers) => { const copy = [...layers]; copy[activeCheeseLayer] = wrapIndex(copy[activeCheeseLayer] + 1, catalog.cheeses.length); return copy; }); }
       function addCheeseLayer() { setCheeseLayers((layers) => { if (layers.length >= MAX_CHEESE_LAYERS) return layers; return [...layers, layers[layers.length - 1] ?? 0]; }); setActiveCheeseLayer((i) => Math.min(i + 1, MAX_CHEESE_LAYERS - 1)); }
       function removeCheeseLayer(i) { setCheeseLayers((layers) => layers.filter((_, idx) => idx !== i)); setActiveCheeseLayer((cur) => (cur > 0 ? cur - 1 : 0)); }
 
       function buildAndAdd() {
         if (!valid) return;
-        const bunSel = BURGER_CATALOG.buns[bunIdx];
-        const proteinsSel = proteinLayers.map((idx) => BURGER_CATALOG.proteins[idx]).filter(Boolean);
-        const cheesesSel = cheeseLayers.map((idx) => BURGER_CATALOG.cheeses[idx]).filter(Boolean);
-        const toppingsSel = toppings.map((id) => BURGER_CATALOG.toppings.find((t) => t.id === id)).filter(Boolean);
+        const bunSel = catalog.buns[bunIdx];
+        const proteinsSel = proteinLayers.map((idx) => catalog.proteins[idx]).filter(Boolean);
+        const cheesesSel = cheeseLayers.map((idx) => catalog.cheeses[idx]).filter(Boolean);
+        const toppingsSel = toppings.map((id) => catalog.toppings.find((t) => t.id === id)).filter(Boolean);
         
         const id = ["custom-burger", bunSel?.id, proteinsSel.map((p) => p.id).join("+"), cheesesSel.map((c) => c.id).join("+"), toppings.slice().sort().join(",")].join(":");
         const meta = { pan: bunSel?.name, carnes: proteinsSel.map((p) => p.name), quesos: cheesesSel.map((c) => c.name), toppings: toppingsSel.map((t) => t.name) };
         
-        onAddToCart?.({ id, name: "Hamburguesa Divinée (Atelier)", price, meta });
+        onAddToCart?.({ id, name: "Hamburguesa Divinée (Atelier)", price, cost: totalCost, meta });
         setStep(0); setBunIdx(0); setProteinLayers([0]); setActiveProteinLayer(0); setCheeseLayers([5]); setActiveCheeseLayer(0); setToppings([]);
       }
 
@@ -1145,20 +1146,20 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
 
           <motion.div key={step} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="mt-5">
             {step === 0 && (
-              <CarouselPicker title="Pan" options={BURGER_CATALOG.buns} index={bunIdx} onPrev={bunPrev} onNext={bunNext} disabledItems={disabledItems} />
+              <CarouselPicker title="Pan" options={catalog.buns} index={bunIdx} onPrev={bunPrev} onNext={bunNext} disabledItems={disabledItems} />
             )}
             {step === 1 && (
               <div className="space-y-4">
                 <LayersHeader title="Carnes" count={proteinLayers.length} onAdd={addProteinLayer} addLabel="Agregar otra carne" disabled={proteinLayers.length >= MAX_PROTEIN_LAYERS} />
                 <LayersTabs label="Carne" layers={proteinLayers} active={activeProteinLayer} setActive={setActiveProteinLayer} onRemove={removeProteinLayer} min={1} />
-                <CarouselPicker title={`Carne ${activeProteinLayer + 1}`} options={BURGER_CATALOG.proteins} index={proteinLayers[activeProteinLayer] ?? 0} onPrev={proteinPrev} onNext={proteinNext} disabledItems={disabledItems} />
+                <CarouselPicker title={`Carne ${activeProteinLayer + 1}`} options={catalog.proteins} index={proteinLayers[activeProteinLayer] ?? 0} onPrev={proteinPrev} onNext={proteinNext} disabledItems={disabledItems} />
               </div>
             )}
             {step === 2 && (
               <div className="space-y-4">
                 <LayersHeader title="Quesos" count={cheeseLayers.length} onAdd={addCheeseLayer} addLabel="Agregar otro queso" disabled={cheeseLayers.length >= MAX_CHEESE_LAYERS} />
                 <LayersTabs label="Queso" layers={cheeseLayers} active={activeCheeseLayer} setActive={setActiveCheeseLayer} onRemove={removeCheeseLayer} min={1} />
-                <CarouselPicker title={`Queso ${activeCheeseLayer + 1}`} options={BURGER_CATALOG.cheeses} index={cheeseLayers[activeCheeseLayer] ?? 0} onPrev={cheesePrev} onNext={cheeseNext} disabledItems={disabledItems} />
+                <CarouselPicker title={`Queso ${activeCheeseLayer + 1}`} options={catalog.cheeses} index={cheeseLayers[activeCheeseLayer] ?? 0} onPrev={cheesePrev} onNext={cheeseNext} disabledItems={disabledItems} />
               </div>
             )}
             {step === 3 && (
@@ -1171,7 +1172,7 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
                   <div className="text-xs tracking-[0.22em] text-divineCream/55">{toppings.length} seleccionados</div>
                 </div>
                 <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                  {BURGER_CATALOG.toppings.map((t) => {
+                  {catalog.toppings.map((t) => {
                     const active = toppings.includes(t.id);
                     const isExhausted = disabledItems.includes(t.id);
                     return (
@@ -1200,19 +1201,19 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
               <div className={`flex justify-between ${isBunDisabled ? 'text-red-400 line-through' : ''}`}><span>{bun?.name}</span><span>{money(bun?.price ?? 0)}</span></div>
               
               {proteinLayers.map((idx, i) => {
-                const p = BURGER_CATALOG.proteins[idx];
+                const p = catalog.proteins[idx];
                 if (!p) return null;
                 return <div key={`p-${i}`} className={`flex justify-between ${disabledItems.includes(p.id) ? 'text-red-400 line-through' : ''}`}><span>{p.name}</span><span>{money(p.price)}</span></div>;
               })}
               
               {cheeseLayers.map((idx, i) => {
-                const c = BURGER_CATALOG.cheeses[idx];
+                const c = catalog.cheeses[idx];
                 if (!c || c.id === 'none') return null;
                 return <div key={`c-${i}`} className={`flex justify-between ${disabledItems.includes(c.id) ? 'text-red-400 line-through' : ''}`}><span>{c.name}</span><span>{money(c.price)}</span></div>;
               })}
               
               {toppings.map((id) => {
-                const t = BURGER_CATALOG.toppings.find((x) => x.id === id);
+                const t = catalog.toppings.find((x) => x.id === id);
                 if (!t) return null;
                 return <div key={id} className={`flex justify-between ${disabledItems.includes(id) ? 'text-red-400 line-through' : ''}`}><span>{t.name}</span><span>{money(t.price)}</span></div>;
               })}
@@ -1233,10 +1234,10 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
         </div>
       );
     }
+
     // =========================
     // Yogurt Coming Soon
     // =========================
-    
     function YogurtComingSoonCard() {
       return (
         <div className="rounded-3xl border border-divineLine2 bg-black/25 p-6 shadow-divine">
@@ -1251,8 +1252,9 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
         </div>
       );
     }
+
     // =========================
-    // Panel de Administrador
+    // Panel de Administrador (Mejorado con Profit e Inventario)
     // =========================
     function AdminLogin({ onLogin, onClose }) {
       const [pin, setPin] = useState("");
@@ -1270,7 +1272,7 @@ function ProductCard({ product, badge, onClick, onAdd, isDisabled }) {
       );
     }
 
-function AdminDashboard({ onClose, supabaseClient }) {
+    function AdminDashboard({ onClose, supabaseClient, localBurgers, localDesserts, localCatalog, onSaveInventory }) {
       const [orders, setOrders] = useState([]);
       const [disabledItems, setDisabledItems] = useState([]);
       const [loading, setLoading] = useState(true);
@@ -1278,6 +1280,11 @@ function AdminDashboard({ onClose, supabaseClient }) {
       const [searchCode, setSearchCode] = useState('');
       const [invoiceOrder, setInvoiceOrder] = useState(null);
       const [isStoreOpen, setIsStoreOpen] = useState(true);
+
+      // Estado para la edición de inventario
+      const [editMode, setEditMode] = useState(false);
+      const [itemToEdit, setItemToEdit] = useState(null); // { cat, idx, type } o similar para saber qué editar
+      const [editForm, setEditForm] = useState({ price: 0, cost: 0 });
 
       useEffect(() => { fetchData(); }, []);
 
@@ -1315,6 +1322,29 @@ function AdminDashboard({ onClose, supabaseClient }) {
         }
       };
 
+      const openEditModal = (item, type, catIdx = null, groupName = null) => {
+        setItemToEdit({ id: item.id, name: item.name, type, catIdx, groupName });
+        setEditForm({ price: item.price, cost: item.cost || 0 });
+      };
+
+      const saveEditForm = () => {
+        let newBurgers = [...localBurgers];
+        let newDesserts = [...localDesserts];
+        let newCatalog = { ...localCatalog };
+
+        if (itemToEdit.type === 'burger') {
+          newBurgers[itemToEdit.catIdx] = { ...newBurgers[itemToEdit.catIdx], price: Number(editForm.price), cost: Number(editForm.cost) };
+        } else if (itemToEdit.type === 'dessert') {
+          newDesserts[itemToEdit.catIdx] = { ...newDesserts[itemToEdit.catIdx], price: Number(editForm.price), cost: Number(editForm.cost) };
+        } else if (itemToEdit.type === 'catalog') {
+          const group = newCatalog[itemToEdit.groupName];
+          newCatalog[itemToEdit.groupName] = group.map(i => i.id === itemToEdit.id ? { ...i, price: Number(editForm.price), cost: Number(editForm.cost) } : i);
+        }
+
+        onSaveInventory(newBurgers, newDesserts, newCatalog);
+        setItemToEdit(null);
+      };
+
       const formatPhoneForWa = (phone) => {
         let cleaned = phone.replace(/\D/g, ''); 
         if (cleaned.startsWith('0')) cleaned = '58' + cleaned.substring(1); 
@@ -1328,9 +1358,19 @@ function AdminDashboard({ onClose, supabaseClient }) {
         if (found) setInvoiceOrder(found);
       };
 
+      const calcOrderProfit = (itemsArr) => {
+        let cost = 0; let revenue = 0;
+        itemsArr.forEach(it => {
+          cost += (it.cost || 0) * it.qty;
+          revenue += (it.price || 0) * it.qty;
+        });
+        return revenue - cost;
+      };
+
       const today = new Date(); today.setHours(0,0,0,0);
       const todayOrders = orders.filter(o => new Date(o.created_at) >= today && o.status !== 'Cancelado');
       const todaySales = todayOrders.reduce((acc, o) => acc + o.total_usd, 0);
+      const todayProfit = todayOrders.reduce((acc, o) => acc + calcOrderProfit(o.items || []), 0);
 
       const statusColors = { 'Pendiente': 'text-red-400 border-red-400/30', 'Preparando': 'text-yellow-400 border-yellow-400/30', 'En camino': 'text-blue-400 border-blue-400/30', 'Listo para retirar': 'text-purple-400 border-purple-400/30', 'Entregado': 'text-green-400 border-green-400/30', 'Cancelado': 'text-gray-400 border-gray-400/30' };
 
@@ -1378,7 +1418,7 @@ function AdminDashboard({ onClose, supabaseClient }) {
             </div>
             <div className="flex gap-4 px-4 border-b border-divineLine2/50 overflow-x-auto mobile-scroll">
               <button onClick={() => setTab('orders')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'orders' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>PEDIDOS</button>
-              <button onClick={() => setTab('inventory')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'inventory' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>INVENTARIO</button>
+              <button onClick={() => setTab('inventory')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'inventory' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>INVENTARIO Y PRECIOS</button>
               <button onClick={() => setTab('invoice')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'invoice' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>FACTURACIÓN</button>
             </div>
           </div>
@@ -1387,27 +1427,56 @@ function AdminDashboard({ onClose, supabaseClient }) {
             {loading ? <div className="text-center py-10 text-divineCream/50">Cargando datos...</div> : 
              tab === 'orders' ? (
               <>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                   <div className="bg-divinePanel border border-divineLine2 rounded-2xl p-4 shadow-divine text-center"><div className="text-[10px] tracking-[0.2em] text-divineCream/50 mb-1">VENTAS HOY</div><div className="text-2xl font-bold text-divineGold">{money(todaySales)}</div></div>
+                  <div className="bg-divinePanel border border-divineLine2 rounded-2xl p-4 shadow-divine text-center"><div className="text-[10px] tracking-[0.2em] text-divineCream/50 mb-1">GANANCIA HOY</div><div className="text-2xl font-bold text-[#25D366]">{money(todayProfit)}</div></div>
                   <div className="bg-divinePanel border border-divineLine2 rounded-2xl p-4 shadow-divine text-center"><div className="text-[10px] tracking-[0.2em] text-divineCream/50 mb-1">PEDIDOS HOY</div><div className="text-2xl font-bold text-divineGold">{todayOrders.length}</div></div>
-                  <div className="col-span-2 md:col-span-1 bg-divinePanel border border-divineLine2 rounded-2xl p-4 shadow-divine flex flex-col items-center justify-center"><div className="text-[10px] tracking-[0.2em] text-divineCream/50 mb-2">ESTADO DE LA TIENDA</div><button onClick={toggleStore} className={`w-full text-sm font-bold tracking-widest py-2 rounded-xl border transition-colors ${isStoreOpen ? 'bg-green-500/20 text-green-400 border-green-500/50 hover:bg-green-500/30' : 'bg-red-500/20 text-red-400 border-red-500/50 hover:bg-red-500/30'}`}>{isStoreOpen ? '🟢 ABIERTO' : '🔴 CERRADA'}</button></div>
+                  <div className="col-span-2 md:col-span-1 bg-divinePanel border border-divineLine2 rounded-2xl p-4 shadow-divine flex flex-col items-center justify-center"><div className="text-[10px] tracking-[0.2em] text-divineCream/50 mb-2">ESTADO LOCAL</div><button onClick={toggleStore} className={`w-full text-sm font-bold tracking-widest py-2 rounded-xl border transition-colors ${isStoreOpen ? 'bg-green-500/20 text-green-400 border-green-500/50 hover:bg-green-500/30' : 'bg-red-500/20 text-red-400 border-red-500/50 hover:bg-red-500/30'}`}>{isStoreOpen ? '🟢 ABIERTO' : '🔴 CERRADA'}</button></div>
                 </div>
                 {orders.length === 0 ? <div className="text-center py-10 text-divineCream/50">No hay pedidos registrados aún.</div> :
                 orders.map(o => (
                   <div key={o.id} className="rounded-2xl border border-divineLine bg-divinePanel p-5 flex flex-col md:flex-row gap-5 justify-between shadow-divine mb-4">
-                    <div className="flex-1"><div className="flex flex-wrap items-center gap-3 mb-3"><span className="text-lg font-bold text-divineGold">{o.tracking_code}</span><span className="text-xs text-divineCream/50 border border-divineLine px-2 py-1 rounded-full">{new Date(o.created_at).toLocaleString('es-VE')}</span></div><div className="text-sm text-divineCream/90 mb-1"><span className="text-divineCream/50">Cliente:</span> {o.customer_name} • <a href={`https://wa.me/${formatPhoneForWa(o.phone)}?text=${encodeURIComponent(`Hola ${o.customer_name}, tu pedido ${o.tracking_code} ya está en proceso. Divinée🍔✨`)}`} target="_blank" rel="noopener noreferrer" className="ml-1 text-divineGold hover:underline">📞 {o.phone}</a></div><div className="text-sm text-divineCream/90 mb-3"><span className="text-divineCream/50">Dir:</span> {o.address}</div><div className="text-xs text-divineCream/70 bg-black/40 p-3 rounded-xl border border-divineLine2/30"><div className="font-semibold text-divineCream mb-1">CARRITO:</div>{o.items.map((it, i) => <div key={i}>• {it.qty}x {it.name}</div>)}{o.notes && <div className="mt-2 text-divineGold/90">📝 Nota: {o.notes}</div>}</div></div>
-                    <div className="flex flex-col items-start md:items-end justify-between min-w-[220px] bg-black/20 p-4 rounded-xl border border-divineLine2/20"><div className="w-full text-left md:text-right"><div className="text-xs text-divineCream/50">TOTAL PAGADO</div><div className="text-2xl font-bold text-divineGold">{money(o.total_usd)}</div><div className="text-xs text-divineCream/60 mt-1">Ref: <span className="text-divineCream tracking-widest">{o.payment_ref}</span></div>{o.bcv_rate && <div className="text-[10px] text-divineCream/40 mt-1">Tasa: {o.bcv_rate}</div>}</div><div className="w-full mt-4"><div className="text-[10px] tracking-[0.2em] text-divineCream/50 mb-1 text-left md:text-right">ESTATUS ACTUAL</div><select value={o.status} onChange={(e) => updateStatus(o.id, e.target.value)} className={`w-full bg-black/80 border rounded-xl px-3 py-2 text-sm font-semibold outline-none cursor-pointer ${statusColors[o.status] || 'text-divineCream border-divineLine'}`}><option value="Pendiente">Pendiente</option><option value="Preparando">Preparando</option><option value="En camino">En camino</option><option value="Listo para retirar">Listo para retirar</option><option value="Entregado">Entregado</option><option value="Cancelado">Cancelado</option></select><button onClick={() => { setSearchCode(o.tracking_code); setInvoiceOrder(o); setTab('invoice'); }} className="mt-3 text-[11px] tracking-widest text-divineCream/50 hover:text-divineGold transition flex items-center gap-1 md:justify-end w-full">📄 GENERAR FACTURA</button></div></div>
+                    <div className="flex-1"><div className="flex flex-wrap items-center gap-3 mb-3"><span className="text-lg font-bold text-divineGold">{o.tracking_code}</span><span className="text-xs text-divineCream/50 border border-divineLine px-2 py-1 rounded-full">{new Date(o.created_at).toLocaleString('es-VE')}</span></div><div className="text-sm text-divineCream/90 mb-1"><span className="text-divineCream/50">Cliente:</span> {o.customer_name} • <a href={`https://wa.me/${formatPhoneForWa(o.phone)}?text=${encodeURIComponent(`Hola ${o.customer_name}, tu pedido ${o.tracking_code} ya está en proceso. Divinée🍔✨`)}`} target="_blank" rel="noopener noreferrer" className="ml-1 text-divineGold hover:underline">📞 {o.phone}</a></div><div className="text-sm text-divineCream/90 mb-3"><span className="text-divineCream/50">Dir:</span> {o.address}</div><div className="text-xs text-divineCream/70 bg-black/40 p-3 rounded-xl border border-divineLine2/30"><div className="font-semibold text-divineCream mb-1">CARRITO:</div>{o.items.map((it, i) => <div key={i}>• {it.qty}x {it.name} <span className="text-divineGold/50 ml-2">(${it.price})</span></div>)}{o.notes && <div className="mt-2 text-divineGold/90">📝 Nota: {o.notes}</div>}</div></div>
+                    <div className="flex flex-col items-start md:items-end justify-between min-w-[220px] bg-black/20 p-4 rounded-xl border border-divineLine2/20">
+                      <div className="w-full flex justify-between md:flex-col md:text-right">
+                        <div><div className="text-xs text-divineCream/50">TOTAL</div><div className="text-2xl font-bold text-divineGold">{money(o.total_usd)}</div></div>
+                        <div className="text-right"><div className="text-xs text-divineCream/50 mt-1 md:mt-2">PROFIT</div><div className="text-lg font-bold text-[#25D366]">{money(calcOrderProfit(o.items || []))}</div></div>
+                      </div>
+                      <div className="w-full mt-4"><div className="text-[10px] tracking-[0.2em] text-divineCream/50 mb-1 text-left md:text-right">ESTATUS ACTUAL</div><select value={o.status} onChange={(e) => updateStatus(o.id, e.target.value)} className={`w-full bg-black/80 border rounded-xl px-3 py-2 text-sm font-semibold outline-none cursor-pointer ${statusColors[o.status] || 'text-divineCream border-divineLine'}`}><option value="Pendiente">Pendiente</option><option value="Preparando">Preparando</option><option value="En camino">En camino</option><option value="Listo para retirar">Listo para retirar</option><option value="Entregado">Entregado</option><option value="Cancelado">Cancelado</option></select><button onClick={() => { setSearchCode(o.tracking_code); setInvoiceOrder(o); setTab('invoice'); }} className="mt-3 text-[11px] tracking-widest text-divineCream/50 hover:text-divineGold transition flex items-center gap-1 md:justify-end w-full">📄 GENERAR FACTURA</button></div>
+                    </div>
                   </div>
                 ))}
               </>
              ) : tab === 'inventory' ? (
-              <div className="space-y-8">
-                <div className="bg-divineLine2/10 border border-divineLine2/30 p-4 rounded-2xl text-sm text-divineCream/80">Toca un producto o ingrediente para marcarlo como <b>AGOTADO</b>.</div>
+              <div className="space-y-8 relative">
                 
-                <div><h3 className="text-xs tracking-[0.2em] text-divineGold mb-3 uppercase">MENÚ: HAMBURGUESAS</h3><div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">{burgers.map(item => { const isOff = disabledItems.includes(item.id); return (<button key={item.id} onClick={() => toggleIngredient(item.id, isOff)} className={`p-3 rounded-xl border text-left transition ${isOff ? 'bg-red-500/10 border-red-500/30' : 'bg-divinePanel border-divineLine hover:border-divineGold/50'}`}><div className={`font-semibold text-sm ${isOff ? 'text-red-400 line-through' : 'text-divineCream'}`}>{item.name}</div><div className="text-[10px] mt-1 text-divineCream/50">{isOff ? '🔴 AGOTADO' : '🟢 DISPONIBLE'}</div></button>) })}</div></div>
-                <div><h3 className="text-xs tracking-[0.2em] text-divineGold mb-3 uppercase mt-6">MENÚ: POSTRES</h3><div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">{desserts.map(item => { const isOff = disabledItems.includes(item.id); return (<button key={item.id} onClick={() => toggleIngredient(item.id, isOff)} className={`p-3 rounded-xl border text-left transition ${isOff ? 'bg-red-500/10 border-red-500/30' : 'bg-divinePanel border-divineLine hover:border-divineGold/50'}`}><div className={`font-semibold text-sm ${isOff ? 'text-red-400 line-through' : 'text-divineCream'}`}>{item.name}</div><div className="text-[10px] mt-1 text-divineCream/50">{isOff ? '🔴 AGOTADO' : '🟢 DISPONIBLE'}</div></button>) })}</div></div>
+                {itemToEdit && (
+                  <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-4">
+                    <div className="bg-divineInk border border-divineGold/50 rounded-2xl p-6 w-full max-w-sm shadow-divine">
+                      <h3 className="text-lg font-bold text-divineCream mb-1">{itemToEdit.name}</h3>
+                      <p className="text-xs text-divineCream/50 mb-4 tracking-widest uppercase">Modificar Valores</p>
+                      <div className="space-y-4">
+                        <div><label className="text-xs text-divineCream/70 mb-1 block">Costo ($)</label><input type="number" step="0.01" value={editForm.cost} onChange={(e)=>setEditForm({...editForm, cost: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
+                        <div><label className="text-xs text-divineCream/70 mb-1 block">Precio de Venta ($)</label><input type="number" step="0.01" value={editForm.price} onChange={(e)=>setEditForm({...editForm, price: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
+                        <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-3 text-center"><span className="text-xs text-green-400 block mb-1">Ganancia por unidad</span><span className="text-lg font-bold text-green-400">{money(editForm.price - editForm.cost)}</span></div>
+                        <div className="flex gap-2 pt-2"><button onClick={()=>setItemToEdit(null)} className="flex-1 btn-ghost py-2">CANCELAR</button><button onClick={saveEditForm} className="flex-1 btn-primary py-2">GUARDAR</button></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-divineLine2/10 border border-divineLine2/30 p-4 rounded-2xl">
+                  <p className="text-sm text-divineCream/80">Usa el modo para <b>AGOTAR</b> (apagar) o <b>EDITAR</b> precios y costos de los productos y ver ganancias.</p>
+                  <div className="flex bg-black/50 rounded-xl p-1 border border-divineLine2">
+                    <button onClick={() => setEditMode(false)} className={`px-4 py-2 rounded-lg text-xs tracking-widest font-bold transition ${!editMode ? 'bg-divineGold text-black' : 'text-divineCream/50 hover:text-white'}`}>AGOTAR</button>
+                    <button onClick={() => setEditMode(true)} className={`px-4 py-2 rounded-lg text-xs tracking-widest font-bold transition ${editMode ? 'bg-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'text-divineCream/50 hover:text-white'}`}>EDITAR PRECIOS</button>
+                  </div>
+                </div>
                 
-                {Object.entries(BURGER_CATALOG).map(([category, items]) => (<div key={category}><h3 className="text-xs tracking-[0.2em] text-divineGold mb-3 uppercase mt-6">ATELIER: {category}</h3><div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">{items.map(item => { if(item.id === 'none') return null; const isOff = disabledItems.includes(item.id); return (<button key={item.id} onClick={() => toggleIngredient(item.id, isOff)} className={`p-3 rounded-xl border text-left transition ${isOff ? 'bg-red-500/10 border-red-500/30' : 'bg-divinePanel border-divineLine hover:border-divineGold/50'}`}><div className={`font-semibold text-sm ${isOff ? 'text-red-400 line-through' : 'text-divineCream'}`}>{item.name}</div><div className="text-[10px] mt-1 text-divineCream/50">{isOff ? '🔴 AGOTADO' : '🟢 DISPONIBLE'}</div></button>) })}</div></div>))}
+                <div><h3 className="text-xs tracking-[0.2em] text-divineGold mb-3 uppercase">MENÚ: HAMBURGUESAS</h3><div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">{localBurgers.map((item, idx) => { const isOff = disabledItems.includes(item.id); return (<button key={item.id} onClick={() => editMode ? openEditModal(item, 'burger', idx) : toggleIngredient(item.id, isOff)} className={`p-3 rounded-xl border text-left transition ${isOff ? 'bg-red-500/10 border-red-500/30' : 'bg-divinePanel border-divineLine hover:border-divineGold/50'}`}><div className={`font-semibold text-sm ${isOff ? 'text-red-400 line-through' : 'text-divineCream'}`}>{item.name}</div><div className="flex justify-between items-end mt-2"><div className="text-[10px] text-divineCream/50">{isOff ? '🔴 AGOTADO' : '🟢 DISPONIBLE'}</div><div className="text-right"><div className="text-xs font-bold text-divineGold">{money(item.price)}</div><div className="text-[9px] text-[#25D366]">Prof: {money(item.price - (item.cost||0))}</div></div></div></button>) })}</div></div>
+                <div><h3 className="text-xs tracking-[0.2em] text-divineGold mb-3 uppercase mt-6">MENÚ: POSTRES</h3><div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">{localDesserts.map((item, idx) => { const isOff = disabledItems.includes(item.id); return (<button key={item.id} onClick={() => editMode ? openEditModal(item, 'dessert', idx) : toggleIngredient(item.id, isOff)} className={`p-3 rounded-xl border text-left transition ${isOff ? 'bg-red-500/10 border-red-500/30' : 'bg-divinePanel border-divineLine hover:border-divineGold/50'}`}><div className={`font-semibold text-sm ${isOff ? 'text-red-400 line-through' : 'text-divineCream'}`}>{item.name}</div><div className="flex justify-between items-end mt-2"><div className="text-[10px] text-divineCream/50">{isOff ? '🔴 AGOTADO' : '🟢 DISPONIBLE'}</div><div className="text-right"><div className="text-xs font-bold text-divineGold">{money(item.price)}</div><div className="text-[9px] text-[#25D366]">Prof: {money(item.price - (item.cost||0))}</div></div></div></button>) })}</div></div>
+                
+                {Object.entries(localCatalog).map(([category, items]) => (<div key={category}><h3 className="text-xs tracking-[0.2em] text-divineGold mb-3 uppercase mt-6">ATELIER: {category}</h3><div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">{items.map(item => { if(item.id === 'none') return null; const isOff = disabledItems.includes(item.id); return (<button key={item.id} onClick={() => editMode ? openEditModal(item, 'catalog', null, category) : toggleIngredient(item.id, isOff)} className={`p-3 rounded-xl border text-left transition ${isOff ? 'bg-red-500/10 border-red-500/30' : 'bg-divinePanel border-divineLine hover:border-divineGold/50'}`}><div className={`font-semibold text-sm ${isOff ? 'text-red-400 line-through' : 'text-divineCream'}`}>{item.name}</div><div className="flex justify-between items-end mt-2"><div className="text-[10px] text-divineCream/50">{isOff ? '🔴 AGOTADO' : '🟢 DISPONIBLE'}</div><div className="text-right"><div className="text-xs font-bold text-divineGold">{money(item.price)}</div><div className="text-[9px] text-[#25D366]">Prof: {money(item.price - (item.cost||0))}</div></div></div></button>) })}</div></div>))}
               </div>
              ) : (
               <div className="max-w-md mx-auto">
@@ -1423,7 +1492,7 @@ function AdminDashboard({ onClose, supabaseClient }) {
       );
     }
   
-// =========================
+    // =========================
     // Notificaciones Premium (Toasts)
     // =========================
     window.showToast = (msg, icon = '✨') => window.dispatchEvent(new CustomEvent('add-toast', { detail: { msg, icon } }));
@@ -1458,7 +1527,7 @@ function AdminDashboard({ onClose, supabaseClient }) {
     // =========================
     function Preloader({ onComplete }) {
       useEffect(() => {
-        const t = setTimeout(onComplete, 2200); // La pantalla dura 2.2 segundos
+        const t = setTimeout(onComplete, 2200); 
         return () => clearTimeout(t);
       }, [onComplete]);
       return (
@@ -1475,9 +1544,9 @@ function AdminDashboard({ onClose, supabaseClient }) {
     }
 
     // =========================
-    // App Base
+    // App Base (Con Inventario Dinámico)
     // =========================
-function App() {
+    function App() {
       useSpotlight();
       const refs = { burgers: useRef(null), desserts: useRef(null), yogurt: useRef(null), atelier: useRef(null) };
       const [activeBurger, setActiveBurger] = useState(null);
@@ -1486,6 +1555,29 @@ function App() {
       const [cartItems, setCartItems] = useState(() => {
         try { const guardado = localStorage.getItem('divinee_cart'); return guardado ? JSON.parse(guardado) : []; } catch (e) { return []; }
       });
+
+      // Estados de Inventario Dinámico
+      const [localBurgers, setLocalBurgers] = useState(DEFAULT_BURGERS);
+      const [localDesserts, setLocalDesserts] = useState(DEFAULT_DESSERTS);
+      const [localCatalog, setLocalCatalog] = useState(DEFAULT_CATALOG);
+
+      useEffect(() => {
+        try {
+          const guardado = localStorage.getItem('divinee_custom_inv');
+          if (guardado) {
+            const parsed = JSON.parse(guardado);
+            if (parsed.burgers) setLocalBurgers(parsed.burgers);
+            if (parsed.desserts) setLocalDesserts(parsed.desserts);
+            if (parsed.catalog) setLocalCatalog(parsed.catalog);
+          }
+        } catch (e) { console.error("Error leyendo inventario", e); }
+      }, []);
+
+      const handleSaveInventory = (newBurgers, newDesserts, newCatalog) => {
+        setLocalBurgers(newBurgers); setLocalDesserts(newDesserts); setLocalCatalog(newCatalog);
+        localStorage.setItem('divinee_custom_inv', JSON.stringify({ burgers: newBurgers, desserts: newDesserts, catalog: newCatalog }));
+        window.showToast("Inventario actualizado", "💾");
+      };
 
       const [bcvRate, setBcvRate] = useState(null);
       const [trackingModalOpen, setTrackingModalOpen] = useState(false);
@@ -1569,11 +1661,11 @@ function App() {
               </div>
             </motion.section>
             
-            <section ref={refs.burgers} className="scroll-mt-32"><SectionShell eyebrow="COLECCIÓN DIVINÉE" title="Hamburguesas" subtitle="Exquisito. Divino. Divinée🍔✨."><ProductShowcase items={burgers} badge="VER 360°" onOpen={setActiveBurger} onAdd={addToCart} disabledItems={disabledItems} /></SectionShell></section>
-            <section ref={refs.desserts} className="scroll-mt-32"><SectionShell eyebrow="EXQUISITE DESSERTS" title="Postres" subtitle="Selección corta, elegante."><ProductShowcase items={desserts} badge="PATISSERIE" onOpen={(p) => addToCart({ ...p, qty: 1 })} onAdd={addToCart} disabledItems={disabledItems} /></SectionShell></section>
+            <section ref={refs.burgers} className="scroll-mt-32"><SectionShell eyebrow="COLECCIÓN DIVINÉE" title="Hamburguesas" subtitle="Exquisito. Divino. Divinée🍔✨."><ProductShowcase items={localBurgers} badge="VER 360°" onOpen={setActiveBurger} onAdd={addToCart} disabledItems={disabledItems} /></SectionShell></section>
+            <section ref={refs.desserts} className="scroll-mt-32"><SectionShell eyebrow="EXQUISITE DESSERTS" title="Postres" subtitle="Selección corta, elegante."><ProductShowcase items={localDesserts} badge="PATISSERIE" onOpen={(p) => addToCart({ ...p, qty: 1 })} onAdd={addToCart} disabledItems={disabledItems} /></SectionShell></section>
             
             <section ref={refs.yogurt} className="scroll-mt-32"><SectionShell eyebrow="GREEK YOGURT DE MÁQUINA" title="Yogurt" subtitle="Sección desactivada temporalmente."><YogurtComingSoonCard /></SectionShell></section>
-            <section ref={refs.atelier} className="scroll-mt-32"><SectionShell eyebrow="ATELIER" title="Arma tu Hamburguesa" subtitle="Configurador en vivo, agrega ingredientes y verás cómo caen."><BurgerBuilder onAddToCart={addToCart} /></SectionShell></section>
+            <section ref={refs.atelier} className="scroll-mt-32"><SectionShell eyebrow="ATELIER" title="Arma tu Hamburguesa" subtitle="Configurador en vivo, agrega ingredientes y verás cómo caen."><BurgerBuilder onAddToCart={addToCart} catalog={localCatalog} /></SectionShell></section>
           </main>
 
           <div className="md:hidden"><CartButton cartCount={cartCount} onClick={() => setCartOpen(true)} /></div>
@@ -1581,11 +1673,11 @@ function App() {
           <a href="https://wa.me/584126835635?text=Hola%20Divin%C3%A9e%2C%20tengo%20una%20duda%20con%20mi%20pedido..." target="_blank" rel="noopener noreferrer" className="fixed z-40 bottom-[calc(1.1rem+env(safe-area-inset-bottom))] left-[calc(1.1rem+env(safe-area-inset-left))] rounded-2xl border border-[#25D366]/50 bg-black/60 px-4 py-3 shadow-glow backdrop-blur hover:bg-[#25D366]/20 transition flex items-center gap-3"><span className="text-xl leading-none">💬</span><span className="text-xs tracking-[0.2em] text-[#25D366] font-semibold hidden sm:inline">AYUDA</span></a>
           
           <AnimatePresence>{cartOpen && <CartDrawer items={cartItems} total={cartTotal} bcvRate={bcvRate} onClose={() => setCartOpen(false)} onQty={updateQty} onClearCart={() => setCartItems([])} />}</AnimatePresence>
-          <AnimatePresence>{!!activeBurger && <ProductModal product={activeBurger} onClose={() => setActiveBurger(null)} onAdd={() => addToCart({ id: activeBurger.id, name: activeBurger.name, price: activeBurger.price })} />}</AnimatePresence>
+          <AnimatePresence>{!!activeBurger && <ProductModal product={activeBurger} onClose={() => setActiveBurger(null)} onAdd={() => addToCart({ ...activeBurger, cost: activeBurger.cost })} />}</AnimatePresence>
           <AnimatePresence>{trackingModalOpen && <TrackingModal onClose={() => setTrackingModalOpen(false)} supabaseClient={supabaseClient} />}</AnimatePresence>
           <AnimatePresence>
             {adminModalOpen && !isAdminLogged && <AdminLogin onLogin={() => setIsAdminLogged(true)} onClose={() => setAdminModalOpen(false)} />}
-            {adminModalOpen && isAdminLogged && <AdminDashboard supabaseClient={supabaseClient} onClose={() => setAdminModalOpen(false)} />}
+            {adminModalOpen && isAdminLogged && <AdminDashboard supabaseClient={supabaseClient} onClose={() => setAdminModalOpen(false)} localBurgers={localBurgers} localDesserts={localDesserts} localCatalog={localCatalog} onSaveInventory={handleSaveInventory} />}
           </AnimatePresence>
         </div>
       );
@@ -1594,47 +1686,3 @@ function App() {
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
