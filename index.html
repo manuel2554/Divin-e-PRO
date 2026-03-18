@@ -1604,7 +1604,7 @@
     }
 
     // =========================
-    // App Base (Con Inventario Dinámico)
+    // App Base (Con Inventario Sincronizado en la Nube)
     // =========================
     function App() {
       useSpotlight();
@@ -1616,30 +1616,73 @@
         try { const guardado = localStorage.getItem('divinee_cart'); return guardado ? JSON.parse(guardado) : []; } catch (e) { return []; }
       });
 
-      // Estados de Inventario Dinámico
+      // Estados de Inventario Dinámico (Empieza con el default, luego carga la nube)
       const [localBurgers, setLocalBurgers] = useState(DEFAULT_BURGERS);
       const [localDesserts, setLocalDesserts] = useState(DEFAULT_DESSERTS);
       const [localCatalog, setLocalCatalog] = useState(DEFAULT_CATALOG);
 
+      const [bcvRate, setBcvRate] = useState(null);
+      const [trackingModalOpen, setTrackingModalOpen] = useState(false);
+      const [adminModalOpen, setAdminModalOpen] = useState(false);
+      const [isAdminLogged, setIsAdminLogged] = useState(false);
+      const [appLoaded, setAppLoaded] = useState(false);
+      
+      const [isStoreOpen, setIsStoreOpen] = useState(true);
+      const [disabledItems, setDisabledItems] = useState([]);
+
+      const cartCount = useMemo(() => cartItems.reduce((acc, it) => acc + it.qty, 0), [cartItems]);
+      const cartTotal = useMemo(() => cartItems.reduce((acc, it) => acc + it.price * it.qty, 0), [cartItems]);
+
+      useEffect(() => { localStorage.setItem('divinee_cart', JSON.stringify(cartItems)); }, [cartItems]);
+
+      // CARGAR DATOS DESDE SUPABASE AL INICIAR
       useEffect(() => {
-        try {
-          const guardado = localStorage.getItem('divinee_custom_inv');
-          if (guardado) {
-            const parsed = JSON.parse(guardado);
-            if (parsed.burgers) setLocalBurgers(parsed.burgers);
-            if (parsed.desserts) setLocalDesserts(parsed.desserts);
-            if (parsed.catalog) setLocalCatalog(parsed.catalog);
+        fetch("https://ve.dolarapi.com/v1/dolares/oficial").then(res => res.json()).then(data => setBcvRate(data.promedio)).catch(err => setBcvRate(60.00)); 
+        
+        const fetchGlobalData = async () => {
+          if (window.supabase) {
+            // Cargar estado de la tienda y el catálogo completo de la nube
+            const { data } = await supabaseClient.from('store_settings').select('is_open, catalog_data').eq('id', 'divinee').single();
+            if (data) {
+              setIsStoreOpen(data.is_open);
+              if (data.catalog_data) {
+                if (data.catalog_data.burgers) setLocalBurgers(data.catalog_data.burgers);
+                if (data.catalog_data.desserts) setLocalDesserts(data.catalog_data.desserts);
+                if (data.catalog_data.catalog) setLocalCatalog(data.catalog_data.catalog);
+              }
+            }
+            
+            // Cargar ingredientes agotados
+            const { data: invData } = await supabaseClient.from('disabled_ingredients').select('id');
+            if (invData) setDisabledItems(invData.map(i => i.id));
           }
-        } catch (e) { console.error("Error leyendo inventario", e); }
+        };
+
+        fetchGlobalData();
+        // Revisar cada 15 segundos si hubo cambios (para que a los clientes se les actualice solo)
+        const interval = setInterval(fetchGlobalData, 15000);
+        return () => clearInterval(interval);
       }, []);
 
-      const handleSaveInventory = (newBurgers, newDesserts, newCatalog) => {
+      // GUARDAR EN SUPABASE
+      const handleSaveInventory = async (newBurgers, newDesserts, newCatalog) => {
         setLocalBurgers(newBurgers); setLocalDesserts(newDesserts); setLocalCatalog(newCatalog);
-        localStorage.setItem('divinee_custom_inv', JSON.stringify({ burgers: newBurgers, desserts: newDesserts, catalog: newCatalog }));
-        window.showToast("Inventario actualizado", "💾");
+        
+        if (window.supabase) {
+          const { error } = await supabaseClient.from('store_settings').update({
+            catalog_data: { burgers: newBurgers, desserts: newDesserts, catalog: newCatalog }
+          }).eq('id', 'divinee');
+          
+          if (error) {
+            window.showToast("Error guardando en la nube", "⚠️");
+            console.error(error);
+          } else {
+            window.showToast("Menú sincronizado en la nube", "☁️");
+          }
+        }
       };
 
-      // Función para añadir nuevos productos al inventario local
+      // Función para añadir nuevos productos al inventario local y nube
       const handleAddNewProduct = (newItemData) => {
         let newBurgers = [...localBurgers];
         let newDesserts = [...localDesserts];
@@ -1676,39 +1719,9 @@
           newCatalog[newItemData.group].push(baseItem);
         }
 
+        // Al llamar esta función, se guarda en los estados y se sube a Supabase
         handleSaveInventory(newBurgers, newDesserts, newCatalog);
       };
-
-      const [bcvRate, setBcvRate] = useState(null);
-      const [trackingModalOpen, setTrackingModalOpen] = useState(false);
-      const [adminModalOpen, setAdminModalOpen] = useState(false);
-      const [isAdminLogged, setIsAdminLogged] = useState(false);
-      const [appLoaded, setAppLoaded] = useState(false);
-      
-      const [isStoreOpen, setIsStoreOpen] = useState(true);
-      const [disabledItems, setDisabledItems] = useState([]);
-
-      const cartCount = useMemo(() => cartItems.reduce((acc, it) => acc + it.qty, 0), [cartItems]);
-      const cartTotal = useMemo(() => cartItems.reduce((acc, it) => acc + it.price * it.qty, 0), [cartItems]);
-
-      useEffect(() => { localStorage.setItem('divinee_cart', JSON.stringify(cartItems)); }, [cartItems]);
-
-      useEffect(() => {
-        fetch("https://ve.dolarapi.com/v1/dolares/oficial").then(res => res.json()).then(data => setBcvRate(data.promedio)).catch(err => setBcvRate(60.00)); 
-        
-        const checkStoreStatus = async () => {
-          if (window.supabase) {
-            const { data } = await supabaseClient.from('store_settings').select('is_open').eq('id', 'divinee').single();
-            if (data) setIsStoreOpen(data.is_open);
-            
-            const { data: invData } = await supabaseClient.from('disabled_ingredients').select('id');
-            if (invData) setDisabledItems(invData.map(i => i.id));
-          }
-        };
-        checkStoreStatus();
-        const interval = setInterval(checkStoreStatus, 30000);
-        return () => clearInterval(interval);
-      }, []);
 
       function scrollTo(key) { refs[key]?.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }
       
@@ -1770,7 +1783,7 @@
 
           <div className="md:hidden"><CartButton cartCount={cartCount} onClick={() => setCartOpen(true)} /></div>
           
-          <a href="https://wa.me/584126835635?text=Hola%20Divin%C3%A9e%2C%20tengo%20una%20duda%20con%20mi%20pedido..." target="_blank" rel="noopener noreferrer" className="fixed z-40 bottom-[calc(1.1rem+env(safe-area-bottom))] left-[calc(1.1rem+env(safe-area-left))] rounded-2xl border border-[#25D366]/50 bg-black/60 px-4 py-3 shadow-glow backdrop-blur hover:bg-[#25D366]/20 transition flex items-center gap-3"><span className="text-xl leading-none">💬</span><span className="text-xs tracking-[0.2em] text-[#25D366] font-semibold hidden sm:inline">AYUDA</span></a>
+          <a href="https://wa.me/584126835635?text=Hola%20Divin%C3%A9e%2C%20tengo%20una%20duda%20con%20mi%20pedido..." target="_blank" rel="noopener noreferrer" className="fixed z-40 bottom-[calc(1.1rem+env(safe-area-inset-bottom))] left-[calc(1.1rem+env(safe-area-inset-left))] rounded-2xl border border-[#25D366]/50 bg-black/60 px-4 py-3 shadow-glow backdrop-blur hover:bg-[#25D366]/20 transition flex items-center gap-3"><span className="text-xl leading-none">💬</span><span className="text-xs tracking-[0.2em] text-[#25D366] font-semibold hidden sm:inline">AYUDA</span></a>
           
           <AnimatePresence>{cartOpen && <CartDrawer items={cartItems} total={cartTotal} bcvRate={bcvRate} onClose={() => setCartOpen(false)} onQty={updateQty} onClearCart={() => setCartItems([])} />}</AnimatePresence>
           <AnimatePresence>{!!activeBurger && <ProductModal product={activeBurger} onClose={() => setActiveBurger(null)} onAdd={() => addToCart({ ...activeBurger, cost: activeBurger.cost })} />}</AnimatePresence>
