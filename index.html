@@ -200,7 +200,7 @@
     }
 
     // =========================
-    // Data Inicial (Totalmente configurable en la nube)
+    // Data Inicial (Con ingredientIds e isPromo + REFRESCOS)
     // =========================
     const DEFAULT_BURGERS = [
       { 
@@ -262,17 +262,28 @@
       { id: "pistachio-opera", name: "Ópera de Pistacho", description: "Capas de pistacho con notas de espresso y glaseado satinado.", price: 11.5, cost: 5.0, isPromo: false, img: "https://images.unsplash.com/photo-1589308078059-be1415eab4c3?auto=format&fit=crop&w=1600&q=80" },
     ];
 
+    const DEFAULT_DRINKS = [
+      { id: "coca-cola", name: "Coca-Cola Original", description: "Bebida gaseosa 355ml.", price: 1.50, cost: 0.80, isPromo: false, img: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=800&q=80" },
+      { id: "pepsi", name: "Pepsi Cola", description: "Bebida gaseosa 355ml.", price: 1.50, cost: 0.80, isPromo: false, img: "https://images.unsplash.com/photo-1629203851288-7ececa5f05c4?auto=format&fit=crop&w=800&q=80" }
+    ];
+
     const DEFAULT_CATALOG = {
       settings: { 
-        deliveryCentro: 0.00, 
-        deliveryAfueras: 1.50, 
         empaque: 0.60,
         whatsapp: "584126835635",
         telegramToken: "8566482559:AAEKenkBkriNlZAjlyIGBWWzGDTB3sFzyCA",
         telegramChatId: "1145054461",
         banco: "PROVINCIAL (0108)",
         telefonoPago: "0412 683 5635",
-        cedulaPago: "V-30158858"
+        cedulaPago: "V-30158858",
+        zelleEmail: "tu_correo@zelle.com",
+        binanceId: "123456789",
+        binanceEmail: "tu_correo@binance.com",
+        deliveryZones: [
+          { id: 'retiro', name: 'Retiro por el local', cost: 0.00 },
+          { id: 'centro', name: 'Delivery: Pueblo Llano Centro', cost: 0.00 },
+          { id: 'afueras', name: 'Delivery: Zonas alejadas', cost: 1.50 }
+        ]
       },
       buns: [
         { id: "brioche", name: "Brioche", price: 1.75, cost: 0.80, note: "Suave, dorado, premium" },
@@ -377,6 +388,9 @@
                  <button onClick={() => onNavigate('burgers')} className="text-[11px] font-semibold tracking-[0.2em] px-4 py-2 rounded-full text-divineCream/60 hover:text-divineGold hover:bg-divineLine2/20 transition">
                    HAMBURGUESAS
                  </button>
+                 <button onClick={() => onNavigate('drinks')} className="text-[11px] font-semibold tracking-[0.2em] px-4 py-2 rounded-full text-divineCream/60 hover:text-divineGold hover:bg-divineLine2/20 transition">
+                   BEBIDAS
+                 </button>
                  <button onClick={() => onNavigate('desserts')} className="text-[11px] font-semibold tracking-[0.2em] px-4 py-2 rounded-full text-divineCream/60 hover:text-divineGold hover:bg-divineLine2/20 transition">
                    POSTRES
                  </button>
@@ -402,6 +416,9 @@
                  </button>
                  <button onClick={() => onNavigate('burgers')} className="shrink-0 text-[10px] font-semibold tracking-[0.2em] px-4 py-2 rounded-full border border-divineLine2 bg-black/40 text-divineCream/75 hover:text-divineGold">
                    HAMBURGUESAS
+                 </button>
+                 <button onClick={() => onNavigate('drinks')} className="shrink-0 text-[10px] font-semibold tracking-[0.2em] px-4 py-2 rounded-full border border-divineLine2 bg-black/40 text-divineCream/75 hover:text-divineGold">
+                   BEBIDAS
                  </button>
                  <button onClick={() => onNavigate('desserts')} className="shrink-0 text-[10px] font-semibold tracking-[0.2em] px-4 py-2 rounded-full border border-divineLine2 bg-black/40 text-divineCream/75 hover:text-divineGold">
                    POSTRES
@@ -811,9 +828,9 @@
     }
     
     // =========================
-    // Cart Drawer con Checkout Integrado + Capture + Tarifa Servicio
+    // Cart Drawer con Zelle, Binance, Pago Móvil y Delivery Dinámico
     // =========================
-    function CartDrawer({ items, total, bcvRate, onClose, onQty, onClearCart, catalog }) {
+    function CartDrawer({ items, total, bcvRate, onClose, onQty, onClearCart, catalog, supabaseClient }) {
       useLockBodyScroll(true); 
       const close = useHistoryClose(true, onClose); 
       useEscape(close, true);
@@ -824,14 +841,16 @@
       const [formData, setFormData] = useState({ name: "", phone: "", address: "", notes: "", ref: "" });
       const [receiptFile, setReceiptFile] = useState(null);
       
-      const [deliveryZone, setDeliveryZone] = useState('retiro');
+      const deliveryZonesList = catalog?.settings?.deliveryZones || [{ id: 'retiro', name: 'Retiro por el local', cost: 0 }];
+      const [deliveryZoneId, setDeliveryZoneId] = useState(deliveryZonesList[0]?.id || 'retiro');
+      const selectedZone = deliveryZonesList.find(z => z.id === deliveryZoneId) || deliveryZonesList[0];
+      
+      const [paymentMethod, setPaymentMethod] = useState('pagomovil'); // pagomovil, zelle, binance
       
       // Cálculos Dinámicos
-      const deliveryCost = deliveryZone === 'centro' ? (catalog?.settings?.deliveryCentro || 0) : (deliveryZone === 'afueras' ? (catalog?.settings?.deliveryAfueras || 1.50) : 0);
+      const deliveryCost = Number(selectedZone?.cost || 0);
       const totalItemsQty = items.reduce((acc, it) => acc + it.qty, 0);
-      
-      // Empaque disfrazado de Tarifa de Servicio
-      const empaqueUnitario = catalog?.settings?.empaque || 0.60;
+      const empaqueUnitario = Number(catalog?.settings?.empaque || 0.60);
       const empaqueCost = totalItemsQty * empaqueUnitario;
       
       const finalTotal = total + deliveryCost + empaqueCost;
@@ -839,9 +858,6 @@
       // Variables dinámicas desde ajustes
       const botToken = catalog?.settings?.telegramToken || TELEGRAM_BOT_TOKEN;
       const chatId = catalog?.settings?.telegramChatId || TELEGRAM_CHAT_ID;
-      const banco = catalog?.settings?.banco || "PROVINCIAL (0108)";
-      const telefonoPago = catalog?.settings?.telefonoPago || "0412 683 5635";
-      const cedulaPago = catalog?.settings?.cedulaPago || "V-30158858";
 
       const handleInput = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -849,11 +865,11 @@
         setLoading(true);
         const newOrderId = "#DIV-" + Math.floor(1000 + Math.random() * 9000);
         
-        const { error } = await window.supabaseClient.from('orders').insert([{
+        const { error } = await supabaseClient.from('orders').insert([{
             tracking_code: newOrderId, customer_name: formData.name, phone: formData.phone,
             address: formData.address, notes: formData.notes, items: items, 
             total_usd: finalTotal, bcv_rate: bcvRate,
-            payment_ref: formData.ref || "Capture adjunto", 
+            payment_ref: `${paymentMethod.toUpperCase()} - ${formData.ref || "Capture adjunto"}`, 
             status: 'Pendiente'
         }]);
 
@@ -862,7 +878,7 @@
           setLoading(false); return;
         }
 
-        let orderText = `🍔 *NUEVO PEDIDO* ${newOrderId}\n\n👤 *Cliente:* ${formData.name}\n📞 *Teléfono:* ${formData.phone}\n📍 *Dirección:* ${formData.address}\n🛵 *Método:* ${deliveryZone.toUpperCase()}\n`;
+        let orderText = `🍔 *NUEVO PEDIDO* ${newOrderId}\n\n👤 *Cliente:* ${formData.name}\n📞 *Teléfono:* ${formData.phone}\n📍 *Dirección:* ${formData.address}\n🛵 *Método:* ${selectedZone.name}\n`;
         if(formData.notes) orderText += `📝 *Nota:* ${formData.notes}\n`;
         orderText += `\n🛒 *PEDIDO:*\n`;
         items.forEach(it => {
@@ -870,12 +886,13 @@
           if (it.meta) Object.entries(it.meta).forEach(([k, v]) => { orderText += `   _${k}:_ ${Array.isArray(v) ? v.join(", ") : String(v)}\n`; });
         });
         
-        // En Telegram también lo llamamos Tarifa de Servicio para mantener la coherencia
         orderText += `\n⚙️ *Tarifa de Servicio:* $${empaqueCost.toFixed(2)}`;
         if (deliveryCost > 0) orderText += `\n🛵 *Costo Delivery:* $${deliveryCost.toFixed(2)}`;
         orderText += `\n💰 *Total USD:* $${finalTotal.toFixed(2)}`;
-        if (bcvRate) orderText += `\n🇻🇪 *Total BCV:* ${(finalTotal * bcvRate).toFixed(2)} Bs`;
-        orderText += `\n💳 *Ref PagoMóvil:* ${formData.ref || "Envió Capture"}`;
+        if (paymentMethod === 'pagomovil' && bcvRate) orderText += `\n🇻🇪 *Total BCV:* ${(finalTotal * bcvRate).toFixed(2)} Bs`;
+        
+        orderText += `\n💳 *Vía de Pago:* ${paymentMethod.toUpperCase()}`;
+        orderText += `\n🧾 *Referencia:* ${formData.ref || "Envió Capture"}`;
 
         try {
           await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: chatId, text: orderText, parse_mode: "Markdown" }) });
@@ -895,7 +912,7 @@
           <motion.aside initial={{ x: 24, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 24, opacity: 0 }} transition={{ duration: 0.28, ease: [0.2, 0.8, 0.2, 1] }} className="absolute right-0 top-0 h-full w-[92vw] max-w-md border-l border-divineLine2 bg-divineInk shadow-divine flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex-1 overflow-y-auto scroll-smooth-ios p-5 pb-10" style={{ paddingBottom: "calc(2.5rem + env(safe-area-inset-bottom))" }}>
               <div className="flex items-start justify-between">
-                <div><div className="text-xs tracking-[0.35em] text-divineGold/90">{BRAND_NAME.toUpperCase()}</div><h3 className="mt-2 text-xl font-semibold">{step === 0 ? "Carrito" : step === 1 ? "Tus Datos" : step === 2 ? "Pago Móvil" : "Pedido Confirmado"}</h3></div>
+                <div><div className="text-xs tracking-[0.35em] text-divineGold/90">{BRAND_NAME.toUpperCase()}</div><h3 className="mt-2 text-xl font-semibold">{step === 0 ? "Carrito" : step === 1 ? "Tus Datos" : step === 2 ? "Realizar Pago" : "Pedido Confirmado"}</h3></div>
                 {step !== 3 && <button onClick={close} className="btn-ghost py-2 px-4" type="button">CERRAR</button>}
               </div>
 
@@ -919,7 +936,6 @@
                       <div className="rounded-2xl border border-divineLine2 bg-black/25 p-4">
                         <div className="space-y-2 mb-3 border-b border-divineLine2 pb-3">
                            <div className="flex items-center justify-between text-xs text-divineCream/60"><span>Subtotal Menú</span><span>{money(total)}</span></div>
-                           {/* Aquí está el disfraz: "Tarifa de Servicio" en lugar de Empaques */}
                            <div className="flex items-center justify-between text-xs text-divineCream/60"><span>Tarifa de Servicio</span><span>{money(empaqueCost)}</span></div>
                         </div>
                         <div className="flex items-center justify-between">
@@ -941,16 +957,16 @@
                   
                   <div>
                     <label className="text-xs tracking-[0.18em] text-divineCream/60 ml-1">MÉTODO DE ENTREGA</label>
-                    <select name="deliveryZone" value={deliveryZone} onChange={(e) => setDeliveryZone(e.target.value)} className="mt-1 w-full bg-black/40 border border-divineLine2 rounded-xl px-4 py-3 text-sm text-divineCream outline-none focus:border-divineGold transition cursor-pointer">
-                      <option value="retiro">Retiro por el local ($0.00)</option>
-                      <option value="centro">Delivery: Pueblo Llano Centro (+{money(catalog?.settings?.deliveryCentro || 0)})</option>
-                      <option value="afueras">Delivery: Zonas alejadas (+{money(catalog?.settings?.deliveryAfueras || 1.50)})</option>
+                    <select value={deliveryZoneId} onChange={(e) => setDeliveryZoneId(e.target.value)} className="mt-1 w-full bg-black/40 border border-divineLine2 rounded-xl px-4 py-3 text-sm text-divineCream outline-none focus:border-divineGold transition cursor-pointer">
+                      {deliveryZonesList.map(zone => (
+                        <option key={zone.id} value={zone.id}>{zone.name} (+{money(zone.cost)})</option>
+                      ))}
                     </select>
                   </div>
 
-                  <div><label className="text-xs tracking-[0.18em] text-divineCream/60 ml-1">DIRECCIÓN DE ENTREGA</label><textarea name="address" value={formData.address} onChange={handleInput} rows={2} className="mt-1 w-full bg-black/40 border border-divineLine2 rounded-xl px-4 py-3 text-sm text-divineCream outline-none focus:border-divineGold transition" placeholder="Sector, calle, casa/apto..."></textarea></div>
-                  <div><label className="text-xs tracking-[0.18em] text-divineCream/60 ml-1">NOTA ADICIONAL</label><input type="text" name="notes" value={formData.notes} onChange={handleInput} className="mt-1 w-full bg-black/40 border border-divineLine2 rounded-xl px-4 py-3 text-sm text-divineCream outline-none focus:border-divineGold transition" /></div>
-                  <div className="pt-4 flex gap-3"><button className="btn-ghost flex-1" onClick={() => setStep(0)}>ATRÁS</button><button className="btn-primary flex-1" onClick={() => setStep(2)} disabled={!formData.name || !formData.phone || (deliveryZone !== 'retiro' && !formData.address)} style={{opacity: (!formData.name || !formData.phone || (deliveryZone !== 'retiro' && !formData.address)) ? 0.5 : 1}}>PAGAR</button></div>
+                  <div><label className="text-xs tracking-[0.18em] text-divineCream/60 ml-1">DIRECCIÓN EXACTA</label><textarea name="address" value={formData.address} onChange={handleInput} rows={2} className="mt-1 w-full bg-black/40 border border-divineLine2 rounded-xl px-4 py-3 text-sm text-divineCream outline-none focus:border-divineGold transition" placeholder="Sector, calle, casa/apto..."></textarea></div>
+                  <div><label className="text-xs tracking-[0.18em] text-divineCream/60 ml-1">NOTA ADICIONAL</label><input type="text" name="notes" value={formData.notes} onChange={handleInput} className="mt-1 w-full bg-black/40 border border-divineLine2 rounded-xl px-4 py-3 text-sm text-divineCream outline-none focus:border-divineGold transition" placeholder="Alergias, cambio para..." /></div>
+                  <div className="pt-4 flex gap-3"><button className="btn-ghost flex-1" onClick={() => setStep(0)}>ATRÁS</button><button className="btn-primary flex-1" onClick={() => setStep(2)} disabled={!formData.name || !formData.phone || (deliveryZoneId !== 'retiro' && !formData.address)} style={{opacity: (!formData.name || !formData.phone || (deliveryZoneId !== 'retiro' && !formData.address)) ? 0.5 : 1}}>IR A PAGAR</button></div>
                 </div>
               )}
 
@@ -958,15 +974,46 @@
                 <div className="mt-6 space-y-4">
                   <div className="rounded-2xl border border-divineLine2 bg-divinePanel p-5 space-y-3">
                     <div className="text-center pb-2 border-b border-divineLine2">
-                      <div className="text-xs tracking-[0.28em] text-divineCream/60 mb-1">TOTAL A TRANSFERIR</div>
-                      <div className="text-2xl font-semibold text-divineGold">{bcvRate ? moneyVES(finalTotal, bcvRate) : money(finalTotal)}</div>
-                      <div className="text-[10px] text-divineCream/50 mt-1">Subtotal: {money(total + empaqueCost)} {deliveryCost > 0 && `+ Delivery: ${money(deliveryCost)}`}</div>
+                      <div className="text-xs tracking-[0.28em] text-divineCream/60 mb-1">TOTAL A PAGAR</div>
+                      <div className="text-2xl font-semibold text-divineGold">{money(finalTotal)} <span className="text-sm font-normal text-divineCream/50">USD</span></div>
+                      <div className="text-[10px] text-divineCream/50 mt-1">Pedido+Servicio: {money(total + empaqueCost)} {deliveryCost > 0 && `| Delivery: ${money(deliveryCost)}`}</div>
                     </div>
-                    <div><span className="text-xs text-divineCream/50 block">Banco</span><span className="font-semibold tracking-wider">{banco}</span></div>
-                    <div><span className="text-xs text-divineCream/50 block">Teléfono</span><span className="font-semibold tracking-wider">{telefonoPago}</span></div>
-                    <div><span className="text-xs text-divineCream/50 block">Cédula/RIF</span><span className="font-semibold tracking-wider">{cedulaPago}</span></div>
+                    
+                    {/* Selector de Método de Pago */}
+                    <div className="pt-2">
+                       <label className="text-xs tracking-[0.18em] text-divineGold mb-2 block">MÉTODO DE PAGO</label>
+                       <div className="grid grid-cols-3 gap-2">
+                         <button onClick={() => setPaymentMethod('pagomovil')} className={`py-2 rounded-lg text-[10px] font-bold tracking-widest transition border ${paymentMethod === 'pagomovil' ? 'bg-divineGold/20 border-divineGold text-divineGold' : 'bg-black/30 border-divineLine2 text-divineCream/50'}`}>PAGO MÓVIL</button>
+                         <button onClick={() => setPaymentMethod('zelle')} className={`py-2 rounded-lg text-[10px] font-bold tracking-widest transition border ${paymentMethod === 'zelle' ? 'bg-[#741bd1]/20 border-[#741bd1] text-[#b366ff]' : 'bg-black/30 border-divineLine2 text-divineCream/50'}`}>ZELLE</button>
+                         <button onClick={() => setPaymentMethod('binance')} className={`py-2 rounded-lg text-[10px] font-bold tracking-widest transition border ${paymentMethod === 'binance' ? 'bg-[#fcd535]/20 border-[#fcd535] text-[#fcd535]' : 'bg-black/30 border-divineLine2 text-divineCream/50'}`}>BINANCE</button>
+                       </div>
+                    </div>
+                    
+                    <div className="bg-black/40 rounded-xl p-4 mt-3 border border-divineLine2/50">
+                      {paymentMethod === 'pagomovil' && (
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center"><span className="text-xs text-divineCream/50 block">Monto Bs:</span><span className="font-bold text-divineGold text-lg">{bcvRate ? moneyVES(finalTotal, bcvRate) : 'Calculando...'}</span></div>
+                          <div className="h-[1px] bg-divineLine2/30 my-2"></div>
+                          <div><span className="text-xs text-divineCream/50 block">Banco</span><span className="font-semibold tracking-wider">{catalog?.settings?.banco || "PROVINCIAL (0108)"}</span></div>
+                          <div><span className="text-xs text-divineCream/50 block">Teléfono</span><span className="font-semibold tracking-wider">{catalog?.settings?.telefonoPago || "0412 683 5635"}</span></div>
+                          <div><span className="text-xs text-divineCream/50 block">Cédula/RIF</span><span className="font-semibold tracking-wider">{catalog?.settings?.cedulaPago || "V-30158858"}</span></div>
+                        </div>
+                      )}
+                      {paymentMethod === 'zelle' && (
+                        <div className="space-y-3">
+                          <div><span className="text-xs text-[#b366ff]/70 block mb-1">Correo Zelle</span><span className="font-semibold tracking-wider text-white text-sm break-all">{catalog?.settings?.zelleEmail || "tu_correo@zelle.com"}</span></div>
+                          <div className="text-[10px] text-divineCream/50 border-t border-divineLine2/30 pt-2">Por favor, indica tu nombre exacto de Zelle en el número de referencia.</div>
+                        </div>
+                      )}
+                      {paymentMethod === 'binance' && (
+                        <div className="space-y-3">
+                          <div><span className="text-xs text-[#fcd535]/70 block mb-1">Binance Pay ID</span><span className="font-semibold tracking-wider text-white text-sm break-all">{catalog?.settings?.binanceId || "123456789"}</span></div>
+                          <div><span className="text-xs text-[#fcd535]/70 block mb-1">Binance Email</span><span className="font-semibold tracking-wider text-white text-sm break-all">{catalog?.settings?.binanceEmail || "tu_correo@binance.com"}</span></div>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div><label className="text-xs tracking-[0.18em] text-divineGold ml-1">REFERENCIA (Opcional si subes capture)</label><input type="number" name="ref" value={formData.ref} onChange={handleInput} className="mt-1 w-full bg-black/60 border border-divineGold/50 rounded-xl px-4 py-3 text-lg font-semibold text-divineCream outline-none focus:border-divineGold transition text-center tracking-widest" placeholder="Últimos dígitos" /></div>
+                  <div><label className="text-xs tracking-[0.18em] text-divineGold ml-1">REFERENCIA / NOMBRE</label><input type="text" name="ref" value={formData.ref} onChange={handleInput} className="mt-1 w-full bg-black/60 border border-divineGold/50 rounded-xl px-4 py-3 text-lg font-semibold text-divineCream outline-none focus:border-divineGold transition text-center tracking-widest" placeholder="Ref o Nombre emisor" /></div>
                   <div><label className="text-xs tracking-[0.18em] text-divineCream/60 ml-1">O SUBE TU CAPTURE</label><input type="file" accept="image/*" onChange={(e) => setReceiptFile(e.target.files[0])} className="mt-1 w-full bg-black/40 border border-divineLine2 rounded-xl px-4 py-3 text-sm text-divineCream file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-divineGold file:text-black hover:file:bg-divineGold2" /></div>
                   <div className="pt-4 flex gap-3"><button className="btn-ghost flex-1" onClick={() => setStep(1)} disabled={loading}>ATRÁS</button><button className="btn-primary flex-1" onClick={handleCheckout} disabled={(!formData.ref && !receiptFile) || loading} style={{opacity: ((!formData.ref && !receiptFile) || loading) ? 0.5 : 1}}>{loading ? "PROCESANDO..." : "CONFIRMAR PAGO"}</button></div>
                 </div>
@@ -1375,7 +1422,7 @@
       );
     }
 
-    function AdminDashboard({ onClose, supabaseClient, localBurgers, localDesserts, localCatalog, onSaveInventory, onAddProduct }) {
+    function AdminDashboard({ onClose, supabaseClient, localBurgers, localDesserts, localDrinks, localCatalog, onSaveInventory, onAddProduct }) {
       const [orders, setOrders] = useState([]);
       const [disabledItems, setDisabledItems] = useState([]);
       const [loading, setLoading] = useState(true);
@@ -1391,18 +1438,25 @@
       const [showAddModal, setShowAddModal] = useState(false);
       const [addForm, setAddForm] = useState({ type: 'burger', group: 'buns', name: '', price: '', cost: '', description: '', img: '', ingredients: [], isPromo: false, showUpsell: true });
 
-      // ESTADO DE AJUSTES GENERALES (Nueva Pestaña)
+      // ESTADO DE AJUSTES GENERALES (Zonas y Pagos)
       const [settingsForm, setSettingsForm] = useState({ 
-        deliveryCentro: localCatalog?.settings?.deliveryCentro || 0, 
-        deliveryAfueras: localCatalog?.settings?.deliveryAfueras || 1.5,
         empaque: localCatalog?.settings?.empaque || 0.60,
         whatsapp: localCatalog?.settings?.whatsapp || "584126835635",
         telegramToken: localCatalog?.settings?.telegramToken || TELEGRAM_BOT_TOKEN,
         telegramChatId: localCatalog?.settings?.telegramChatId || TELEGRAM_CHAT_ID,
         banco: localCatalog?.settings?.banco || "PROVINCIAL (0108)",
         telefonoPago: localCatalog?.settings?.telefonoPago || "0412 683 5635",
-        cedulaPago: localCatalog?.settings?.cedulaPago || "V-30158858"
+        cedulaPago: localCatalog?.settings?.cedulaPago || "V-30158858",
+        zelleEmail: localCatalog?.settings?.zelleEmail || "tu_correo@zelle.com",
+        binanceId: localCatalog?.settings?.binanceId || "123456789",
+        binanceEmail: localCatalog?.settings?.binanceEmail || "tu_correo@binance.com",
       });
+
+      const [deliveryZonesConfig, setDeliveryZonesConfig] = useState(localCatalog?.settings?.deliveryZones || [
+        { id: 'retiro', name: 'Retiro por el local', cost: 0.00 },
+        { id: 'centro', name: 'Delivery: Pueblo Llano Centro', cost: 0.00 },
+        { id: 'afueras', name: 'Delivery: Zonas alejadas', cost: 1.50 }
+      ]);
 
       useEffect(() => { fetchData(); }, []);
 
@@ -1440,28 +1494,34 @@
         }
       };
 
-      // GUARDAR LOS AJUSTES (Delivery, Telegram, WhatsApp, Bancos)
+      const addDeliveryZone = () => {
+        const id = 'zone_' + Math.random().toString(36).substr(2, 9);
+        setDeliveryZonesConfig([...deliveryZonesConfig, { id, name: 'Nueva Zona', cost: 0 }]);
+      };
+      
+      const updateDeliveryZone = (id, field, value) => {
+        setDeliveryZonesConfig(deliveryZonesConfig.map(z => z.id === id ? { ...z, [field]: value } : z));
+      };
+
+      const removeDeliveryZone = (id) => {
+        setDeliveryZonesConfig(deliveryZonesConfig.filter(z => z.id !== id));
+      };
+
+      // GUARDAR LOS AJUSTES
       const saveSettingsForm = () => {
         const newCatalog = { 
           ...localCatalog, 
           settings: { 
-            deliveryCentro: Number(settingsForm.deliveryCentro), 
-            deliveryAfueras: Number(settingsForm.deliveryAfueras), 
+            ...settingsForm,
             empaque: Number(settingsForm.empaque),
-            whatsapp: settingsForm.whatsapp,
-            telegramToken: settingsForm.telegramToken,
-            telegramChatId: settingsForm.telegramChatId,
-            banco: settingsForm.banco,
-            telefonoPago: settingsForm.telefonoPago,
-            cedulaPago: settingsForm.cedulaPago
+            deliveryZones: deliveryZonesConfig.map(z => ({...z, cost: Number(z.cost)}))
           } 
         };
-        onSaveInventory(localBurgers, localDesserts, newCatalog);
+        onSaveInventory(localBurgers, localDesserts, localDrinks, newCatalog);
       };
 
       const openEditModal = (item, type, catIdx = null, groupName = null) => {
         setItemToEdit({ id: item.id, type, catIdx, groupName });
-        // Si showUpsell es undefined, asume true por defecto para no romper compatibilidad hacia atrás
         setEditForm({ name: item.name, description: item.description || '', price: item.price, cost: item.cost || 0, ingredients: item.ingredientIds || [], isPromo: item.isPromo || false, showUpsell: item.showUpsell !== false });
       };
 
@@ -1480,6 +1540,7 @@
       const saveEditForm = () => {
         let newBurgers = [...localBurgers];
         let newDesserts = [...localDesserts];
+        let newDrinks = [...localDrinks];
         let newCatalog = { ...localCatalog };
 
         if (itemToEdit.type === 'burger') {
@@ -1487,12 +1548,14 @@
           newBurgers[itemToEdit.catIdx] = { ...newBurgers[itemToEdit.catIdx], name: editForm.name, description: editForm.description, price: Number(editForm.price), cost: Number(editForm.cost), ingredientIds: editForm.ingredients, ingredients: nombresIngredientes, isPromo: editForm.isPromo, showUpsell: editForm.showUpsell };
         } else if (itemToEdit.type === 'dessert') {
           newDesserts[itemToEdit.catIdx] = { ...newDesserts[itemToEdit.catIdx], name: editForm.name, description: editForm.description, price: Number(editForm.price), cost: Number(editForm.cost), isPromo: editForm.isPromo };
+        } else if (itemToEdit.type === 'drink') {
+          newDrinks[itemToEdit.catIdx] = { ...newDrinks[itemToEdit.catIdx], name: editForm.name, description: editForm.description, price: Number(editForm.price), cost: Number(editForm.cost), isPromo: editForm.isPromo };
         } else if (itemToEdit.type === 'catalog') {
           const group = newCatalog[itemToEdit.groupName];
           newCatalog[itemToEdit.groupName] = group.map(i => i.id === itemToEdit.id ? { ...i, name: editForm.name, price: Number(editForm.price), cost: Number(editForm.cost) } : i);
         }
 
-        onSaveInventory(newBurgers, newDesserts, newCatalog);
+        onSaveInventory(newBurgers, newDesserts, newDrinks, newCatalog);
         setItemToEdit(null);
       };
 
@@ -1501,17 +1564,20 @@
 
         let newBurgers = [...localBurgers];
         let newDesserts = [...localDesserts];
+        let newDrinks = [...localDrinks];
         let newCatalog = { ...localCatalog };
 
         if (itemToEdit.type === 'burger') {
           newBurgers.splice(itemToEdit.catIdx, 1);
         } else if (itemToEdit.type === 'dessert') {
           newDesserts.splice(itemToEdit.catIdx, 1);
+        } else if (itemToEdit.type === 'drink') {
+          newDrinks.splice(itemToEdit.catIdx, 1);
         } else if (itemToEdit.type === 'catalog') {
           newCatalog[itemToEdit.groupName] = newCatalog[itemToEdit.groupName].filter(i => i.id !== itemToEdit.id);
         }
 
-        onSaveInventory(newBurgers, newDesserts, newCatalog);
+        onSaveInventory(newBurgers, newDesserts, newDrinks, newCatalog);
         setItemToEdit(null);
       };
 
@@ -1682,7 +1748,7 @@
             </div>
             <div className="flex gap-4 px-4 border-b border-divineLine2/50 overflow-x-auto mobile-scroll">
               <button onClick={() => setTab('orders')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'orders' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>PEDIDOS</button>
-              <button onClick={() => setTab('inventory')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'inventory' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>INVENTARIO</button>
+              <button onClick={() => setTab('inventory')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'inventory' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>INVENTARIO Y PRECIOS</button>
               <button onClick={() => setTab('invoice')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'invoice' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>FACTURACIÓN</button>
               <button onClick={() => setTab('settings')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'settings' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>⚙️ AJUSTES</button>
             </div>
@@ -1714,18 +1780,37 @@
               </>
              ) : tab === 'settings' ? (
               <div className="max-w-xl mx-auto space-y-6">
+                
                 <div className="bg-divinePanel border border-divineGold/30 rounded-2xl p-6 shadow-glow">
-                   <h3 className="text-sm tracking-[0.2em] text-divineGold mb-4 font-bold border-b border-divineLine2 pb-2">📦 COSTOS EXTRA Y DELIVERY</h3>
-                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                     <div><label className="text-xs text-divineCream/70 mb-1 block">Delivery Centro ($)</label><input type="number" step="0.01" value={settingsForm.deliveryCentro} onChange={(e)=>setSettingsForm({...settingsForm, deliveryCentro: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
-                     <div><label className="text-xs text-divineCream/70 mb-1 block">Delivery Afueras ($)</label><input type="number" step="0.01" value={settingsForm.deliveryAfueras} onChange={(e)=>setSettingsForm({...settingsForm, deliveryAfueras: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
-                     <div><label className="text-xs text-divineCream/70 mb-1 block">Empaque / Servicio ($)</label><input type="number" step="0.01" value={settingsForm.empaque} onChange={(e)=>setSettingsForm({...settingsForm, empaque: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
-                   </div>
+                   <h3 className="text-sm tracking-[0.2em] text-divineGold mb-4 font-bold border-b border-divineLine2 pb-2">📦 TARIFA DE SERVICIO (EMPAQUES)</h3>
+                   <div><label className="text-xs text-divineCream/70 mb-1 block">Costo cobrado al cliente por empaque/unidad ($)</label><input type="number" step="0.01" value={settingsForm.empaque} onChange={(e)=>setSettingsForm({...settingsForm, empaque: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
                 </div>
 
                 <div className="bg-divinePanel border border-divineGold/30 rounded-2xl p-6 shadow-glow">
-                   <h3 className="text-sm tracking-[0.2em] text-divineGold mb-4 font-bold border-b border-divineLine2 pb-2">📞 CONTACTO Y REDES</h3>
-                   <div><label className="text-xs text-divineCream/70 mb-1 block">Número de WhatsApp (Con código de país, ej: 58412...)</label><input type="text" value={settingsForm.whatsapp} onChange={(e)=>setSettingsForm({...settingsForm, whatsapp: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none font-mono tracking-widest" /></div>
+                   <div className="flex justify-between items-center mb-4 border-b border-divineLine2 pb-2">
+                     <h3 className="text-sm tracking-[0.2em] text-divineGold font-bold">🛵 ZONAS DE DELIVERY</h3>
+                     <button onClick={addDeliveryZone} className="text-xs bg-divineGold/20 text-divineGold px-3 py-1 rounded hover:bg-divineGold hover:text-black transition">+ AÑADIR ZONA</button>
+                   </div>
+                   <div className="space-y-3">
+                     {deliveryZonesConfig.map(zone => (
+                       <div key={zone.id} className="flex gap-2 items-center bg-black/40 p-2 rounded-xl border border-divineLine2/50">
+                         <div className="flex-1"><input type="text" value={zone.name} onChange={(e) => updateDeliveryZone(zone.id, 'name', e.target.value)} placeholder="Nombre de la zona" className="w-full bg-transparent border-none text-white text-sm outline-none px-2" /></div>
+                         <div className="w-24"><input type="number" step="0.01" value={zone.cost} onChange={(e) => updateDeliveryZone(zone.id, 'cost', e.target.value)} className="w-full bg-black/60 border border-divineLine2 rounded-lg px-2 py-1 text-white text-sm outline-none text-center" /></div>
+                         <button onClick={() => removeDeliveryZone(zone.id)} className="w-8 h-8 flex items-center justify-center text-red-500 hover:bg-red-500/20 rounded-lg transition">✕</button>
+                       </div>
+                     ))}
+                   </div>
+                </div>
+
+                <div className="bg-divinePanel border border-[#741bd1]/50 rounded-2xl p-6 shadow-[0_0_15px_rgba(116,27,209,0.15)]">
+                   <h3 className="text-sm tracking-[0.2em] text-[#b366ff] mb-4 font-bold border-b border-[#741bd1]/30 pb-2">🟣 PAGOS INTERNACIONALES</h3>
+                   <div className="space-y-4">
+                     <div><label className="text-xs text-divineCream/70 mb-1 block">Correo Zelle</label><input type="email" value={settingsForm.zelleEmail} onChange={(e)=>setSettingsForm({...settingsForm, zelleEmail: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-[#741bd1] outline-none" /></div>
+                     <div className="grid grid-cols-2 gap-4 pt-2 border-t border-divineLine2/30 mt-2">
+                       <div><label className="text-xs text-divineCream/70 mb-1 block">Binance Pay ID</label><input type="text" value={settingsForm.binanceId} onChange={(e)=>setSettingsForm({...settingsForm, binanceId: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-[#fcd535] outline-none" /></div>
+                       <div><label className="text-xs text-divineCream/70 mb-1 block">Binance Email</label><input type="email" value={settingsForm.binanceEmail} onChange={(e)=>setSettingsForm({...settingsForm, binanceEmail: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-[#fcd535] outline-none" /></div>
+                     </div>
+                   </div>
                 </div>
 
                 <div className="bg-divinePanel border border-divineGold/30 rounded-2xl p-6 shadow-glow">
@@ -1737,6 +1822,11 @@
                        <div><label className="text-xs text-divineCream/70 mb-1 block">Cédula o RIF</label><input type="text" value={settingsForm.cedulaPago} onChange={(e)=>setSettingsForm({...settingsForm, cedulaPago: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none uppercase" /></div>
                      </div>
                    </div>
+                </div>
+
+                <div className="bg-divinePanel border border-[#25D366]/50 rounded-2xl p-6 shadow-[0_0_15px_rgba(37,211,102,0.15)]">
+                   <h3 className="text-sm tracking-[0.2em] text-[#25D366] mb-4 font-bold border-b border-[#25D366]/30 pb-2">📞 CONTACTO Y REDES</h3>
+                   <div><label className="text-xs text-divineCream/70 mb-1 block">Número de WhatsApp (Soporte)</label><input type="text" value={settingsForm.whatsapp} onChange={(e)=>setSettingsForm({...settingsForm, whatsapp: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-[#25D366] outline-none font-mono tracking-widest" placeholder="Ej: 584126835635" /></div>
                 </div>
 
                 <div className="bg-divinePanel border border-[#0088cc]/50 rounded-2xl p-6 shadow-[0_0_15px_rgba(0,136,204,0.15)]">
@@ -1762,7 +1852,7 @@
                       <div className="space-y-4">
                         <div><label className="text-xs text-divineCream/70 mb-1 block">Nombre</label><input type="text" value={editForm.name} onChange={(e)=>setEditForm({...editForm, name: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
                         
-                        {(itemToEdit.type === 'burger' || itemToEdit.type === 'dessert') && (
+                        {(itemToEdit.type === 'burger' || itemToEdit.type === 'dessert' || itemToEdit.type === 'drink') && (
                           <>
                             <div className="grid grid-cols-2 gap-2">
                               <label className="flex items-center gap-2 cursor-pointer bg-divineGold/10 p-3 rounded-xl border border-divineGold/30">
@@ -1820,6 +1910,7 @@
                           <select value={addForm.type} onChange={(e) => setAddForm({...addForm, type: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white outline-none cursor-pointer">
                             <option value="burger">Hamburguesa (Menú)</option>
                             <option value="dessert">Postre (Menú)</option>
+                            <option value="drink">Bebida / Refresco (Menú)</option>
                             <option value="catalog">Ingrediente (Atelier)</option>
                           </select>
                         </div>
@@ -1836,7 +1927,7 @@
                         )}
                         <div><label className="text-xs text-divineCream/70 mb-1 block">Nombre</label><input type="text" value={addForm.name} onChange={(e) => setAddForm({...addForm, name: e.target.value})} placeholder="Ej: Triple Bacon" className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
                         
-                        {(addForm.type === 'burger' || addForm.type === 'dessert') && (
+                        {(addForm.type === 'burger' || addForm.type === 'dessert' || addForm.type === 'drink') && (
                           <div className="grid grid-cols-2 gap-2">
                             <label className="flex items-center gap-2 cursor-pointer bg-divineGold/10 p-3 rounded-xl border border-divineGold/30">
                               <input type="checkbox" checked={addForm.isPromo} onChange={(e)=>setAddForm({...addForm, isPromo: e.target.checked})} className="w-4 h-4 accent-divineGold" />
@@ -1866,7 +1957,7 @@
                           <div><label className="text-xs text-divineCream/70 mb-1 block">Costo ($)</label><input type="number" step="0.01" value={addForm.cost} onChange={(e) => setAddForm({...addForm, cost: e.target.value})} placeholder="0.00" className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
                           <div><label className="text-xs text-divineCream/70 mb-1 block">Precio Venta ($)</label><input type="number" step="0.01" value={addForm.price} onChange={(e) => setAddForm({...addForm, price: e.target.value})} placeholder="0.00" className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
                         </div>
-                        {(addForm.type === 'burger' || addForm.type === 'dessert') && (
+                        {(addForm.type === 'burger' || addForm.type === 'dessert' || addForm.type === 'drink') && (
                           <motion.div initial={{opacity:0}} animate={{opacity:1}} className="space-y-4">
                             <div><label className="text-xs text-divineCream/70 mb-1 block">Descripción (Opcional)</label><textarea value={addForm.description} onChange={(e) => setAddForm({...addForm, description: e.target.value})} rows="2" className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none"></textarea></div>
                             <div><label className="text-xs text-divineCream/70 mb-1 block">Link de Imagen (Opcional)</label><input type="text" value={addForm.img} onChange={(e) => setAddForm({...addForm, img: e.target.value})} placeholder="https://..." className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
@@ -1891,6 +1982,7 @@
                 </div>
                 
                 <div><h3 className="text-xs tracking-[0.2em] text-divineGold mb-3 uppercase">MENÚ: HAMBURGUESAS</h3><div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">{localBurgers.map((item, idx) => { const isOff = disabledItems.includes(item.id); return (<button key={item.id} onClick={() => editMode ? openEditModal(item, 'burger', idx) : toggleIngredient(item.id, isOff)} className={`p-3 rounded-xl border text-left transition ${isOff ? 'bg-red-500/10 border-red-500/30' : 'bg-divinePanel border-divineLine hover:border-divineGold/50'}`}><div className={`font-semibold text-sm ${isOff ? 'text-red-400 line-through' : 'text-divineCream'} ${item.isPromo ? 'text-divineGold' : ''}`}>{item.name} {item.isPromo && '🌟'}</div><div className="flex justify-between items-end mt-2"><div className="text-[10px] text-divineCream/50">{isOff ? '🔴 AGOTADO' : '🟢 DISPONIBLE'}</div><div className="text-right"><div className="text-xs font-bold text-divineGold">{money(item.price)}</div><div className="text-[9px] text-[#25D366]">Prof: {money(item.price - (item.cost||0))}</div></div></div></button>) })}</div></div>
+                <div><h3 className="text-xs tracking-[0.2em] text-divineGold mb-3 uppercase mt-6">MENÚ: BEBIDAS / REFRESCOS</h3><div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">{localDrinks.map((item, idx) => { const isOff = disabledItems.includes(item.id); return (<button key={item.id} onClick={() => editMode ? openEditModal(item, 'drink', idx) : toggleIngredient(item.id, isOff)} className={`p-3 rounded-xl border text-left transition ${isOff ? 'bg-red-500/10 border-red-500/30' : 'bg-divinePanel border-divineLine hover:border-divineGold/50'}`}><div className={`font-semibold text-sm ${isOff ? 'text-red-400 line-through' : 'text-divineCream'} ${item.isPromo ? 'text-divineGold' : ''}`}>{item.name} {item.isPromo && '🌟'}</div><div className="flex justify-between items-end mt-2"><div className="text-[10px] text-divineCream/50">{isOff ? '🔴 AGOTADO' : '🟢 DISPONIBLE'}</div><div className="text-right"><div className="text-xs font-bold text-divineGold">{money(item.price)}</div><div className="text-[9px] text-[#25D366]">Prof: {money(item.price - (item.cost||0))}</div></div></div></button>) })}</div></div>
                 <div><h3 className="text-xs tracking-[0.2em] text-divineGold mb-3 uppercase mt-6">MENÚ: POSTRES</h3><div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">{localDesserts.map((item, idx) => { const isOff = disabledItems.includes(item.id); return (<button key={item.id} onClick={() => editMode ? openEditModal(item, 'dessert', idx) : toggleIngredient(item.id, isOff)} className={`p-3 rounded-xl border text-left transition ${isOff ? 'bg-red-500/10 border-red-500/30' : 'bg-divinePanel border-divineLine hover:border-divineGold/50'}`}><div className={`font-semibold text-sm ${isOff ? 'text-red-400 line-through' : 'text-divineCream'} ${item.isPromo ? 'text-divineGold' : ''}`}>{item.name} {item.isPromo && '🌟'}</div><div className="flex justify-between items-end mt-2"><div className="text-[10px] text-divineCream/50">{isOff ? '🔴 AGOTADO' : '🟢 DISPONIBLE'}</div><div className="text-right"><div className="text-xs font-bold text-divineGold">{money(item.price)}</div><div className="text-[9px] text-[#25D366]">Prof: {money(item.price - (item.cost||0))}</div></div></div></button>) })}</div></div>
                 
                 {Object.entries(localCatalog).map(([category, items]) => { if(category === 'settings' || !Array.isArray(items)) return null; return (<div key={category}><h3 className="text-xs tracking-[0.2em] text-divineGold mb-3 uppercase mt-6">ATELIER: {category}</h3><div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">{items.map(item => { if(item.id === 'none') return null; const isOff = disabledItems.includes(item.id); return (<button key={item.id} onClick={() => editMode ? openEditModal(item, 'catalog', null, category) : toggleIngredient(item.id, isOff)} className={`p-3 rounded-xl border text-left transition ${isOff ? 'bg-red-500/10 border-red-500/30' : 'bg-divinePanel border-divineLine hover:border-divineGold/50'}`}><div className={`font-semibold text-sm ${isOff ? 'text-red-400 line-through' : 'text-divineCream'}`}>{item.name}</div><div className="flex justify-between items-end mt-2"><div className="text-[10px] text-divineCream/50">{isOff ? '🔴 AGOTADO' : '🟢 DISPONIBLE'}</div><div className="text-right"><div className="text-xs font-bold text-divineGold">{money(item.price)}</div><div className="text-[9px] text-[#25D366]">Prof: {money(item.price - (item.cost||0))}</div></div></div></button>) })}</div></div>)})}
@@ -1899,7 +1991,7 @@
               <div className="max-w-md mx-auto">
                 <form onSubmit={handleSearchInvoice} className="flex gap-2 mb-6"><input type="text" value={searchCode} onChange={(e) => setSearchCode(e.target.value)} placeholder="Código (Ej: #DIV-1234)" className="flex-1 bg-black/40 border border-divineLine2 rounded-xl px-4 py-3 text-sm text-divineCream outline-none focus:border-divineGold transition uppercase tracking-widest" /><button type="submit" className="btn-primary px-6">BUSCAR</button></form>
                 {invoiceOrder ? (
-                  <><div id="invoice-print-area" className="bg-white text-black p-6 md:p-8 rounded-2xl shadow-xl font-mono text-sm"><div className="text-center mb-6 border-b-2 border-dashed border-black/20 pb-6"><h2 className="text-2xl font-bold tracking-widest">{BRAND_NAME.toUpperCase()}</h2><p className="text-xs mt-1 text-gray-600">GOURMET BAR</p><p className="text-xs text-gray-600 mt-1">RIF: V-30158858-1</p></div><div className="mb-6 space-y-1 text-xs"><div className="flex"><span>TICKET:</span> <strong className="text-base">{invoiceOrder.tracking_code}</strong></div><div className="flex"><span>FECHA:</span> <span>{new Date(invoiceOrder.created_at).toLocaleString('es-VE')}</span></div><div className="flex mt-3"><span>CLIENTE:</span> <span className="font-bold uppercase text-right truncate">{invoiceOrder.customer_name}</span></div><div className="flex"><span>TLF:</span> <span>{invoiceOrder.phone}</span></div></div><div className="mb-6 border-t-2 border-b-2 border-dashed border-black/20 py-4"><div className="flex font-bold mb-3 text-xs"><span>CANT DESCRIPCIÓN</span><span>TOTAL</span></div>{invoiceOrder.items.map((it, i) => (<div key={i} className="mb-3 text-xs"><div className="flex font-semibold"><span>{it.qty}x {it.name.replace('Hamburguesa Divinée (Atelier)', 'Atelier')}</span><span>{money(it.price * it.qty)}</span></div>{it.meta && (<div className="text-xs text-gray-500 pl-4 mt-1 space-y-1">{Object.entries(it.meta).map(([k,v]) => <div key={k}>- {k}: {Array.isArray(v) ? v.join(", ") : String(v)}</div>)}</div>)}</div>))}</div><div className="mb-8 space-y-1"><div className="flex text-base font-bold"><span>TOTAL USD:</span><span>{money(invoiceOrder.total_usd)}</span></div>{invoiceOrder.bcv_rate && (<div className="flex text-xs text-gray-500 font-bold"><span>TOTAL BCV (TASA {invoiceOrder.bcv_rate}):</span><span>{(invoiceOrder.total_usd * invoiceOrder.bcv_rate).toFixed(2)} Bs</span></div>)}<div className="flex text-xs text-gray-400 mt-2"><span>REF PAGO:</span><span>{invoiceOrder.payment_ref}</span></div></div><div className="text-center text-xs text-gray-600 font-bold space-y-1"><p>¡GRACIAS POR SU COMPRA!</p><p>Exquisito. Divino. Divinée🍔✨</p></div></div><button onClick={handlePrintTicket} className="mt-8 w-full bg-black text-white py-4 rounded-xl font-sans font-bold tracking-widest hover:bg-gray-800 transition shadow-lg">🖨️ IMPRIMIR TICKET</button></>
+                  <><div id="invoice-print-area" className="bg-white text-black p-6 md:p-8 rounded-2xl shadow-xl font-mono text-sm"><div className="text-center mb-6 border-b-2 border-dashed border-black/20 pb-6"><h2 className="text-2xl font-bold tracking-widest">{BRAND_NAME.toUpperCase()}</h2><p className="text-xs mt-1 text-gray-600">GOURMET BAR</p><p className="text-xs text-gray-600 mt-1">RIF: V-30158858-1</p></div><div className="mb-6 space-y-1 text-xs"><div className="flex"><span>TICKET:</span> <strong className="text-base">{invoiceOrder.tracking_code}</strong></div><div className="flex"><span>FECHA:</span> <span>{new Date(invoiceOrder.created_at).toLocaleString('es-VE')}</span></div><div className="flex mt-3"><span>CLIENTE:</span> <span className="font-bold uppercase text-right truncate">{invoiceOrder.customer_name}</span></div><div className="flex"><span>TLF:</span> <span>{invoiceOrder.phone}</span></div></div><div className="mb-6 border-t-2 border-b-2 border-dashed border-black/20 py-4"><div className="flex font-bold mb-3 text-xs"><span>CANT DESCRIPCIÓN</span><span>TOTAL</span></div>{invoiceOrder.items.map((it, i) => (<div key={i} className="mb-3 text-xs"><div className="flex font-semibold"><span>{it.qty}x {it.name.replace('Hamburguesa Divinée (Atelier)', 'Atelier')}</span><span>{money(it.price * it.qty)}</span></div>{it.meta && (<div className="text-xs text-gray-500 pl-4 mt-1 space-y-1">{Object.entries(it.meta).map(([k,v]) => <div key={k}>- {k}: {Array.isArray(v) ? v.join(", ") : String(v)}</div>)}</div>)}</div>))}</div><div className="mb-8 space-y-1"><div className="flex text-base font-bold"><span>TOTAL USD:</span><span>{money(invoiceOrder.total_usd)}</span></div>{invoiceOrder.bcv_rate && (<div className="flex text-xs text-gray-500 font-bold"><span>TOTAL BCV (TASA {invoiceOrder.bcv_rate}):</span><span>{(invoiceOrder.total_usd * invoiceOrder.bcv_rate).toFixed(2)} Bs</span></div>)}<div className="flex text-xs text-gray-400 mt-2"><span>METODO:</span><span className="uppercase">{invoiceOrder.payment_ref}</span></div></div><div className="text-center text-xs text-gray-600 font-bold space-y-1"><p>¡GRACIAS POR SU COMPRA!</p><p>Exquisito. Divino. Divinée🍔✨</p></div></div><button onClick={handlePrintTicket} className="mt-8 w-full bg-black text-white py-4 rounded-xl font-sans font-bold tracking-widest hover:bg-gray-800 transition shadow-lg">🖨️ IMPRIMIR TICKET</button></>
                 ) : (<div className="text-center py-10 text-divineCream/40 text-sm border border-dashed border-divineLine2 rounded-2xl">Ingresa el código arriba o selecciona un pedido de la lista para generar su factura.</div>)}
               </div>
              )
@@ -1965,7 +2057,7 @@
     // =========================
     function App() {
       useSpotlight();
-      const refs = { promos: useRef(null), burgers: useRef(null), desserts: useRef(null), yogurt: useRef(null), atelier: useRef(null) };
+      const refs = { promos: useRef(null), burgers: useRef(null), drinks: useRef(null), desserts: useRef(null), yogurt: useRef(null), atelier: useRef(null) };
       const [activeBurger, setActiveBurger] = useState(null);
       const [cartOpen, setCartOpen] = useState(false);
       
@@ -1975,6 +2067,7 @@
 
       const [localBurgers, setLocalBurgers] = useState(DEFAULT_BURGERS);
       const [localDesserts, setLocalDesserts] = useState(DEFAULT_DESSERTS);
+      const [localDrinks, setLocalDrinks] = useState(DEFAULT_DRINKS);
       const [localCatalog, setLocalCatalog] = useState(DEFAULT_CATALOG);
 
       const [bcvRate, setBcvRate] = useState(null);
@@ -1996,9 +2089,10 @@
       const promos = useMemo(() => {
         return [
           ...localBurgers.filter(b => b.isPromo),
+          ...localDrinks.filter(dr => dr.isPromo),
           ...localDesserts.filter(d => d.isPromo)
         ];
-      }, [localBurgers, localDesserts]);
+      }, [localBurgers, localDesserts, localDrinks]);
 
       useEffect(() => { localStorage.setItem('divinee_cart', JSON.stringify(cartItems)); }, [cartItems]);
 
@@ -2013,6 +2107,7 @@
               if (data.catalog_data) {
                 if (data.catalog_data.burgers) setLocalBurgers(data.catalog_data.burgers);
                 if (data.catalog_data.desserts) setLocalDesserts(data.catalog_data.desserts);
+                if (data.catalog_data.drinks) setLocalDrinks(data.catalog_data.drinks);
                 if (data.catalog_data.catalog) {
                    const loadedCatalog = data.catalog_data.catalog;
                    if (!loadedCatalog.settings) loadedCatalog.settings = DEFAULT_CATALOG.settings;
@@ -2030,12 +2125,12 @@
         return () => clearInterval(interval);
       }, []);
 
-      const handleSaveInventory = async (newBurgers, newDesserts, newCatalog) => {
-        setLocalBurgers(newBurgers); setLocalDesserts(newDesserts); setLocalCatalog(newCatalog);
+      const handleSaveInventory = async (newBurgers, newDesserts, newDrinks, newCatalog) => {
+        setLocalBurgers(newBurgers); setLocalDesserts(newDesserts); setLocalDrinks(newDrinks); setLocalCatalog(newCatalog);
         
         if (supabaseClient) {
           const { error } = await supabaseClient.from('store_settings').update({
-            catalog_data: { burgers: newBurgers, desserts: newDesserts, catalog: newCatalog }
+            catalog_data: { burgers: newBurgers, desserts: newDesserts, drinks: newDrinks, catalog: newCatalog }
           }).eq('id', 'divinee');
           
           if (error) {
@@ -2050,6 +2145,7 @@
       const handleAddNewProduct = (newItemData) => {
         let newBurgers = [...localBurgers];
         let newDesserts = [...localDesserts];
+        let newDrinks = [...localDrinks];
         let newCatalog = { ...localCatalog };
 
         const newId = newItemData.name.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Math.floor(Math.random()*1000);
@@ -2079,6 +2175,13 @@
             img: newItemData.img || "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=800&q=80",
             isPromo: newItemData.isPromo || false
           });
+        } else if (newItemData.type === 'drink') {
+          newDrinks.push({
+            ...baseItem,
+            description: newItemData.description || "Bebida refrescante.",
+            img: newItemData.img || "https://images.unsplash.com/photo-1543253687-c931c8e01820?auto=format&fit=crop&w=800&q=80",
+            isPromo: newItemData.isPromo || false
+          });
         } else if (newItemData.type === 'catalog') {
           baseItem.note = "Añadido recientemente";
           baseItem.group = newItemData.group === 'toppings' ? 'Extra' : undefined;
@@ -2086,7 +2189,7 @@
           newCatalog[newItemData.group].push(baseItem);
         }
 
-        handleSaveInventory(newBurgers, newDesserts, newCatalog);
+        handleSaveInventory(newBurgers, newDesserts, newDrinks, newCatalog);
       };
 
       function scrollTo(key) { refs[key]?.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }
@@ -2170,6 +2273,7 @@
             )}
 
             <section ref={refs.burgers} className="scroll-mt-32"><SectionShell eyebrow="COLECCIÓN DIVINÉE" title="Hamburguesas" subtitle="Exquisito. Divino. Divinée🍔✨."><ProductShowcase items={localBurgers.filter(b=>!b.isPromo)} badge="VER 360°" onOpen={setActiveBurger} onAdd={(item) => handleInitialAddToCart(item, true)} disabledItems={disabledItems} /></SectionShell></section>
+            <section ref={refs.drinks} className="scroll-mt-32"><SectionShell eyebrow="REFRESHING DRINKS" title="Bebidas" subtitle="Para acompañar la experiencia perfecta."><ProductShowcase items={localDrinks.filter(d=>!d.isPromo)} badge="BEBIDA" onOpen={(p) => handleInitialAddToCart({ ...p, qty: 1 }, false)} onAdd={(item) => handleInitialAddToCart(item, false)} disabledItems={disabledItems} /></SectionShell></section>
             <section ref={refs.desserts} className="scroll-mt-32"><SectionShell eyebrow="EXQUISITE DESSERTS" title="Postres" subtitle="Selección corta, elegante."><ProductShowcase items={localDesserts.filter(d=>!d.isPromo)} badge="PATISSERIE" onOpen={(p) => handleInitialAddToCart({ ...p, qty: 1 }, false)} onAdd={(item) => handleInitialAddToCart(item, false)} disabledItems={disabledItems} /></SectionShell></section>
             
             <section ref={refs.yogurt} className="scroll-mt-32"><SectionShell eyebrow="GREEK YOGURT DE MÁQUINA" title="Yogurt" subtitle="Sección desactivada temporalmente."><YogurtComingSoonCard /></SectionShell></section>
@@ -2181,12 +2285,12 @@
           <a href={`https://wa.me/${wsPhone}?text=Hola%20Divin%C3%A9e%2C%20tengo%20una%20duda%20con%20mi%20pedido...`} target="_blank" rel="noopener noreferrer" className="fixed z-40 bottom-[calc(1.1rem+env(safe-area-inset-bottom))] left-[calc(1.1rem+env(safe-area-inset-left))] rounded-2xl border border-[#25D366]/50 bg-black/60 px-4 py-3 shadow-glow backdrop-blur hover:bg-[#25D366]/20 transition flex items-center gap-3"><span className="text-xl leading-none">💬</span><span className="text-xs tracking-[0.2em] text-[#25D366] font-semibold hidden sm:inline">AYUDA</span></a>
           
           <AnimatePresence>{showUpsell && <UpsellModal product={pendingItem} catalog={localCatalog} onAccept={(papaObj) => processUpsell(true, papaObj)} onDecline={() => processUpsell(false)} />}</AnimatePresence>
-          <AnimatePresence>{cartOpen && <CartDrawer items={cartItems} total={cartTotal} bcvRate={bcvRate} catalog={localCatalog} onClose={() => setCartOpen(false)} onQty={updateQty} onClearCart={() => setCartItems([])} />}</AnimatePresence>
+          <AnimatePresence>{cartOpen && <CartDrawer items={cartItems} total={cartTotal} bcvRate={bcvRate} catalog={localCatalog} onClose={() => setCartOpen(false)} onQty={updateQty} onClearCart={() => setCartItems([])} supabaseClient={supabaseClient} />}</AnimatePresence>
           <AnimatePresence>{!!activeBurger && <ProductModal product={activeBurger} onClose={() => setActiveBurger(null)} onAdd={() => handleInitialAddToCart({ ...activeBurger, cost: activeBurger.cost }, true)} />}</AnimatePresence>
           <AnimatePresence>{trackingModalOpen && <TrackingModal onClose={() => setTrackingModalOpen(false)} supabaseClient={supabaseClient} />}</AnimatePresence>
           <AnimatePresence>
             {adminModalOpen && !isAdminLogged && <AdminLogin onLogin={() => setIsAdminLogged(true)} onClose={() => setAdminModalOpen(false)} />}
-            {adminModalOpen && isAdminLogged && <AdminDashboard supabaseClient={supabaseClient} onClose={() => setAdminModalOpen(false)} localBurgers={localBurgers} localDesserts={localDesserts} localCatalog={localCatalog} onSaveInventory={handleSaveInventory} onAddProduct={handleAddNewProduct} />}
+            {adminModalOpen && isAdminLogged && <AdminDashboard supabaseClient={supabaseClient} onClose={() => setAdminModalOpen(false)} localBurgers={localBurgers} localDesserts={localDesserts} localDrinks={localDrinks} localCatalog={localCatalog} onSaveInventory={handleSaveInventory} onAddProduct={handleAddNewProduct} />}
           </AnimatePresence>
         </div>
       );
