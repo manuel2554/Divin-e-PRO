@@ -99,7 +99,7 @@
     const YOGURT_ENABLED = false;
     
     // =========================
-    // Configuración de Supabase y Telegram
+    // Configuración de Supabase
     // =========================
     const { createClient } = window.supabase;
     const supabaseUrl = "https://djkmmzbxicsbexeutuzz.supabase.co"; 
@@ -203,7 +203,7 @@
     }
 
     // =========================
-    // Data Inicial (Agregada la variable isPromo e ingredientIds para que funcione perfecto)
+    // Data Inicial (Totalmente configurable en la nube)
     // =========================
     const DEFAULT_BURGERS = [
       { 
@@ -211,11 +211,9 @@
         name: "Clásica Divinée", 
         description: "La tradición elevada. Jugosa carne Smash en pan brioche sellado, jamón cheddar, huevo y tocino crujiente con el toque fresco de la casa.", 
         price: 8.80, cost: 4.20, isPromo: false,
-        grams: 120, 
         img: "https://i.postimg.cc/bwqjqMf9/Gemini_Generated_Image_cj43xcj43xcj43xc.png", 
         ingredientIds: ["brioche", "smash", "cheddar", "bacon", "egg", "tocino", "papashilo", "lettuce", "tomato"],
         ingredients: ["Pan Brioche", "Carne Smash", "Cheddar Añejo", "Jamón de Pierna", "Huevo", "Tocineta", "Papas Hilo", "Lechuga", "Tomate"], 
-        nutrition: { kcal: 650, proteina_g: 32, carbos_g: 40, grasa_g: 38 }, 
         config: [{type:"bunBottom"},{type:"meat"},{type:"cheese"},{type:"generic"},{type:"lettuce"},{type:"bunTop"}] 
       },
       { 
@@ -223,11 +221,9 @@
         name: "Pollo Divino", 
         description: "Tierna y ligera. Filete de pollo seleccionado a la plancha sobre pan brioche, con el equilibrio perfecto de queso, jamón y huevo.", 
         price: 8.50, cost: 3.90, isPromo: false,
-        grams: 120, 
         img: "https://i.postimg.cc/t49H9fH0/Gemini_Generated_Image_r93243r93243r932.png", 
         ingredientIds: ["brioche", "chickenGrilled", "cheddar", "bacon", "egg", "tocino", "papashilo", "lettuce", "tomato"],
         ingredients: ["Pan Brioche", "Pollo a la Plancha", "Cheddar Añejo", "Jamón de Pierna", "Huevo", "Tocineta", "Papas Hilo","Lechuga", "Tomate"], 
-        nutrition: { kcal: 580, proteina_g: 38, carbos_g: 35, grasa_g: 28 }, 
         config: [{type:"bunBottom"},{type:"meat"},{type:"cheese"},{type:"generic"},{type:"bunTop"}] 
       },
       { 
@@ -235,11 +231,9 @@
         name: "Porc Divinée", 
         description: "Sabor ahumado y premium. Lomo de cerdo de alta selección con queso fundido y tocino en pan brioche artesanal.", 
         price: 9.50, cost: 4.80, isPromo: false,
-        grams: 150, 
         img: "https://i.postimg.cc/fRMhMFQK/Gemini_Generated_Image_d5qhrid5qhrid5qh.png", 
         ingredientIds: ["brioche", "lomoCerdo", "cheddar", "bacon", "egg", "tocino", "papashilo", "lettuce", "tomato"],
         ingredients: ["Pan Brioche", "Lomo de Cerdo", "Cheddar Añejo", "Jamón de Pierna", "Huevo", "Tocineta", "Papas Hilo","Lechuga", "Tomate"], 
-        nutrition: { kcal: 710, proteina_g: 35, carbos_g: 38, grasa_g: 42 }, 
         config: [{type:"bunBottom"},{type:"meat"},{type:"cheese"},{type:"generic"},{type:"bunTop"}] 
       },
       { 
@@ -247,23 +241,19 @@
         name: "Divinée Mixta", 
         description: "La dualidad perfecta. Fusión imponente de lomo de cerdo y lomito de res, diseñada para los que buscan potencia y sabor extremo.", 
         price: 12.99, cost: 6.50, isPromo: false,
-        grams: 300, 
         img: "https://i.postimg.cc/8zTVT3gb/Gemini_Generated_Image_51ak0f51ak0f51ak.png", 
         ingredientIds: ["brioche", "angus180", "lomoCerdo", "cheddar", "bacon", "egg", "tocino", "papashilo", "lettuce", "tomato"],
         ingredients: ["Pan Brioche", "Lomito Premium", "Lomo de Cerdo", "Cheddar Añejo", "Jamón de Pierna", "Huevo", "Tocineta", "Papas Hilo", "Lechuga", "Tomate"], 
-        nutrition: { kcal: 890, proteina_g: 52, carbos_g: 42, grasa_g: 55 }, 
         config: [{type:"bunBottom"},{type:"meat"},{type:"meat"},{type:"cheese"},{type:"lettuce"},{type:"bunTop"}] 
       },
       { 
         id: "divinee-absoluta", 
         name: "Divinée Absoluta", 
         description: "La joya de la corona. Cuatro proteínas (Smash, Lomo, Pollo y Chorizo) unidas en una creación monumental sin límites.", 
-        price: 16.99, cost: 8.50, isPromo: true, // Esto hace que aparezca en la sección PROMOS dorada
-        grams: 600, 
+        price: 16.99, cost: 8.50, isPromo: true, 
         img: "https://i.postimg.cc/Z5JhJgzF/Gemini_Generated_Image_kjudi7kjudi7kjud.png", 
         ingredientIds: ["brioche", "smash", "lomoCerdo", "chickenGrilled", "chorizo", "cheddar", "bacon", "egg", "tocino", "papashilo", "lettuce", "tomato"],
         ingredients: ["Pan Brioche", "Carne Smash", "Lomo de Cerdo", "Pollo a la Plancha", "Chorizo Premium", "Cheddar Añejo", "Jamón de Pierna", "Huevo", "Tocineta", "Papas Hilo", "Lechuga", "Tomate"], 
-        nutrition: { kcal: 1250, proteina_g: 85, carbos_g: 45, grasa_g: 78 }, 
         config: [{type:"bunBottom"},{type:"meat"},{type:"meat"},{type:"meat"},{type:"meat"},{type:"cheese"},{type:"lettuce"},{type:"bunTop"}] 
       },
     ];
@@ -276,7 +266,17 @@
     ];
 
     const DEFAULT_CATALOG = {
-      delivery: { centro: 0.00, afueras: 1.50, empaque: 0.60 }, // Agregados el Costo de Empaque
+      settings: { 
+        deliveryCentro: 0.00, 
+        deliveryAfueras: 1.50, 
+        empaque: 0.60,
+        whatsapp: "584126835635",
+        telegramToken: "8566482559:AAEKenkBkriNlZAjlyIGBWWzGDTB3sFzyCA",
+        telegramChatId: "1145054461",
+        banco: "PROVINCIAL (0108)",
+        telefonoPago: "0412 683 5635",
+        cedulaPago: "V-30158858"
+      },
       buns: [
         { id: "brioche", name: "Brioche", price: 1.75, cost: 0.80, note: "Suave, dorado, premium" },
         { id: "potato", name: "Potato Roll", price: 1.50, cost: 0.60, note: "Esponjoso, balanceado" },
@@ -301,7 +301,7 @@
         { id: "none", name: "Sin queso", price: 0.0, cost: 0.0, note: "Limpio, directo" },
       ],
       toppings: [
-        { id: "papas-grandes", name: "Papas Fritas Grandes", price: 1.50, cost: 0.50, group: "Extra" }, // Se agregaron las Papas para el Upsell
+        { id: "papas-grandes", name: "Papas Fritas Grandes", price: 1.50, cost: 0.50, group: "Extra" }, 
         { id: "bacon", name: "Jamón de Pierna", price: 0.50, cost: 0.20, group: "Crunch" },
         { id: "pickles", name: "Pepinillos", price: 0.70, cost: 0.25, group: "Classic" },
         { id: "lettuce", name: "Lechuga", price: 0.60, cost: 0.15, group: "Fresh" },
@@ -741,7 +741,7 @@
           <BottomSheet title="COLECCIÓN DIVINÉE" subtitle={product.name} onClose={onClose} cta={<button onClick={onAdd} className="w-full btn-primary" type="button">AÑADIR AL CARRITO · {money(product.price)}</button>}>
             <div className="rounded-2xl border border-divineLine2 bg-black/20 overflow-hidden">{viewer}</div>
             <div className="mt-4 text-sm text-divineCream/70">{product.description}</div>
-            <div className="mt-3 flex flex-wrap items-center gap-2"><span className="rounded-full border border-divineLine2 bg-divinePanel px-3 py-1 text-xs text-divineCream/80">Peso: <span className="text-divineCream">{product.grams || '--'}g</span></span><span className="rounded-full border border-divineLine2 bg-divinePanel px-3 py-1 text-xs text-divineCream/80">Precio: <span className="text-divineGold font-semibold">{money(product.price)}</span></span></div>
+            <div className="mt-3 flex flex-wrap items-center gap-2"><span className="rounded-full border border-divineLine2 bg-divinePanel px-3 py-1 text-xs text-divineCream/80">Precio: <span className="text-divineGold font-semibold">{money(product.price)}</span></span></div>
             {product.ingredients && (
               <div className="mt-4 rounded-2xl border border-divineLine2 bg-divinePanel p-4"><div className="text-xs tracking-[0.28em] text-divineCream/60">INGREDIENTES</div><ul className="mt-3 space-y-2 text-sm text-divineCream/75">{product.ingredients.map((ing, i) => (<li key={i} className="flex items-center justify-between"><span>{ing}</span><span className="text-divineGold/60">•</span></li>))}</ul></div>
             )}
@@ -755,12 +755,9 @@
           <div className="absolute inset-0 flex items-center justify-center p-4 md:p-6">
             <motion.div initial={{ y: 18, opacity: 0, scale: 0.99 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: 14, opacity: 0, scale: 0.99 }} transition={{ duration: 0.28, ease: [0.2, 0.8, 0.2, 1] }} className="relative w-full max-w-5xl max-h-[92vh] overflow-hidden rounded-3xl border border-divineLine2 bg-divineInk shadow-divine" onClick={(e) => e.stopPropagation()}>
               <div className="sticky top-0 z-20 border-b border-divineLine2 bg-black/35 backdrop-blur px-5 py-3"><div className="flex items-center justify-between gap-3"><div className="min-w-0"><div className="text-[10px] tracking-[0.35em] text-divineGold/90">COLECCIÓN DIVINÉE</div><div className="truncate text-sm font-semibold text-divineCream">{product.name}</div></div><button onClick={close} className="btn-ghost py-2 px-4" type="button">✕ CERRAR</button></div></div>
-              <div className="max-h-[92vh] overflow-y-auto scroll-smooth-ios overscroll-contain"><div className="grid grid-cols-1 lg:grid-cols-2"><div className="relative p-5"><div className="rounded-2xl border border-divineLine2 bg-black/20 overflow-hidden">{viewer}</div></div><div className="p-5 lg:p-7"><h3 className="text-2xl font-semibold">{product.name}</h3><p className="mt-2 text-sm text-divineCream/70">{product.description}</p><div className="mt-5 flex flex-wrap items-center gap-3"><span className="rounded-full border border-divineLine2 bg-divinePanel px-3 py-1 text-xs text-divineCream/80">Peso: <span className="text-divineCream">{product.grams || '--'}g</span></span><span className="rounded-full border border-divineLine2 bg-divinePanel px-3 py-1 text-xs text-divineCream/80">Precio: <span className="text-divineGold font-semibold">{money(product.price)}</span></span><button onClick={onAdd} className="ml-auto btn-primary" type="button">AÑADIR</button></div>
+              <div className="max-h-[92vh] overflow-y-auto scroll-smooth-ios overscroll-contain"><div className="grid grid-cols-1 lg:grid-cols-2"><div className="relative p-5"><div className="rounded-2xl border border-divineLine2 bg-black/20 overflow-hidden">{viewer}</div></div><div className="p-5 lg:p-7"><h3 className="text-2xl font-semibold">{product.name}</h3><p className="mt-2 text-sm text-divineCream/70">{product.description}</p><div className="mt-5 flex flex-wrap items-center gap-3"><span className="rounded-full border border-divineLine2 bg-divinePanel px-3 py-1 text-xs text-divineCream/80">Precio: <span className="text-divineGold font-semibold">{money(product.price)}</span></span><button onClick={onAdd} className="ml-auto btn-primary" type="button">AÑADIR</button></div>
               {product.ingredients && (
                 <div className="mt-6 rounded-2xl border border-divineLine2 bg-divinePanel p-4"><div className="text-xs tracking-[0.28em] text-divineCream/60">INGREDIENTES</div><ul className="mt-3 space-y-2 text-sm text-divineCream/75">{product.ingredients.map((ing, i) => (<li key={i} className="flex items-center justify-between"><span>{ing}</span><span className="text-divineGold/60">•</span></li>))}</ul></div>
-              )}
-              {product.nutrition && (
-                <div className="mt-6 rounded-2xl border border-divineLine2 bg-black/25 p-4"><div className="text-xs tracking-[0.28em] text-divineCream/60">NUTRICIÓN</div><div className="mt-3 grid grid-cols-2 gap-3 text-sm">{Object.entries(product.nutrition).map(([k, v]) => (<div key={k} className="flex items-center justify-between rounded-xl border border-divineLine bg-divinePanel px-3 py-2"><span className="text-divineCream/70">{String(k).toUpperCase()}</span><span className="font-semibold text-divineCream">{v}</span></div>))}</div></div>
               )}
               <div className="h-4"></div></div></div></div>
             </motion.div>
@@ -843,6 +840,13 @@
       
       const finalTotal = total + deliveryCost + empaqueCost;
 
+      // Variables dinámicas desde ajustes
+      const botToken = catalog?.settings?.telegramToken || TELEGRAM_BOT_TOKEN;
+      const chatId = catalog?.settings?.telegramChatId || TELEGRAM_CHAT_ID;
+      const banco = catalog?.settings?.banco || "PROVINCIAL (0108)";
+      const telefonoPago = catalog?.settings?.telefonoPago || "0412 683 5635";
+      const cedulaPago = catalog?.settings?.cedulaPago || "V-30158858";
+
       const handleInput = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
       const handleCheckout = async () => {
@@ -876,10 +880,10 @@
         orderText += `\n💳 *Ref PagoMóvil:* ${formData.ref || "Envió Capture"}`;
 
         try {
-          await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: orderText, parse_mode: "Markdown" }) });
+          await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: chatId, text: orderText, parse_mode: "Markdown" }) });
           if (receiptFile) {
-            const fd = new FormData(); fd.append('chat_id', TELEGRAM_CHAT_ID); fd.append('photo', receiptFile); fd.append('caption', `📷 Capture del pedido: ${newOrderId}`);
-            await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, { method: 'POST', body: fd });
+            const fd = new FormData(); fd.append('chat_id', chatId); fd.append('photo', receiptFile); fd.append('caption', `📷 Capture del pedido: ${newOrderId}`);
+            await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, { method: 'POST', body: fd });
           }
         } catch (e) { console.log("Telegram falló"); }
         setOrderId(newOrderId); setStep(3); onClearCart(); setLoading(false);
@@ -959,9 +963,9 @@
                       <div className="text-2xl font-semibold text-divineGold">{bcvRate ? moneyVES(finalTotal, bcvRate) : money(finalTotal)}</div>
                       <div className="text-[10px] text-divineCream/50 mt-1">Pedido+Empaque: {money(total + empaqueCost)} {deliveryCost > 0 && `+ Delivery: ${money(deliveryCost)}`}</div>
                     </div>
-                    <div><span className="text-xs text-divineCream/50 block">Banco</span><span className="font-semibold tracking-wider">PROVINCIAL (0108)</span></div>
-                    <div><span className="text-xs text-divineCream/50 block">Teléfono</span><span className="font-semibold tracking-wider">0412 683 5635</span></div>
-                    <div><span className="text-xs text-divineCream/50 block">Cédula/RIF</span><span className="font-semibold tracking-wider">V-30158858</span></div>
+                    <div><span className="text-xs text-divineCream/50 block">Banco</span><span className="font-semibold tracking-wider">{banco}</span></div>
+                    <div><span className="text-xs text-divineCream/50 block">Teléfono</span><span className="font-semibold tracking-wider">{telefonoPago}</span></div>
+                    <div><span className="text-xs text-divineCream/50 block">Cédula/RIF</span><span className="font-semibold tracking-wider">{cedulaPago}</span></div>
                   </div>
                   <div><label className="text-xs tracking-[0.18em] text-divineGold ml-1">REFERENCIA (Opcional si subes capture)</label><input type="number" name="ref" value={formData.ref} onChange={handleInput} className="mt-1 w-full bg-black/60 border border-divineGold/50 rounded-xl px-4 py-3 text-lg font-semibold text-divineCream outline-none focus:border-divineGold transition text-center tracking-widest" placeholder="Últimos dígitos" /></div>
                   <div><label className="text-xs tracking-[0.18em] text-divineCream/60 ml-1">O SUBE TU CAPTURE</label><input type="file" accept="image/*" onChange={(e) => setReceiptFile(e.target.files[0])} className="mt-1 w-full bg-black/40 border border-divineLine2 rounded-xl px-4 py-3 text-sm text-divineCream file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-divineGold file:text-black hover:file:bg-divineGold2" /></div>
@@ -1006,7 +1010,7 @@
     }
 
     // =========================
-    // Atelier (Burger Builder) - MEJORADO PARA MÚLTIPLES TOPPINGS
+    // Atelier (Burger Builder)
     // =========================
     function wrapIndex(i, len) {
       if (len <= 0) return 0;
@@ -1091,7 +1095,7 @@
 
       useEffect(() => {
         const fetchInventory = async () => {
-          if(!window.supabase) return; // FIX DE SEGURIDAD AQUÍ TAMBIÉN
+          if(!window.supabase) return;
           const { data } = await supabaseClient.from('disabled_ingredients').select('id');
           if (data) setDisabledItems(data.map(i => i.id));
         };
@@ -1354,7 +1358,7 @@
     }
 
     // =========================
-    // Panel de Administrador
+    // Panel de Administrador (Con Configuración General y Ajustes)
     // =========================
     function AdminLogin({ onLogin, onClose }) {
       const [pin, setPin] = useState("");
@@ -1381,19 +1385,25 @@
       const [invoiceOrder, setInvoiceOrder] = useState(null);
       const [isStoreOpen, setIsStoreOpen] = useState(true);
 
-      // Estados de Inventario (Editar / Agregar / Eliminar)
       const [editMode, setEditMode] = useState(false);
       const [itemToEdit, setItemToEdit] = useState(null); 
       const [editForm, setEditForm] = useState({ name: '', description: '', price: 0, cost: 0, ingredients: [], isPromo: false });
       
-      const [deliveryForm, setDeliveryForm] = useState({ 
-        centro: localCatalog?.settings?.deliveryCentro || 0, 
-        afueras: localCatalog?.settings?.deliveryAfueras || 1.5,
-        empaque: localCatalog?.settings?.empaque || 0.60
-      });
-
       const [showAddModal, setShowAddModal] = useState(false);
       const [addForm, setAddForm] = useState({ type: 'burger', group: 'buns', name: '', price: '', cost: '', description: '', img: '', ingredients: [], isPromo: false });
+
+      // ESTADO DE AJUSTES GENERALES (Nueva Pestaña)
+      const [settingsForm, setSettingsForm] = useState({ 
+        deliveryCentro: localCatalog?.settings?.deliveryCentro || 0, 
+        deliveryAfueras: localCatalog?.settings?.deliveryAfueras || 1.5,
+        empaque: localCatalog?.settings?.empaque || 0.60,
+        whatsapp: localCatalog?.settings?.whatsapp || "584126835635",
+        telegramToken: localCatalog?.settings?.telegramToken || TELEGRAM_BOT_TOKEN,
+        telegramChatId: localCatalog?.settings?.telegramChatId || TELEGRAM_CHAT_ID,
+        banco: localCatalog?.settings?.banco || "PROVINCIAL (0108)",
+        telefonoPago: localCatalog?.settings?.telefonoPago || "0412 683 5635",
+        cedulaPago: localCatalog?.settings?.cedulaPago || "V-30158858"
+      });
 
       useEffect(() => { fetchData(); }, []);
 
@@ -1431,8 +1441,22 @@
         }
       };
 
-      const saveDeliveryCost = () => {
-        const newCatalog = { ...localCatalog, settings: { deliveryCentro: Number(deliveryForm.centro), deliveryAfueras: Number(deliveryForm.afueras), empaque: Number(deliveryForm.empaque) } };
+      // GUARDAR LOS AJUSTES (Delivery, Telegram, WhatsApp, Bancos)
+      const saveSettingsForm = () => {
+        const newCatalog = { 
+          ...localCatalog, 
+          settings: { 
+            deliveryCentro: Number(settingsForm.deliveryCentro), 
+            deliveryAfueras: Number(settingsForm.deliveryAfueras), 
+            empaque: Number(settingsForm.empaque),
+            whatsapp: settingsForm.whatsapp,
+            telegramToken: settingsForm.telegramToken,
+            telegramChatId: settingsForm.telegramChatId,
+            banco: settingsForm.banco,
+            telefonoPago: settingsForm.telefonoPago,
+            cedulaPago: settingsForm.cedulaPago
+          } 
+        };
         onSaveInventory(localBurgers, localDesserts, newCatalog);
       };
 
@@ -1618,11 +1642,10 @@
         printWindow.document.close();
       };
 
-      // EL ESCUDO DE SEGURIDAD (Array.isArray)
       const renderIngredientSelector = (selectedArr, isEdit) => (
         <div className="h-48 overflow-y-auto bg-black/60 rounded-xl border border-divineLine2 p-3 space-y-3 scroll-smooth-ios">
           {Object.entries(localCatalog).map(([cat, arr]) => {
-            if (!Array.isArray(arr)) return null; // <--- AQUÍ ESTÁ EL ESCUDO
+            if (!Array.isArray(arr)) return null; 
             return (
               <div key={cat}>
                 <div className="text-[10px] text-divineGold mb-1 uppercase tracking-widest">{cat === 'buns' ? 'Pan' : cat === 'proteins' ? 'Proteína' : cat === 'cheeses' ? 'Queso' : 'Toppings'}</div>
@@ -1659,8 +1682,9 @@
             </div>
             <div className="flex gap-4 px-4 border-b border-divineLine2/50 overflow-x-auto mobile-scroll">
               <button onClick={() => setTab('orders')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'orders' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>PEDIDOS</button>
-              <button onClick={() => setTab('inventory')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'inventory' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>INVENTARIO Y PRECIOS</button>
+              <button onClick={() => setTab('inventory')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'inventory' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>INVENTARIO</button>
               <button onClick={() => setTab('invoice')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'invoice' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>FACTURACIÓN</button>
+              <button onClick={() => setTab('settings')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'settings' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>⚙️ AJUSTES</button>
             </div>
           </div>
 
@@ -1688,19 +1712,46 @@
                   </div>
                 ))}
               </>
-             ) : tab === 'inventory' ? (
-              <div className="space-y-8 relative">
-                
-                {/* Costos Extra */}
-                <div className="bg-divinePanel border border-divineGold/30 rounded-2xl p-5 shadow-glow mb-6">
-                   <h3 className="text-sm tracking-[0.2em] text-divineGold mb-3 font-bold">🛵 COSTOS EXTRA Y DELIVERY</h3>
-                   <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
-                     <div><label className="text-xs text-divineCream/70 mb-1 block">Delivery Centro ($)</label><input type="number" step="0.01" value={deliveryForm.centro} onChange={(e)=>setDeliveryForm({...deliveryForm, centro: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
-                     <div><label className="text-xs text-divineCream/70 mb-1 block">Delivery Afueras ($)</label><input type="number" step="0.01" value={deliveryForm.afueras} onChange={(e)=>setDeliveryForm({...deliveryForm, afueras: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
-                     <div><label className="text-xs text-divineCream/70 mb-1 block">Costo Empaque ($)</label><input type="number" step="0.01" value={deliveryForm.empaque} onChange={(e)=>setDeliveryForm({...deliveryForm, empaque: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
-                     <button onClick={saveDeliveryCost} className="btn-primary py-2 px-4 h-[42px] flex items-center justify-center">GUARDAR</button>
+             ) : tab === 'settings' ? (
+              <div className="max-w-xl mx-auto space-y-6">
+                <div className="bg-divinePanel border border-divineGold/30 rounded-2xl p-6 shadow-glow">
+                   <h3 className="text-sm tracking-[0.2em] text-divineGold mb-4 font-bold border-b border-divineLine2 pb-2">📦 COSTOS EXTRA Y DELIVERY</h3>
+                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                     <div><label className="text-xs text-divineCream/70 mb-1 block">Delivery Centro ($)</label><input type="number" step="0.01" value={settingsForm.deliveryCentro} onChange={(e)=>setSettingsForm({...settingsForm, deliveryCentro: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
+                     <div><label className="text-xs text-divineCream/70 mb-1 block">Delivery Afueras ($)</label><input type="number" step="0.01" value={settingsForm.deliveryAfueras} onChange={(e)=>setSettingsForm({...settingsForm, deliveryAfueras: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
+                     <div><label className="text-xs text-divineCream/70 mb-1 block">Costo Empaque c/u ($)</label><input type="number" step="0.01" value={settingsForm.empaque} onChange={(e)=>setSettingsForm({...settingsForm, empaque: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
                    </div>
                 </div>
+
+                <div className="bg-divinePanel border border-divineGold/30 rounded-2xl p-6 shadow-glow">
+                   <h3 className="text-sm tracking-[0.2em] text-divineGold mb-4 font-bold border-b border-divineLine2 pb-2">📞 CONTACTO Y REDES</h3>
+                   <div><label className="text-xs text-divineCream/70 mb-1 block">Número de WhatsApp (Con código de país, ej: 58412...)</label><input type="text" value={settingsForm.whatsapp} onChange={(e)=>setSettingsForm({...settingsForm, whatsapp: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none font-mono tracking-widest" /></div>
+                </div>
+
+                <div className="bg-divinePanel border border-divineGold/30 rounded-2xl p-6 shadow-glow">
+                   <h3 className="text-sm tracking-[0.2em] text-divineGold mb-4 font-bold border-b border-divineLine2 pb-2">💳 DATOS BANCARIOS (PAGO MÓVIL)</h3>
+                   <div className="space-y-4">
+                     <div><label className="text-xs text-divineCream/70 mb-1 block">Banco</label><input type="text" value={settingsForm.banco} onChange={(e)=>setSettingsForm({...settingsForm, banco: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none uppercase" /></div>
+                     <div className="grid grid-cols-2 gap-4">
+                       <div><label className="text-xs text-divineCream/70 mb-1 block">Teléfono</label><input type="text" value={settingsForm.telefonoPago} onChange={(e)=>setSettingsForm({...settingsForm, telefonoPago: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
+                       <div><label className="text-xs text-divineCream/70 mb-1 block">Cédula o RIF</label><input type="text" value={settingsForm.cedulaPago} onChange={(e)=>setSettingsForm({...settingsForm, cedulaPago: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none uppercase" /></div>
+                     </div>
+                   </div>
+                </div>
+
+                <div className="bg-divinePanel border border-[#0088cc]/50 rounded-2xl p-6 shadow-[0_0_15px_rgba(0,136,204,0.15)]">
+                   <h3 className="text-sm tracking-[0.2em] text-[#0088cc] mb-4 font-bold border-b border-[#0088cc]/30 pb-2">🤖 BOT DE TELEGRAM</h3>
+                   <p className="text-xs text-divineCream/50 mb-4">Aquí se enviarán todas las comandas de los pedidos web.</p>
+                   <div className="space-y-4">
+                     <div><label className="text-xs text-divineCream/70 mb-1 block">Bot Token</label><input type="text" value={settingsForm.telegramToken} onChange={(e)=>setSettingsForm({...settingsForm, telegramToken: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-[#0088cc] outline-none font-mono text-xs" /></div>
+                     <div><label className="text-xs text-divineCream/70 mb-1 block">Chat ID</label><input type="text" value={settingsForm.telegramChatId} onChange={(e)=>setSettingsForm({...settingsForm, telegramChatId: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-[#0088cc] outline-none font-mono tracking-widest" /></div>
+                   </div>
+                </div>
+
+                <button onClick={saveSettingsForm} className="btn-primary w-full py-4 text-sm tracking-widest shadow-glow">GUARDAR TODOS LOS AJUSTES</button>
+              </div>
+             ) : tab === 'inventory' ? (
+              <div className="space-y-8 relative">
 
                 {/* Modal para Editar o Eliminar */}
                 {itemToEdit && (
@@ -2049,13 +2100,15 @@
       function processUpsell(addPapas, papaObj) {
         addToCart(pendingItem);
         if (addPapas && papaObj) {
-           setTimeout(() => addToCart(papaObj), 400); // Añadir papas después con delay para visual
+           setTimeout(() => addToCart(papaObj), 400); 
         }
         setShowUpsell(false);
         setPendingItem(null);
       }
       
       function updateQty(id, qty) { setCartItems((prev) => prev.map((p) => (p.id === id ? { ...p, qty } : p)).filter((p) => p.qty > 0)); }
+
+      const wsPhone = localCatalog?.settings?.whatsapp || "584126835635";
 
       return (
         <div className="min-h-screen relative z-[1]">
@@ -2109,7 +2162,7 @@
 
           <div className="md:hidden"><CartButton cartCount={cartCount} onClick={() => setCartOpen(true)} /></div>
           
-          <a href="https://wa.me/584126835635?text=Hola%20Divin%C3%A9e%2C%20tengo%20una%20duda%20con%20mi%20pedido..." target="_blank" rel="noopener noreferrer" className="fixed z-40 bottom-[calc(1.1rem+env(safe-area-inset-bottom))] left-[calc(1.1rem+env(safe-area-inset-left))] rounded-2xl border border-[#25D366]/50 bg-black/60 px-4 py-3 shadow-glow backdrop-blur hover:bg-[#25D366]/20 transition flex items-center gap-3"><span className="text-xl leading-none">💬</span><span className="text-xs tracking-[0.2em] text-[#25D366] font-semibold hidden sm:inline">AYUDA</span></a>
+          <a href={`https://wa.me/${wsPhone}?text=Hola%20Divin%C3%A9e%2C%20tengo%20una%20duda%20con%20mi%20pedido...`} target="_blank" rel="noopener noreferrer" className="fixed z-40 bottom-[calc(1.1rem+env(safe-area-inset-bottom))] left-[calc(1.1rem+env(safe-area-inset-left))] rounded-2xl border border-[#25D366]/50 bg-black/60 px-4 py-3 shadow-glow backdrop-blur hover:bg-[#25D366]/20 transition flex items-center gap-3"><span className="text-xl leading-none">💬</span><span className="text-xs tracking-[0.2em] text-[#25D366] font-semibold hidden sm:inline">AYUDA</span></a>
           
           <AnimatePresence>{showUpsell && <UpsellModal product={pendingItem} catalog={localCatalog} onAccept={(papaObj) => processUpsell(true, papaObj)} onDecline={() => processUpsell(false)} />}</AnimatePresence>
           <AnimatePresence>{cartOpen && <CartDrawer items={cartItems} total={cartTotal} bcvRate={bcvRate} catalog={localCatalog} onClose={() => setCartOpen(false)} onQty={updateQty} onClearCart={() => setCartItems([])} />}</AnimatePresence>
