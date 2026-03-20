@@ -106,9 +106,6 @@
     const supabaseKey = "sb_publishable_kOKC9dSiLSqhOQvxjx24yQ_aFP2VYuM"; 
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
-    const TELEGRAM_BOT_TOKEN = "8566482559:AAEKenkBkriNlZAjlyIGBWWzGDTB3sFzyCA";    
-    const TELEGRAM_CHAT_ID = "1145054461";                
-
     const moneyVES = (usd, rate) => new Intl.NumberFormat("es-VE", { style: "currency", currency: "VES" }).format(usd * rate);
 
     // =========================
@@ -210,7 +207,7 @@
         id: "clasica-divinee", 
         name: "Clásica Divinée", 
         description: "La tradición elevada. Jugosa carne Smash en pan brioche sellado, jamón cheddar, huevo y tocino crujiente con el toque fresco de la casa.", 
-        price: 8.80, cost: 4.20, isPromo: false,
+        price: 8.80, cost: 4.20, isPromo: false, showUpsell: true,
         img: "https://i.postimg.cc/bwqjqMf9/Gemini_Generated_Image_cj43xcj43xcj43xc.png", 
         ingredientIds: ["brioche", "smash", "cheddar", "bacon", "egg", "tocino", "papashilo", "lettuce", "tomato"],
         ingredients: ["Pan Brioche", "Carne Smash", "Cheddar Añejo", "Jamón de Pierna", "Huevo", "Tocineta", "Papas Hilo", "Lechuga", "Tomate"], 
@@ -220,7 +217,7 @@
         id: "pollo-divino", 
         name: "Pollo Divino", 
         description: "Tierna y ligera. Filete de pollo seleccionado a la plancha sobre pan brioche, con el equilibrio perfecto de queso, jamón y huevo.", 
-        price: 8.50, cost: 3.90, isPromo: false,
+        price: 8.50, cost: 3.90, isPromo: false, showUpsell: true,
         img: "https://i.postimg.cc/t49H9fH0/Gemini_Generated_Image_r93243r93243r932.png", 
         ingredientIds: ["brioche", "chickenGrilled", "cheddar", "bacon", "egg", "tocino", "papashilo", "lettuce", "tomato"],
         ingredients: ["Pan Brioche", "Pollo a la Plancha", "Cheddar Añejo", "Jamón de Pierna", "Huevo", "Tocineta", "Papas Hilo","Lechuga", "Tomate"], 
@@ -230,7 +227,7 @@
         id: "porc-divinee", 
         name: "Porc Divinée", 
         description: "Sabor ahumado y premium. Lomo de cerdo de alta selección con queso fundido y tocino en pan brioche artesanal.", 
-        price: 9.50, cost: 4.80, isPromo: false,
+        price: 9.50, cost: 4.80, isPromo: false, showUpsell: true,
         img: "https://i.postimg.cc/fRMhMFQK/Gemini_Generated_Image_d5qhrid5qhrid5qh.png", 
         ingredientIds: ["brioche", "lomoCerdo", "cheddar", "bacon", "egg", "tocino", "papashilo", "lettuce", "tomato"],
         ingredients: ["Pan Brioche", "Lomo de Cerdo", "Cheddar Añejo", "Jamón de Pierna", "Huevo", "Tocineta", "Papas Hilo","Lechuga", "Tomate"], 
@@ -240,7 +237,7 @@
         id: "divinee-mixta", 
         name: "Divinée Mixta", 
         description: "La dualidad perfecta. Fusión imponente de lomo de cerdo y lomito de res, diseñada para los que buscan potencia y sabor extremo.", 
-        price: 12.99, cost: 6.50, isPromo: false,
+        price: 12.99, cost: 6.50, isPromo: false, showUpsell: true,
         img: "https://i.postimg.cc/8zTVT3gb/Gemini_Generated_Image_51ak0f51ak0f51ak.png", 
         ingredientIds: ["brioche", "angus180", "lomoCerdo", "cheddar", "bacon", "egg", "tocino", "papashilo", "lettuce", "tomato"],
         ingredients: ["Pan Brioche", "Lomito Premium", "Lomo de Cerdo", "Cheddar Añejo", "Jamón de Pierna", "Huevo", "Tocineta", "Papas Hilo", "Lechuga", "Tomate"], 
@@ -250,7 +247,7 @@
         id: "divinee-absoluta", 
         name: "Divinée Absoluta", 
         description: "La joya de la corona. Cuatro proteínas (Smash, Lomo, Pollo y Chorizo) unidas en una creación monumental sin límites.", 
-        price: 16.99, cost: 8.50, isPromo: true, 
+        price: 16.99, cost: 8.50, isPromo: true, showUpsell: true,
         img: "https://i.postimg.cc/Z5JhJgzF/Gemini_Generated_Image_kjudi7kjudi7kjud.png", 
         ingredientIds: ["brioche", "smash", "lomoCerdo", "chickenGrilled", "chorizo", "cheddar", "bacon", "egg", "tocino", "papashilo", "lettuce", "tomato"],
         ingredients: ["Pan Brioche", "Carne Smash", "Lomo de Cerdo", "Pollo a la Plancha", "Chorizo Premium", "Cheddar Añejo", "Jamón de Pierna", "Huevo", "Tocineta", "Papas Hilo", "Lechuga", "Tomate"], 
@@ -386,9 +383,6 @@
                  <button onClick={() => onNavigate('atelier')} className="text-[11px] font-semibold tracking-[0.2em] px-5 py-2 rounded-full border border-divineGold/40 text-divineGold bg-divineGold/10 hover:bg-divineGold/20 transition shadow-[0_0_15px_rgba(212,175,55,0.15)] flex items-center gap-2">
                    ✨ ATELIER
                  </button>
-                 <button onClick={onOpenAdmin} className="text-[11px] font-semibold tracking-[0.2em] px-4 py-2 rounded-full text-divineCream/40 hover:text-white hover:bg-divineLine2/20 transition">
-                   PANEL
-                 </button>
               </nav>
 
               <button onClick={onOpenCart} className="shrink-0 relative flex items-center gap-2 px-4 py-2 md:py-2.5 rounded-full bg-gradient-to-r from-divineGold/20 to-divineGold/5 border border-divineGold/40 text-divineGold hover:from-divineGold/30 hover:to-divineGold/10 transition shadow-[0_0_15px_rgba(212,175,55,0.2)]">
@@ -414,9 +408,6 @@
                  </button>
                  <button onClick={() => onNavigate('atelier')} className="shrink-0 text-[10px] font-semibold tracking-[0.2em] px-4 py-2 rounded-full border border-divineGold/50 bg-divineGold/10 text-divineGold">
                    ✨ ATELIER
-                 </button>
-                 <button onClick={onOpenAdmin} className="shrink-0 text-[10px] font-semibold tracking-[0.2em] px-4 py-2 rounded-full border border-divineLine2 bg-black/40 text-divineCream/40 hover:text-white">
-                   PANEL
                  </button>
               </nav>
             </div>
@@ -759,6 +750,9 @@
               {product.ingredients && (
                 <div className="mt-6 rounded-2xl border border-divineLine2 bg-divinePanel p-4"><div className="text-xs tracking-[0.28em] text-divineCream/60">INGREDIENTES</div><ul className="mt-3 space-y-2 text-sm text-divineCream/75">{product.ingredients.map((ing, i) => (<li key={i} className="flex items-center justify-between"><span>{ing}</span><span className="text-divineGold/60">•</span></li>))}</ul></div>
               )}
+              {product.nutrition && (
+                <div className="mt-6 rounded-2xl border border-divineLine2 bg-black/25 p-4"><div className="text-xs tracking-[0.28em] text-divineCream/60">NUTRICIÓN</div><div className="mt-3 grid grid-cols-2 gap-3 text-sm">{Object.entries(product.nutrition).map(([k, v]) => (<div key={k} className="flex items-center justify-between rounded-xl border border-divineLine bg-divinePanel px-3 py-2"><span className="text-divineCream/70">{String(k).toUpperCase()}</span><span className="font-semibold text-divineCream">{v}</span></div>))}</div></div>
+              )}
               <div className="h-4"></div></div></div></div>
             </motion.div>
           </div>
@@ -817,7 +811,7 @@
     }
     
     // =========================
-    // Cart Drawer con Checkout Integrado + Capture + Empaque
+    // Cart Drawer con Checkout Integrado + Capture + Tarifa Servicio
     // =========================
     function CartDrawer({ items, total, bcvRate, onClose, onQty, onClearCart, catalog }) {
       useLockBodyScroll(true); 
@@ -835,6 +829,8 @@
       // Cálculos Dinámicos
       const deliveryCost = deliveryZone === 'centro' ? (catalog?.settings?.deliveryCentro || 0) : (deliveryZone === 'afueras' ? (catalog?.settings?.deliveryAfueras || 1.50) : 0);
       const totalItemsQty = items.reduce((acc, it) => acc + it.qty, 0);
+      
+      // Empaque disfrazado de Tarifa de Servicio
       const empaqueUnitario = catalog?.settings?.empaque || 0.60;
       const empaqueCost = totalItemsQty * empaqueUnitario;
       
@@ -853,7 +849,7 @@
         setLoading(true);
         const newOrderId = "#DIV-" + Math.floor(1000 + Math.random() * 9000);
         
-        const { error } = await supabaseClient.from('orders').insert([{
+        const { error } = await window.supabaseClient.from('orders').insert([{
             tracking_code: newOrderId, customer_name: formData.name, phone: formData.phone,
             address: formData.address, notes: formData.notes, items: items, 
             total_usd: finalTotal, bcv_rate: bcvRate,
@@ -873,7 +869,9 @@
           orderText += `• ${it.qty}x ${it.name} - $${(it.price * it.qty).toFixed(2)}\n`;
           if (it.meta) Object.entries(it.meta).forEach(([k, v]) => { orderText += `   _${k}:_ ${Array.isArray(v) ? v.join(", ") : String(v)}\n`; });
         });
-        orderText += `\n📦 *Costo de Empaques:* $${empaqueCost.toFixed(2)}`;
+        
+        // En Telegram también lo llamamos Tarifa de Servicio para mantener la coherencia
+        orderText += `\n⚙️ *Tarifa de Servicio:* $${empaqueCost.toFixed(2)}`;
         if (deliveryCost > 0) orderText += `\n🛵 *Costo Delivery:* $${deliveryCost.toFixed(2)}`;
         orderText += `\n💰 *Total USD:* $${finalTotal.toFixed(2)}`;
         if (bcvRate) orderText += `\n🇻🇪 *Total BCV:* ${(finalTotal * bcvRate).toFixed(2)} Bs`;
@@ -921,7 +919,8 @@
                       <div className="rounded-2xl border border-divineLine2 bg-black/25 p-4">
                         <div className="space-y-2 mb-3 border-b border-divineLine2 pb-3">
                            <div className="flex items-center justify-between text-xs text-divineCream/60"><span>Subtotal Menú</span><span>{money(total)}</span></div>
-                           <div className="flex items-center justify-between text-xs text-divineCream/60"><span>Costo Empaques ({totalItemsQty})</span><span>{money(empaqueCost)}</span></div>
+                           {/* Aquí está el disfraz: "Tarifa de Servicio" en lugar de Empaques */}
+                           <div className="flex items-center justify-between text-xs text-divineCream/60"><span>Tarifa de Servicio</span><span>{money(empaqueCost)}</span></div>
                         </div>
                         <div className="flex items-center justify-between">
                            <span className="text-sm text-divineCream/90 font-bold">TOTAL</span>
@@ -961,7 +960,7 @@
                     <div className="text-center pb-2 border-b border-divineLine2">
                       <div className="text-xs tracking-[0.28em] text-divineCream/60 mb-1">TOTAL A TRANSFERIR</div>
                       <div className="text-2xl font-semibold text-divineGold">{bcvRate ? moneyVES(finalTotal, bcvRate) : money(finalTotal)}</div>
-                      <div className="text-[10px] text-divineCream/50 mt-1">Pedido+Empaque: {money(total + empaqueCost)} {deliveryCost > 0 && `+ Delivery: ${money(deliveryCost)}`}</div>
+                      <div className="text-[10px] text-divineCream/50 mt-1">Subtotal: {money(total + empaqueCost)} {deliveryCost > 0 && `+ Delivery: ${money(deliveryCost)}`}</div>
                     </div>
                     <div><span className="text-xs text-divineCream/50 block">Banco</span><span className="font-semibold tracking-wider">{banco}</span></div>
                     <div><span className="text-xs text-divineCream/50 block">Teléfono</span><span className="font-semibold tracking-wider">{telefonoPago}</span></div>
@@ -1095,8 +1094,8 @@
 
       useEffect(() => {
         const fetchInventory = async () => {
-          if(!window.supabase) return;
-          const { data } = await supabaseClient.from('disabled_ingredients').select('id');
+          if(!window.supabaseClient) return;
+          const { data } = await window.supabaseClient.from('disabled_ingredients').select('id');
           if (data) setDisabledItems(data.map(i => i.id));
         };
         fetchInventory();
@@ -1189,7 +1188,7 @@
         const id = ["custom-burger", bunSel?.id, proteinsSel.map((p) => p.id).join("+"), cheesesSel.map((c) => c.id).join("+"), toppingsArr.map(t=>t.id).sort().join(",")].join(":");
         const meta = { pan: bunSel?.name, carnes: proteinsSel.map((p) => p.name), quesos: cheesesSel.map((c) => c.name), toppings: toppingsArr.map((t) => t.name) };
         
-        onAddToCart?.({ id, name: "Hamburguesa Divinée (Atelier)", price, cost: totalCost, meta }, true); 
+        onAddToCart?.({ id, name: "Hamburguesa Divinée (Atelier)", price, cost: totalCost, meta }, true); // true = es burger, mostrar upsell
         setStep(0); setBunIdx(0); setProteinLayers([0]); setActiveProteinLayer(0); setCheeseLayers([5]); setActiveCheeseLayer(0); setToppings({});
       }
 
@@ -1387,10 +1386,10 @@
 
       const [editMode, setEditMode] = useState(false);
       const [itemToEdit, setItemToEdit] = useState(null); 
-      const [editForm, setEditForm] = useState({ name: '', description: '', price: 0, cost: 0, ingredients: [], isPromo: false });
+      const [editForm, setEditForm] = useState({ name: '', description: '', price: 0, cost: 0, ingredients: [], isPromo: false, showUpsell: true });
       
       const [showAddModal, setShowAddModal] = useState(false);
-      const [addForm, setAddForm] = useState({ type: 'burger', group: 'buns', name: '', price: '', cost: '', description: '', img: '', ingredients: [], isPromo: false });
+      const [addForm, setAddForm] = useState({ type: 'burger', group: 'buns', name: '', price: '', cost: '', description: '', img: '', ingredients: [], isPromo: false, showUpsell: true });
 
       // ESTADO DE AJUSTES GENERALES (Nueva Pestaña)
       const [settingsForm, setSettingsForm] = useState({ 
@@ -1462,7 +1461,8 @@
 
       const openEditModal = (item, type, catIdx = null, groupName = null) => {
         setItemToEdit({ id: item.id, type, catIdx, groupName });
-        setEditForm({ name: item.name, description: item.description || '', price: item.price, cost: item.cost || 0, ingredients: item.ingredientIds || [], isPromo: item.isPromo || false });
+        // Si showUpsell es undefined, asume true por defecto para no romper compatibilidad hacia atrás
+        setEditForm({ name: item.name, description: item.description || '', price: item.price, cost: item.cost || 0, ingredients: item.ingredientIds || [], isPromo: item.isPromo || false, showUpsell: item.showUpsell !== false });
       };
 
       const buildIngredientNames = (idsArray) => {
@@ -1484,7 +1484,7 @@
 
         if (itemToEdit.type === 'burger') {
           const nombresIngredientes = buildIngredientNames(editForm.ingredients);
-          newBurgers[itemToEdit.catIdx] = { ...newBurgers[itemToEdit.catIdx], name: editForm.name, description: editForm.description, price: Number(editForm.price), cost: Number(editForm.cost), ingredientIds: editForm.ingredients, ingredients: nombresIngredientes, isPromo: editForm.isPromo };
+          newBurgers[itemToEdit.catIdx] = { ...newBurgers[itemToEdit.catIdx], name: editForm.name, description: editForm.description, price: Number(editForm.price), cost: Number(editForm.cost), ingredientIds: editForm.ingredients, ingredients: nombresIngredientes, isPromo: editForm.isPromo, showUpsell: editForm.showUpsell };
         } else if (itemToEdit.type === 'dessert') {
           newDesserts[itemToEdit.catIdx] = { ...newDesserts[itemToEdit.catIdx], name: editForm.name, description: editForm.description, price: Number(editForm.price), cost: Number(editForm.cost), isPromo: editForm.isPromo };
         } else if (itemToEdit.type === 'catalog') {
@@ -1528,7 +1528,7 @@
         
         onAddProduct(finalAddForm);
         setShowAddModal(false);
-        setAddForm({ type: 'burger', group: 'buns', name: '', price: '', cost: '', description: '', img: '', ingredients: [], isPromo: false });
+        setAddForm({ type: 'burger', group: 'buns', name: '', price: '', cost: '', description: '', img: '', ingredients: [], isPromo: false, showUpsell: true });
       };
 
       const handleAutoCalc = (selectedIds, isEdit) => {
@@ -1719,7 +1719,7 @@
                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                      <div><label className="text-xs text-divineCream/70 mb-1 block">Delivery Centro ($)</label><input type="number" step="0.01" value={settingsForm.deliveryCentro} onChange={(e)=>setSettingsForm({...settingsForm, deliveryCentro: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
                      <div><label className="text-xs text-divineCream/70 mb-1 block">Delivery Afueras ($)</label><input type="number" step="0.01" value={settingsForm.deliveryAfueras} onChange={(e)=>setSettingsForm({...settingsForm, deliveryAfueras: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
-                     <div><label className="text-xs text-divineCream/70 mb-1 block">Costo Empaque c/u ($)</label><input type="number" step="0.01" value={settingsForm.empaque} onChange={(e)=>setSettingsForm({...settingsForm, empaque: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
+                     <div><label className="text-xs text-divineCream/70 mb-1 block">Empaque / Servicio ($)</label><input type="number" step="0.01" value={settingsForm.empaque} onChange={(e)=>setSettingsForm({...settingsForm, empaque: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
                    </div>
                 </div>
 
@@ -1764,10 +1764,18 @@
                         
                         {(itemToEdit.type === 'burger' || itemToEdit.type === 'dessert') && (
                           <>
-                            <label className="flex items-center gap-3 cursor-pointer bg-divineGold/10 p-3 rounded-xl border border-divineGold/30">
-                              <input type="checkbox" checked={editForm.isPromo} onChange={(e)=>setEditForm({...editForm, isPromo: e.target.checked})} className="w-5 h-5 accent-divineGold" />
-                              <span className="text-sm font-bold text-divineGold">🌟 Destacar en Promociones</span>
-                            </label>
+                            <div className="grid grid-cols-2 gap-2">
+                              <label className="flex items-center gap-2 cursor-pointer bg-divineGold/10 p-3 rounded-xl border border-divineGold/30">
+                                <input type="checkbox" checked={editForm.isPromo} onChange={(e)=>setEditForm({...editForm, isPromo: e.target.checked})} className="w-4 h-4 accent-divineGold" />
+                                <span className="text-[10px] font-bold text-divineGold uppercase">🌟 Promo Especial</span>
+                              </label>
+                              {itemToEdit.type === 'burger' && (
+                                <label className="flex items-center gap-2 cursor-pointer bg-[#25D366]/10 p-3 rounded-xl border border-[#25D366]/30">
+                                  <input type="checkbox" checked={editForm.showUpsell} onChange={(e)=>setEditForm({...editForm, showUpsell: e.target.checked})} className="w-4 h-4 accent-[#25D366]" />
+                                  <span className="text-[10px] font-bold text-[#25D366] uppercase">🍟 Sugerir Papas</span>
+                                </label>
+                              )}
+                            </div>
                             <div><label className="text-xs text-divineCream/70 mb-1 block">Descripción</label><textarea rows="2" value={editForm.description} onChange={(e)=>setEditForm({...editForm, description: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
                           </>
                         )}
@@ -1829,10 +1837,18 @@
                         <div><label className="text-xs text-divineCream/70 mb-1 block">Nombre</label><input type="text" value={addForm.name} onChange={(e) => setAddForm({...addForm, name: e.target.value})} placeholder="Ej: Triple Bacon" className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
                         
                         {(addForm.type === 'burger' || addForm.type === 'dessert') && (
-                          <label className="flex items-center gap-3 cursor-pointer bg-divineGold/10 p-3 rounded-xl border border-divineGold/30">
-                            <input type="checkbox" checked={addForm.isPromo} onChange={(e)=>setAddForm({...addForm, isPromo: e.target.checked})} className="w-5 h-5 accent-divineGold" />
-                            <span className="text-sm font-bold text-divineGold">🌟 Destacar en Promociones</span>
-                          </label>
+                          <div className="grid grid-cols-2 gap-2">
+                            <label className="flex items-center gap-2 cursor-pointer bg-divineGold/10 p-3 rounded-xl border border-divineGold/30">
+                              <input type="checkbox" checked={addForm.isPromo} onChange={(e)=>setAddForm({...addForm, isPromo: e.target.checked})} className="w-4 h-4 accent-divineGold" />
+                              <span className="text-[10px] font-bold text-divineGold uppercase">🌟 Promo Especial</span>
+                            </label>
+                            {addForm.type === 'burger' && (
+                              <label className="flex items-center gap-2 cursor-pointer bg-[#25D366]/10 p-3 rounded-xl border border-[#25D366]/30">
+                                <input type="checkbox" checked={addForm.showUpsell} onChange={(e)=>setAddForm({...addForm, showUpsell: e.target.checked})} className="w-4 h-4 accent-[#25D366]" />
+                                <span className="text-[10px] font-bold text-[#25D366] uppercase">🍟 Sugerir Papas</span>
+                              </label>
+                            )}
+                          </div>
                         )}
 
                         {/* Selector de ingredientes para nuevas Hamburguesas */}
@@ -2050,10 +2066,10 @@
             ...baseItem,
             description: newItemData.description || "Nueva creación exclusiva de la casa.",
             img: newItemData.img || "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80",
-            grams: 150,
             ingredientIds: newItemData.ingredientIds || [],
             ingredients: newItemData.ingredients || [],
             isPromo: newItemData.isPromo || false,
+            showUpsell: newItemData.showUpsell !== false,
             config: [{type:"bunBottom"},{type:"meat"},{type:"generic"},{type:"bunTop"}]
           });
         } else if (newItemData.type === 'dessert') {
@@ -2080,7 +2096,7 @@
         if (!isStoreOpen) { window.showToast("CERRADO POR HOY 🚫", '🚫'); return; }
         if (disabledItems.includes(item.id)) { window.showToast("Este producto está agotado 🚫", '🚫'); return; }
 
-        if (isBurger) {
+        if (isBurger && item.showUpsell !== false) {
           setPendingItem(item);
           setShowUpsell(true);
         } else {
