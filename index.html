@@ -1029,7 +1029,6 @@
       const [cheeseLayers, setCheeseLayers] = useState([5]); 
       const [activeCheeseLayer, setActiveCheeseLayer] = useState(0);
       
-      // NUEVO: Toppings ahora es un objeto para soportar múltiples cantidades { 'bacon': 2, 'egg': 1 }
       const [toppings, setToppings] = useState({});
       
       const [disabledItems, setDisabledItems] = useState([]);
@@ -1094,7 +1093,6 @@
 
       const steps = ["PAN", "CARNES", "QUESOS", "TOPPINGS"];
 
-      // NUEVO: Funciones para incrementar y decrementar toppings
       function incrementTopping(id) { 
         setToppings(prev => ({ ...prev, [id]: (prev[id] || 0) + 1 })); 
       }
@@ -1303,7 +1301,7 @@
     }
 
     // =========================
-    // Panel de Administrador (Con Auto-Calc, Multi-Select e Ingredientes)
+    // Panel de Administrador (Con Auto-Calc y Multi-Select de Ingredientes)
     // =========================
     function AdminLogin({ onLogin, onClose }) {
       const [pin, setPin] = useState("");
@@ -1386,22 +1384,25 @@
         setEditForm({ name: item.name, description: item.description || '', price: item.price, cost: item.cost || 0, ingredients: item.ingredientIds || [] });
       };
 
+      const buildIngredientNames = (idsArray) => {
+        const uniqueIds = [...new Set(idsArray)];
+        return uniqueIds.map(id => {
+          const qty = idsArray.filter(x => x === id).length;
+          let matchName = id;
+          for (let arr of Object.values(localCatalog)) {
+            if (Array.isArray(arr)) { let m = arr.find(x => x.id === id); if(m) matchName = m.name; }
+          }
+          return qty > 1 ? `${qty}x ${matchName}` : matchName;
+        });
+      };
+
       const saveEditForm = () => {
         let newBurgers = [...localBurgers];
         let newDesserts = [...localDesserts];
         let newCatalog = { ...localCatalog };
 
         if (itemToEdit.type === 'burger') {
-          // Reconstruir lista de nombres de ingredientes
-          const nombresIngredientes = editForm.ingredients.map(id => {
-            for (let arr of Object.values(localCatalog)) {
-              if (Array.isArray(arr)) {
-                let match = arr.find(x => x.id === id);
-                if (match) return match.name;
-              }
-            }
-            return id;
-          });
+          const nombresIngredientes = buildIngredientNames(editForm.ingredients);
           newBurgers[itemToEdit.catIdx] = { ...newBurgers[itemToEdit.catIdx], name: editForm.name, description: editForm.description, price: Number(editForm.price), cost: Number(editForm.cost), ingredientIds: editForm.ingredients, ingredients: nombresIngredientes };
         } else if (itemToEdit.type === 'dessert') {
           newDesserts[itemToEdit.catIdx] = { ...newDesserts[itemToEdit.catIdx], name: editForm.name, description: editForm.description, price: Number(editForm.price), cost: Number(editForm.cost) };
@@ -1441,12 +1442,7 @@
         let finalAddForm = { ...addForm };
         if (addForm.type === 'burger') {
            finalAddForm.ingredientIds = addForm.ingredients;
-           finalAddForm.ingredients = addForm.ingredients.map(id => {
-            for (let arr of Object.values(localCatalog)) {
-              if (Array.isArray(arr)) { let match = arr.find(x => x.id === id); if (match) return match.name; }
-            }
-            return id;
-          });
+           finalAddForm.ingredients = buildIngredientNames(addForm.ingredients);
         }
         
         onAddProduct(finalAddForm);
@@ -1454,7 +1450,6 @@
         setAddForm({ type: 'burger', group: 'buns', name: '', price: '', cost: '', description: '', img: '', ingredients: [] });
       };
 
-      // Función mágica de Autocalcular Precios y Costos
       const handleAutoCalc = (selectedIds, isEdit) => {
         let c = 0, p = 0;
         selectedIds.forEach(id => {
@@ -1470,16 +1465,34 @@
         window.showToast("Costo y Precio autocalculados", "✨");
       };
 
-      const toggleFormIngredient = (id, isEdit) => {
+      const incrementFormIngredient = (id, isEdit) => {
+        if (isEdit) {
+          setEditForm(prev => ({...prev, ingredients: [...prev.ingredients, id]}));
+        } else {
+          setAddForm(prev => ({...prev, ingredients: [...prev.ingredients, id]}));
+        }
+      }
+
+      const decrementFormIngredient = (id, isEdit) => {
         if (isEdit) {
           setEditForm(prev => {
-            const arr = prev.ingredients.includes(id) ? prev.ingredients.filter(x=>x!==id) : [...prev.ingredients, id];
-            return {...prev, ingredients: arr};
+            const idx = prev.ingredients.indexOf(id);
+            if (idx > -1) {
+              const newArr = [...prev.ingredients];
+              newArr.splice(idx, 1);
+              return {...prev, ingredients: newArr};
+            }
+            return prev;
           });
         } else {
           setAddForm(prev => {
-            const arr = prev.ingredients.includes(id) ? prev.ingredients.filter(x=>x!==id) : [...prev.ingredients, id];
-            return {...prev, ingredients: arr};
+            const idx = prev.ingredients.indexOf(id);
+            if (idx > -1) {
+              const newArr = [...prev.ingredients];
+              newArr.splice(idx, 1);
+              return {...prev, ingredients: newArr};
+            }
+            return prev;
           });
         }
       }
@@ -1548,21 +1561,28 @@
         printWindow.document.close();
       };
 
-      // Generador de lista de ingredientes para los modales
       const renderIngredientSelector = (selectedArr, isEdit) => (
-        <div className="h-40 overflow-y-auto bg-black/60 rounded-xl border border-divineLine2 p-3 space-y-3 scroll-smooth-ios">
+        <div className="h-48 overflow-y-auto bg-black/60 rounded-xl border border-divineLine2 p-3 space-y-3 scroll-smooth-ios">
           {Object.entries(localCatalog).map(([cat, arr]) => {
-            if (!Array.isArray(arr)) return null;
+            if (cat === 'delivery' || !Array.isArray(arr)) return null;
             return (
               <div key={cat}>
                 <div className="text-[10px] text-divineGold mb-1 uppercase tracking-widest">{cat}</div>
                 {arr.map(it => {
                   if (it.id === 'none') return null;
-                  const active = selectedArr.includes(it.id);
+                  const qty = selectedArr.filter(x => x === it.id).length;
+                  const active = qty > 0;
                   return (
-                    <div key={it.id} onClick={() => toggleFormIngredient(it.id, isEdit)} className={`cursor-pointer flex items-center justify-between p-2 rounded-lg mb-1 transition ${active ? 'bg-divineGold/20 border border-divineGold' : 'hover:bg-white/5 border border-transparent'}`}>
-                      <span className="text-xs text-divineCream">{it.name}</span>
-                      {active && <span className="text-xs">✅</span>}
+                    <div key={it.id} className={`flex items-center justify-between p-2 rounded-lg mb-1 transition ${active ? 'bg-divineGold/10 border border-divineGold/50' : 'hover:bg-white/5 border border-transparent'}`}>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs text-divineCream truncate">{it.name}</div>
+                        <div className="text-[9px] text-divineGold">{money(it.price)} / {money(it.cost)} cost</div>
+                      </div>
+                      <div className="flex items-center gap-2 bg-black/50 rounded-full border border-divineLine2 px-1 py-1">
+                        <button type="button" onClick={() => decrementFormIngredient(it.id, isEdit)} className="w-6 h-6 flex items-center justify-center rounded-full text-divineCream/70 hover:bg-white/10 transition">−</button>
+                        <span className="w-4 text-center text-sm font-bold text-divineGold">{qty}</span>
+                        <button type="button" onClick={() => incrementFormIngredient(it.id, isEdit)} className="w-6 h-6 flex items-center justify-center rounded-full bg-divineGold text-black font-bold transition">+</button>
+                      </div>
                     </div>
                   )
                 })}
