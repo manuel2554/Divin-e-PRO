@@ -751,7 +751,7 @@
           <div ref={scrollRef} className="flex overflow-x-auto no-scrollbar gap-4 pb-4 snap-x snap-mandatory px-1" style={{ WebkitOverflowScrolling: 'touch' }}>
             {availableItems.map((p) => (
               <div key={p.id} className="w-[82vw] sm:w-[320px] lg:w-[340px] shrink-0 snap-start">
-                <ProductCard product={p} badge={badge} isDisabled={false} isPromoDesign={promoOnly} onClick={() => onOpen(p)} onAdd={() => onAdd({ ...p, cost: p.cost })} />
+                <ProductCard product={p} badge={badge} isDisabled={false} isPromo={promoOnly} onClick={() => onOpen(p)} onAdd={() => onAdd({ ...p, cost: p.cost })} />
               </div>
             ))}
           </div>
@@ -960,7 +960,7 @@
                 <h4 className="text-[10px] tracking-[0.3em] text-gold/80 font-semibold mb-4">CONTACTO</h4>
                 <div className="space-y-2.5 text-sm text-cream/45 font-light">
                   <div className="flex items-center gap-2">{Icons.mapPin} Pueblo Llano, Mérida</div>
-                  <div className="flex items-center gap-2">{Icons.clock} 12:00 PM — 10:00 PM</div>
+                  <div className="flex items-center gap-2">{Icons.clock} Viernes a Dom. 6:00 PM — 12:00 AM</div>
                   <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-[#25D366] hover:underline">💬 WhatsApp</a>
                 </div>
               </div>
@@ -1027,14 +1027,24 @@
           const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
           scene.add(new THREE.AmbientLight(0xffffff, 0.16));
           scene.add(new THREE.HemisphereLight(0xf5efe6, 0x050508, 0.6));
+          
           const key = new THREE.SpotLight(0xffffff, 2.3, 30, Math.PI / 6, 0.35, 1.2);
           key.position.set(4.5, 6, 3.2); key.castShadow = true; key.shadow.mapSize.set(1024, 1024); scene.add(key);
-          scene.add(Object.assign(new THREE.DirectionalLight(0xc9a84c, 0.85), { position: new THREE.Vector3(-4, 2.2, -3.2) }));
-          scene.add(Object.assign(new THREE.DirectionalLight(0xe6d3a3, 0.55), { position: new THREE.Vector3(-4.2, 2.2, 2.5) }));
+          
+          const rim = new THREE.DirectionalLight(0xc9a84c, 0.85);
+          rim.position.set(-4, 2.2, -3.2);
+          scene.add(rim);
+          
+          const fill = new THREE.DirectionalLight(0xe6d3a3, 0.55);
+          fill.position.set(-4.2, 2.2, 2.5);
+          scene.add(fill);
+          
           const ground = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.ShadowMaterial({ opacity: 0.2 }));
-          ground.rotation.x = -Math.PI / 2; ground.position.setY(-1.25); ground.receiveShadow = true; scene.add(ground);
-          const root = new THREE.Group(); root.position.setY(-0.2); scene.add(root);
+          ground.rotation.x = -Math.PI / 2; ground.position.set(0, -1.25, 0); ground.receiveShadow = true; scene.add(ground);
+          
+          const root = new THREE.Group(); root.position.set(0, -0.2, 0); scene.add(root);
           const stack = new THREE.Group(); root.add(stack);
+          
           const el = renderer.domElement;
           const onDown = e => { draggingRef.current = true; lastRef.current = { x: e.clientX, y: e.clientY }; el.setPointerCapture?.(e.pointerId); };
           const onMove = e => { if (!draggingRef.current) return; const dx = e.clientX - lastRef.current.x; const dy = e.clientY - lastRef.current.y; lastRef.current = { x: e.clientX, y: e.clientY }; yawRef.current += dx * 0.008; pitchRef.current = Math.max(-0.75, Math.min(0.35, pitchRef.current + dy * 0.006)); };
@@ -1056,14 +1066,14 @@
             reqRef.current = requestAnimationFrame(animate);
             if (stateRef.current.root) {
               if (autoRotateRef.current && !draggingRef.current) yawRef.current += 0.003;
-              stateRef.current.root.rotation.set(pitchRef.current, yawRef.current, 0); // FIX: Position/Rotation set
+              stateRef.current.root.rotation.set(pitchRef.current, yawRef.current, 0);
             }
             const time = performance.now() * 0.001;
             stateRef.current.animatables.forEach(a => {
               if (time > a.startTime) {
                 const d = a.targetY - a.mesh.position.y;
                 a.velocity += d * 0.25; a.velocity *= 0.65;
-                a.mesh.position.setY(a.mesh.position.y + a.velocity); // FIX: Position setY
+                a.mesh.position.setY(a.mesh.position.y + a.velocity);
               }
             });
             renderer.render(scene, camera);
@@ -1095,7 +1105,7 @@
             if (mesh) { mesh.traverse(m => { if(m.isMesh){m.castShadow=true;m.receiveShadow=true;} }); stack.add(mesh); const tY = curY+thick/2; anims.push({mesh,targetY:tY,startTime:now+idx*0.15,velocity:0}); curY += thick; }
           });
           fitCameraToObject(THREE, camera, stack, 1.4);
-          anims.forEach(a => { a.mesh.position.setY(a.targetY + 6); }); // FIX: setY
+          anims.forEach(a => { a.mesh.position.setY(a.targetY + 6); });
           st.animatables = anims;
         }
       }, [modelUrl, burgerConfig]);
@@ -1343,7 +1353,7 @@
 
       useEffect(() => {
         (async () => {
-          if (!supabaseClient) return;
+          if (!window.supabase) return;
           const { data } = await supabaseClient.from('disabled_ingredients').select('id');
           if (data) setDisabledItems(data.map(i => i.id));
         })();
@@ -1531,7 +1541,7 @@
     }
 
     // ═══════════════════════════════════════
-    // ADMIN DASHBOARD — COMPLETO Y BLINDADO
+    // ADMIN DASHBOARD — BLINDADO
     // ═══════════════════════════════════════
     function AdminDashboard({ onClose, supabaseClient, localBurgers, localDesserts, localDrinks, localCatalog, onSaveInventory, onAddProduct }) {
       const [orders, setOrders] = useState([]);
@@ -1657,7 +1667,7 @@
       const renderIngSelector = (selArr, isE) => (
         <div className="h-48 overflow-y-auto bg-bg rounded-xl border border-line p-3 space-y-3 scroll-smooth-ios">
           {Object.entries(localCatalog).map(([cat, arr]) => {
-            if (!Array.isArray(arr)) return null; // EL ESCUDO ESTÁ AQUÍ
+            if (!Array.isArray(arr)) return null; // ESCUDO DE SEGURIDAD: Previene crash si 'arr' no es array (ej. settings)
             return (<div key={cat}><p className="text-[9px] text-gold mb-1 uppercase tracking-widest font-semibold">{cat==='buns'?'Pan':cat==='proteins'?'Proteína':cat==='cheeses'?'Queso':'Toppings'}</p>
               {arr.map(it => { if (it.id==='none') return null; const q = selArr.filter(x=>x===it.id).length; return (
                 <div key={it.id} className={`flex items-center justify-between p-2 rounded-lg mb-1 transition ${q>0?'bg-gold/10 border border-gold/30':'hover:bg-panel border border-transparent'}`}>
@@ -1886,16 +1896,21 @@
 
       const cartCount = useMemo(() => cartItems.reduce((a, it) => a + it.qty, 0), [cartItems]);
       const cartTotal = useMemo(() => cartItems.reduce((a, it) => a + it.price * it.qty, 0), [cartItems]);
-      const promos = useMemo(() => [...localBurgers.filter(b => b.isPromo), ...localDrinks.filter(d => d.isPromo), ...localDesserts.filter(d => d.isPromo)], [localBurgers, localDesserts, localDrinks]);
+      
+      const promos = useMemo(() => {
+        return [...localBurgers.filter(b => b.isPromo), ...localDrinks.filter(d => d.isPromo), ...localDesserts.filter(d => d.isPromo)];
+      }, [localBurgers, localDesserts, localDrinks]);
 
       useEffect(() => { localStorage.setItem('divinee_cart', JSON.stringify(cartItems)); }, [cartItems]);
 
       useEffect(() => {
-        fetch("https://ve.dolarapi.com/v1/dolares/oficial").then(r => r.json()).then(d => {
-          let tasa = parseFloat(d.promedio);
-          if (tasa > 100) tasa = tasa / 10; // Safety fallback 
-          setBcvRate(tasa.toFixed(2));
-        }).catch(() => setBcvRate(60.00));
+        fetch("https://ve.dolarapi.com/v1/dolares/oficial")
+          .then(r => r.json())
+          .then(d => {
+            let tasa = parseFloat(d.promedio);
+            if (tasa > 100) tasa = tasa / 10; // Safety fallback 
+            setBcvRate(tasa.toFixed(2));
+          }).catch(() => setBcvRate(60.00));
 
         const fetchGlobal = async () => {
           if (!supabaseClient) return;
@@ -1957,7 +1972,7 @@
       const updateQty = (id, qty) => setCartItems(prev => prev.map(p => p.id === id ? { ...p, qty } : p).filter(p => p.qty > 0));
       const wsPhone = localCatalog?.settings?.whatsapp || "584126835635";
 
-      // Hide Sections logic
+      // Filtros Inteligentes: Solo mostrar los que NO están en "disabledItems"
       const activePromos = promos.filter(p => !disabledItems.includes(p.id));
       const activeBurgers = localBurgers.filter(b => !b.isPromo && !disabledItems.includes(b.id));
       const activeDrinks = localDrinks.filter(d => !d.isPromo && !disabledItems.includes(d.id));
