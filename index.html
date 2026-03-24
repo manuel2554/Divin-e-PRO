@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#050508" />
+  <meta name="theme-color" content="#07070A" />
   <title>Divinée — Gourmet Bar | Experiencia Culinaria de Lujo</title>
   <meta name="description" content="Hamburguesas gourmet, postres artesanales y experiencias gastronómicas de lujo en Pueblo Llano. Pide online y vive la experiencia Divinée." />
   <meta property="og:title" content="Divinée Gourmet Bar | La mejor experiencia culinaria" />
@@ -231,20 +231,6 @@
       width: 48px; height: 4px; border-radius: 999px;
       background: linear-gradient(90deg, rgba(201,168,76,0.3), rgba(201,168,76,0.5), rgba(201,168,76,0.3));
     }
-
-    /* ═══ SAFE AREAS ═══ */
-    .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
-    .floating-safe { bottom: calc(1.2rem + env(safe-area-inset-bottom)); }
-    .floating-safe-right { right: calc(1.2rem + env(safe-area-inset-right)); }
-    .floating-safe-left { left: calc(1.2rem + env(safe-area-inset-left)); }
-
-    /* ═══ TESTIMONIAL ═══ */
-    .testimonial-gradient {
-      background: linear-gradient(135deg, rgba(201,168,76,0.05) 0%, rgba(14,14,22,0.8) 100%);
-    }
-
-    /* ═══ STATS COUNTER ═══ */
-    .stat-glow { box-shadow: 0 0 40px rgba(201,168,76,0.08); }
 
     /* ═══ RESPONSIVE ═══ */
     @media (max-width: 640px) {
@@ -749,27 +735,32 @@
     }
 
     function ProductShowcase({ items, badge, onOpen, onAdd, disabledItems = [], promoOnly = false }) {
-      return (
-        <>
-          {/* Mobile: Horizontal Scroll */}
-          <div className="sm:hidden">
-            <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 snap-x snap-mandatory -mx-4 px-4" style={{ WebkitOverflowScrolling: 'touch' }}>
-              {items.map(p => (
-                <div key={p.id} className="w-[82vw] max-w-[380px] snap-start shrink-0">
-                  <ProductCard product={p} badge={badge} isDisabled={disabledItems.includes(p.id)} isPromo={promoOnly} onClick={() => onOpen(p)} onAdd={() => onAdd({ ...p, cost: p.cost })} />
-                </div>
-              ))}
-            </div>
-            <p className="text-[10px] text-cream/30 tracking-widest mt-1">← DESLIZA PARA VER MÁS →</p>
-          </div>
+      const scrollRef = useRef(null);
+      const scroll = (offset) => {
+        scrollRef.current?.scrollBy({ left: offset, behavior: 'smooth' });
+      };
 
-          {/* Desktop: Grid */}
-          <div className="hidden sm:grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {items.map(p => (
-              <ProductCard key={p.id} product={p} badge={badge} isDisabled={disabledItems.includes(p.id)} isPromo={promoOnly} onClick={() => onOpen(p)} onAdd={() => onAdd({ ...p, cost: p.cost })} />
+      const availableItems = items.filter(p => !disabledItems.includes(p.id));
+      if (availableItems.length === 0) return null;
+
+      return (
+        <div className="relative group">
+          {/* Desktop Left Arrow */}
+          <button onClick={() => scroll(-320)} className="hidden lg:flex absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 items-center justify-center rounded-full bg-bgAlt/90 border border-lineGold text-gold opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-glowStrong hover:scale-110">←</button>
+
+          <div ref={scrollRef} className="flex overflow-x-auto no-scrollbar gap-4 pb-4 snap-x snap-mandatory px-1" style={{ WebkitOverflowScrolling: 'touch' }}>
+            {availableItems.map((p) => (
+              <div key={p.id} className="w-[82vw] sm:w-[320px] lg:w-[340px] shrink-0 snap-start">
+                <ProductCard product={p} badge={badge} isDisabled={false} isPromoDesign={promoOnly} onClick={() => onOpen(p)} onAdd={() => onAdd({ ...p, cost: p.cost })} />
+              </div>
             ))}
           </div>
-        </>
+
+          {/* Desktop Right Arrow */}
+          <button onClick={() => scroll(320)} className="hidden lg:flex absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 items-center justify-center rounded-full bg-bgAlt/90 border border-lineGold text-gold opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-glowStrong hover:scale-110">→</button>
+          
+          <p className="lg:hidden mt-2 text-[10px] text-cream/30 tracking-widest text-center">← DESLIZA PARA VER MÁS →</p>
+        </div>
       );
     }
 
@@ -998,7 +989,7 @@
     }
 
     // ═══════════════════════════
-    // 3D BURGER VIEWER
+    // 3D BURGER VIEWER (FIXED)
     // ═══════════════════════════
     function BurgerViewer3D({ heightClass = "h-[280px] md:h-[440px]", modelUrl, showUI = true, burgerConfig = null }) {
       const mountRef = useRef(null);
@@ -1041,8 +1032,8 @@
           scene.add(Object.assign(new THREE.DirectionalLight(0xc9a84c, 0.85), { position: new THREE.Vector3(-4, 2.2, -3.2) }));
           scene.add(Object.assign(new THREE.DirectionalLight(0xe6d3a3, 0.55), { position: new THREE.Vector3(-4.2, 2.2, 2.5) }));
           const ground = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.ShadowMaterial({ opacity: 0.2 }));
-          ground.rotation.x = -Math.PI / 2; ground.position.y = -1.25; ground.receiveShadow = true; scene.add(ground);
-          const root = new THREE.Group(); root.position.set(0, -0.2, 0); scene.add(root);
+          ground.rotation.x = -Math.PI / 2; ground.position.setY(-1.25); ground.receiveShadow = true; scene.add(ground);
+          const root = new THREE.Group(); root.position.setY(-0.2); scene.add(root);
           const stack = new THREE.Group(); root.add(stack);
           const el = renderer.domElement;
           const onDown = e => { draggingRef.current = true; lastRef.current = { x: e.clientX, y: e.clientY }; el.setPointerCapture?.(e.pointerId); };
@@ -1061,7 +1052,22 @@
             generic: new THREE.MeshStandardMaterial({ color: 0x8a6a4c, roughness: 0.9 })
           };
           stateRef.current = { THREE, scene, camera, renderer, root, stack, animatables: [], matCache };
-          const animate = () => { reqRef.current = requestAnimationFrame(animate); if (stateRef.current.root) { if (autoRotateRef.current && !draggingRef.current) yawRef.current += 0.003; stateRef.current.root.rotation.y = yawRef.current; stateRef.current.root.rotation.x = pitchRef.current; } const time = performance.now() * 0.001; stateRef.current.animatables.forEach(a => { if (time > a.startTime) { const d = a.targetY - a.mesh.position.y; a.velocity += d * 0.25; a.velocity *= 0.65; a.mesh.position.y += a.velocity; } }); renderer.render(scene, camera); };
+          const animate = () => {
+            reqRef.current = requestAnimationFrame(animate);
+            if (stateRef.current.root) {
+              if (autoRotateRef.current && !draggingRef.current) yawRef.current += 0.003;
+              stateRef.current.root.rotation.set(pitchRef.current, yawRef.current, 0); // FIX: Position/Rotation set
+            }
+            const time = performance.now() * 0.001;
+            stateRef.current.animatables.forEach(a => {
+              if (time > a.startTime) {
+                const d = a.targetY - a.mesh.position.y;
+                a.velocity += d * 0.25; a.velocity *= 0.65;
+                a.mesh.position.setY(a.mesh.position.y + a.velocity); // FIX: Position setY
+              }
+            });
+            renderer.render(scene, camera);
+          };
           animate();
           return () => { window.removeEventListener("resize", onResize); el.removeEventListener("pointerdown", onDown); el.removeEventListener("pointermove", onMove); window.removeEventListener("pointerup", onUp); cancelAnimationFrame(reqRef.current); renderer.dispose(); if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement); stateRef.current = { animatables: [] }; };
         } catch (e) { setErr(e?.message || String(e)); }
@@ -1089,7 +1095,7 @@
             if (mesh) { mesh.traverse(m => { if(m.isMesh){m.castShadow=true;m.receiveShadow=true;} }); stack.add(mesh); const tY = curY+thick/2; anims.push({mesh,targetY:tY,startTime:now+idx*0.15,velocity:0}); curY += thick; }
           });
           fitCameraToObject(THREE, camera, stack, 1.4);
-          anims.forEach(a => { a.mesh.position.y = a.targetY + 6; });
+          anims.forEach(a => { a.mesh.position.setY(a.targetY + 6); }); // FIX: setY
           st.animatables = anims;
         }
       }, [modelUrl, burgerConfig]);
@@ -1194,7 +1200,6 @@
         </motion.div>
       );
     }
-
     // ═══════════════════════════
     // TRACKING MODAL
     // ═══════════════════════════
@@ -1253,15 +1258,19 @@
     }
 
     // ═══════════════════════════
-    // YOGURT COMING SOON
+    // YOGURT COMING SOON (COMPACTO)
     // ═══════════════════════════
     function YogurtComingSoon() {
       return (
-        <div className="rounded-[28px] border border-line glass p-8 text-center">
-          <div className="text-5xl mb-4">🍦</div>
-          <h3 className="text-2xl font-display font-bold text-gradient-cream mb-2">¡Muy Pronto!</h3>
-          <p className="text-sm text-cream/50 font-light max-w-md mx-auto">Estamos preparando la mejor experiencia de yogurt griego de máquina para ti.</p>
-          <div className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-full glass text-[10px] tracking-[0.2em] text-cream/45">
+        <div className="rounded-2xl border border-line glass p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="text-4xl">🍦</div>
+            <div>
+              <h3 className="text-lg font-display font-bold text-gradient-cream">Yogurt Griego de Máquina</h3>
+              <p className="text-xs text-cream/50 font-light mt-1">Estamos preparando una nueva experiencia refrescante para ti.</p>
+            </div>
+          </div>
+          <div className="px-4 py-2 rounded-full glass text-[9px] tracking-[0.2em] text-cream/45 font-semibold whitespace-nowrap">
             🔒 PRÓXIMAMENTE
           </div>
         </div>
@@ -1307,7 +1316,7 @@
 
     function LayersTabs({ label, layers, active, setActive, onRemove, min = 1 }) {
       return (
-        <div className="mt-3 flex gap-2 overflow-x-auto no-scrollbar pb-1">
+        <div className="mt-3 flex gap-2 overflow-x-auto no-scrollbar pb-1 mobile-scroll">
           {layers.map((_, i) => (
             <div key={i} className="flex items-center gap-1">
               <button onClick={() => setActive(i)} className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[10px] tracking-[0.2em] transition font-semibold ${active === i ? 'glass-gold text-gold shadow-glow' : 'glass text-cream/60 hover:text-gold'}`}>{label} {i+1}</button>
@@ -1319,7 +1328,7 @@
     }
 
     // ═══════════════════════════════════════════
-    // BURGER BUILDER (ATELIER) — ULTRA PREMIUM
+    // BURGER BUILDER (ATELIER)
     // ═══════════════════════════════════════════
     function BurgerBuilder({ onAddToCart, catalog }) {
       const [step, setStep] = useState(0);
@@ -1404,13 +1413,9 @@
 
       return (
         <div className="rounded-[28px] border border-lineGold glass-gold shadow-glowStrong p-5 lg:p-8">
-          {/* Header */}
           <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-gold">{Icons.sparkles}</span>
-                <span className="text-[9px] tracking-[0.4em] text-gold font-semibold">ATELIER DIVINÉE</span>
-              </div>
+              <div className="flex items-center gap-2 mb-2"><span className="text-gold">{Icons.sparkles}</span><span className="text-[9px] tracking-[0.4em] text-gold font-semibold">ATELIER DIVINÉE</span></div>
               <h3 className="text-2xl lg:text-3xl font-display font-bold text-gradient-cream">Arma tu Hamburguesa</h3>
               <p className="mt-1 text-sm text-cream/50 font-light">Selecciona cada ingrediente y mira cómo cobra vida en 3D.</p>
             </div>
@@ -1420,7 +1425,6 @@
             </div>
           </div>
 
-          {/* 3D Viewer */}
           <div className="rounded-2xl border border-line overflow-hidden bg-bg mb-6">
             <div className="flex items-center justify-between px-4 py-2 border-b border-line glass">
               <p className="text-[9px] tracking-[0.3em] text-gold/70 font-semibold">VISTA PREVIA 3D</p>
@@ -1429,11 +1433,8 @@
             <BurgerViewer3D heightClass="h-[220px] lg:h-[300px]" burgerConfig={dynamicConfig} showUI={false} />
           </div>
 
-          {hasAnyError && (
-            <div className="mb-5 p-4 rounded-xl border border-red-500/40 bg-red-500/10 text-red-400 text-sm font-semibold text-center">⚠️ Tienes ingredientes AGOTADOS. Cámbialos para continuar.</div>
-          )}
+          {hasAnyError && <div className="mb-5 p-4 rounded-xl border border-red-500/40 bg-red-500/10 text-red-400 text-sm font-semibold text-center">⚠️ Tienes ingredientes AGOTADOS. Cámbialos para continuar.</div>}
 
-          {/* Step Navigation */}
           <div className="grid grid-cols-4 gap-2 mb-6">
             {steps.map((s, i) => (
               <button key={s.key} onClick={() => setStep(i)} className={`relative rounded-2xl py-3 px-2 text-center transition-all duration-300 ${step === i ? 'glass-gold shadow-glow border border-gold/40' : 'glass border border-line hover:border-lineGold'}`}>
@@ -1444,7 +1445,6 @@
             ))}
           </div>
 
-          {/* Step Content */}
           <motion.div key={step} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
             {step === 0 && <CarouselPicker title="Pan" options={catalog.buns} index={bunIdx} onPrev={bunPrev} onNext={bunNext} disabledItems={disabledItems} />}
             {step === 1 && (
@@ -1503,7 +1503,6 @@
             )}
           </motion.div>
 
-          {/* Breakdown */}
           <div className="mt-6 glass rounded-2xl p-5">
             <p className="text-[9px] tracking-[0.3em] text-gold/60 font-semibold mb-3">DESGLOSE</p>
             <div className="space-y-1.5 text-sm">
@@ -1520,7 +1519,6 @@
             </div>
           </div>
 
-          {/* Actions */}
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <button onClick={() => setStep(s => Math.max(0, s - 1))} className="btn-ghost !text-[10px]">← ATRÁS</button>
             <button onClick={() => setStep(s => Math.min(3, s + 1))} className="btn-ghost !text-[10px]">SIGUIENTE →</button>
@@ -1532,252 +1530,9 @@
       );
     }
 
-    // ═══════════════════════════
-    // CART BUTTON (FLOATING)
-    // ═══════════════════════════
-    function CartButton({ cartCount, onClick }) {
-      return (
-        <button onClick={onClick} className="fixed z-40 floating-safe floating-safe-right rounded-2xl glass-gold px-5 py-3 shadow-glowStrong hover:brightness-110 transition-all duration-300" aria-label="Abrir carrito">
-          <div className="flex items-center gap-3">
-            <span className="text-gold">{Icons.cart}</span>
-            <span className="text-[10px] tracking-[0.25em] text-cream/70 font-semibold">ORDEN</span>
-            <span className="bg-gradient-to-br from-gold to-goldDark text-bg text-[10px] font-bold px-2 py-0.5 rounded-full">{cartCount}</span>
-          </div>
-        </button>
-      );
-    }
-
     // ═══════════════════════════════════════
-    // CART DRAWER — REDESIGNED CHECKOUT
+    // ADMIN DASHBOARD — COMPLETO Y BLINDADO
     // ═══════════════════════════════════════
-    function CartDrawer({ items, total, bcvRate, onClose, onQty, onClearCart, catalog, supabaseClient }) {
-      useLockBodyScroll(true);
-      const close = useHistoryClose(true, onClose);
-      useEscape(close, true);
-      const [step, setStep] = useState(0);
-      const [loading, setLoading] = useState(false);
-      const [orderId, setOrderId] = useState("");
-      const [formData, setFormData] = useState({ name: "", phone: "", address: "", notes: "", ref: "" });
-      const [receiptFile, setReceiptFile] = useState(null);
-      const dzList = catalog?.settings?.deliveryZones || [{ id: 'retiro', name: 'Retiro por el local', cost: 0 }];
-      const [dzId, setDzId] = useState(dzList[0]?.id || 'retiro');
-      const selZone = dzList.find(z => z.id === dzId) || dzList[0];
-      const [payMethod, setPayMethod] = useState('pagomovil');
-      const deliveryCost = Number(selZone?.cost || 0);
-      const totalQty = items.reduce((a, it) => a + it.qty, 0);
-      const empUnit = Number(catalog?.settings?.empaque || 0.60);
-      const empCost = totalQty * empUnit;
-      const finalTotal = total + deliveryCost + empCost;
-      const botToken = catalog?.settings?.telegramToken;
-      const chatId = catalog?.settings?.telegramChatId;
-      const handleInput = e => setFormData({ ...formData, [e.target.name]: e.target.value });
-
-      const handleCheckout = async () => {
-        setLoading(true);
-        const newId = "#DIV-" + Math.floor(1000 + Math.random() * 9000);
-        await supabaseClient.from('orders').insert([{ tracking_code: newId, customer_name: formData.name, phone: formData.phone, address: formData.address, notes: formData.notes, items, total_usd: finalTotal, bcv_rate: bcvRate, payment_ref: `${payMethod.toUpperCase()} - ${formData.ref || "Capture adjunto"}`, status: 'Pendiente' }]);
-        let txt = `🍔 *NUEVO PEDIDO* ${newId}\n\n👤 ${formData.name}\n📞 ${formData.phone}\n📍 ${formData.address}\n🛵 ${selZone.name}\n`;
-        if (formData.notes) txt += `📝 ${formData.notes}\n`;
-        txt += `\n🛒 *PEDIDO:*\n`;
-        items.forEach(it => { txt += `• ${it.qty}x ${it.name} — $${(it.price * it.qty).toFixed(2)}\n`; if (it.meta) Object.entries(it.meta).forEach(([k, v]) => { txt += `  _${k}:_ ${Array.isArray(v) ? v.join(", ") : v}\n`; }); });
-        txt += `\n⚙️ Servicio: $${empCost.toFixed(2)}`;
-        if (deliveryCost > 0) txt += `\n🛵 Delivery: $${deliveryCost.toFixed(2)}`;
-        txt += `\n💰 *Total: $${finalTotal.toFixed(2)}*`;
-        if (payMethod === 'pagomovil' && bcvRate) txt += `\n🇻🇪 Bs: ${(finalTotal * bcvRate).toFixed(2)}`;
-        txt += `\n💳 ${payMethod.toUpperCase()} | Ref: ${formData.ref || "Capture"}`;
-        try {
-          await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: chatId, text: txt, parse_mode: "Markdown" }) });
-          if (receiptFile) { const fd = new FormData(); fd.append('chat_id', chatId); fd.append('photo', receiptFile); fd.append('caption', `📷 Capture: ${newId}`); await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, { method: 'POST', body: fd }); }
-        } catch (e) {}
-        setOrderId(newId); setStep(3); onClearCart(); setLoading(false);
-      };
-
-      const stepLabels = ["Tu Orden", "Datos", "Pago", "Confirmado"];
-
-      return (
-        <motion.div className="fixed inset-0 z-[120]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} aria-modal="true">
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={close} />
-          <motion.aside initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} transition={{ type: "spring", stiffness: 300, damping: 30 }} className="absolute right-0 top-0 h-full w-[94vw] max-w-md border-l border-lineGold bg-bgAlt shadow-luxe flex flex-col" onClick={e => e.stopPropagation()}>
-
-            {/* Header */}
-            <div className="shrink-0 px-5 pt-5 pb-4 border-b border-line glass-strong">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-[9px] tracking-[0.4em] text-gold/80 font-semibold">{BRAND.toUpperCase()}</p>
-                  <h3 className="text-lg font-display font-bold text-cream">{stepLabels[step]}</h3>
-                </div>
-                {step !== 3 && <button onClick={close} className="btn-icon">{Icons.close}</button>}
-              </div>
-              {/* Step Indicator */}
-              <div className="flex gap-1">
-                {[0,1,2,3].map(s => (
-                  <div key={s} className={`flex-1 h-1 rounded-full transition-all duration-500 ${s <= step ? 'bg-gradient-to-r from-gold to-goldLight' : 'bg-line'}`} />
-                ))}
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto scroll-smooth-ios px-5 py-5 safe-bottom">
-              {step === 0 && (
-                <>
-                  {items.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-center">
-                      <div className="text-5xl mb-4">🛒</div>
-                      <p className="text-lg font-display font-semibold text-cream/60 mb-2">Tu carrito está vacío</p>
-                      <p className="text-sm text-cream/35 font-light">Explora el menú y añade algo delicioso.</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {items.map(it => (
-                        <motion.div key={it.id} layout className="glass rounded-2xl p-4 relative group">
-                          <button onClick={() => onQty(it.id, 0)} className="absolute top-3 right-3 p-1.5 rounded-lg text-red-500/40 hover:text-red-400 hover:bg-red-500/10 transition opacity-0 group-hover:opacity-100">{Icons.trash}</button>
-                          <div className="flex items-start justify-between gap-3 pr-8">
-                            <div>
-                              <p className="font-display font-semibold text-cream text-sm">{it.name}</p>
-                              <p className="text-xs text-cream/45 mt-0.5 font-light">{money(it.price)} c/u</p>
-                              {it.meta && <div className="mt-1.5 space-y-0.5">{Object.entries(it.meta).map(([k,v]) => <p key={k} className="text-[10px] text-gold/50">{k}: {Array.isArray(v)?v.join(", "):v}</p>)}</div>}
-                            </div>
-                            <p className="text-sm font-bold text-gold shrink-0">{money(it.price * it.qty)}</p>
-                          </div>
-                          <div className="mt-3 flex items-center gap-2">
-                            <button onClick={() => onQty(it.id, it.qty - 1)} className="btn-icon !w-8 !h-8">{Icons.minus}</button>
-                            <span className="w-8 text-center text-sm font-bold text-cream">{it.qty}</span>
-                            <button onClick={() => onQty(it.id, it.qty + 1)} className="btn-icon !w-8 !h-8">{Icons.plus}</button>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  )}
-                  {items.length > 0 && (
-                    <div className="mt-6 space-y-3">
-                      <div className="glass-gold rounded-2xl p-5">
-                        <div className="space-y-2 pb-3 mb-3 border-b border-line">
-                          <div className="flex justify-between text-xs text-cream/45"><span>Subtotal</span><span>{money(total)}</span></div>
-                          <div className="flex justify-between text-xs text-cream/45"><span>Tarifa de Servicio ({totalQty} items)</span><span>{money(empCost)}</span></div>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="font-display font-bold text-cream">TOTAL</span>
-                          <span className="text-xl font-display font-bold text-gradient-gold">{money(total + empCost)}</span>
-                        </div>
-                        <button className="mt-4 w-full btn-primary" onClick={() => setStep(1)}>PROCESAR COMPRA {Icons.arrowRight}</button>
-                      </div>
-                      <button onClick={onClearCart} className="w-full py-2.5 text-[10px] tracking-widest text-red-500/40 hover:text-red-400 hover:bg-red-500/5 border border-transparent hover:border-red-500/20 rounded-xl transition font-semibold">VACIAR CARRITO</button>
-                    </div>
-                  )}
-                </>
-              )}
-
-              {step === 1 && (
-                <div className="space-y-4">
-                  {[{ label: "NOMBRE COMPLETO", name: "name", type: "text" }, { label: "TELÉFONO", name: "phone", type: "tel" }].map(f => (
-                    <div key={f.name}><label className="text-[9px] tracking-[0.25em] text-cream/50 ml-1 font-semibold">{f.label}</label><input type={f.type} name={f.name} value={formData[f.name]} onChange={handleInput} className="mt-1 w-full bg-bg border border-line rounded-xl px-4 py-3 text-sm text-cream outline-none focus:border-gold transition" /></div>
-                  ))}
-                  <div>
-                    <label className="text-[9px] tracking-[0.25em] text-cream/50 ml-1 font-semibold">MÉTODO DE ENTREGA</label>
-                    <select value={dzId} onChange={e => setDzId(e.target.value)} className="mt-1 w-full bg-bg border border-line rounded-xl px-4 py-3 text-sm text-cream outline-none focus:border-gold transition cursor-pointer">
-                      {dzList.map(z => <option key={z.id} value={z.id}>{z.name} (+{money(z.cost)})</option>)}
-                    </select>
-                  </div>
-                  <div><label className="text-[9px] tracking-[0.25em] text-cream/50 ml-1 font-semibold">DIRECCIÓN EXACTA</label><textarea name="address" value={formData.address} onChange={handleInput} rows={2} placeholder="Sector, calle, casa..." className="mt-1 w-full bg-bg border border-line rounded-xl px-4 py-3 text-sm text-cream outline-none focus:border-gold transition" /></div>
-                  <div><label className="text-[9px] tracking-[0.25em] text-cream/50 ml-1 font-semibold">NOTA ADICIONAL</label><input type="text" name="notes" value={formData.notes} onChange={handleInput} placeholder="Alergias, notas..." className="mt-1 w-full bg-bg border border-line rounded-xl px-4 py-3 text-sm text-cream outline-none focus:border-gold transition" /></div>
-                  <div className="pt-4 flex gap-3">
-                    <button className="flex-1 btn-ghost" onClick={() => setStep(0)}>← ATRÁS</button>
-                    <button className="flex-1 btn-primary" onClick={() => setStep(2)} disabled={!formData.name || !formData.phone || (dzId !== 'retiro' && !formData.address)} style={{ opacity: (!formData.name || !formData.phone || (dzId !== 'retiro' && !formData.address)) ? 0.4 : 1 }}>IR A PAGAR →</button>
-                  </div>
-                </div>
-              )}
-
-              {step === 2 && (
-                <div className="space-y-4">
-                  <div className="glass-gold rounded-2xl p-5">
-                    <div className="text-center pb-3 mb-3 border-b border-line">
-                      <p className="text-[9px] tracking-[0.3em] text-cream/50 mb-1">TOTAL A PAGAR</p>
-                      <p className="text-3xl font-display font-bold text-gradient-gold">{money(finalTotal)}</p>
-                      <p className="text-[10px] text-cream/35 mt-1">Items: {money(total + empCost)} {deliveryCost > 0 && `| Delivery: ${money(deliveryCost)}`}</p>
-                    </div>
-
-                    {/* Payment Method Tabs */}
-                    <p className="text-[9px] tracking-[0.25em] text-gold/80 font-semibold mb-2">MÉTODO DE PAGO</p>
-                    <div className="grid grid-cols-3 gap-2 mb-4">
-                      {[
-                        { id: 'pagomovil', label: 'PAGO MÓVIL', color: 'gold' },
-                        { id: 'zelle', label: 'ZELLE', color: '[#741bd1]' },
-                        { id: 'binance', label: 'BINANCE', color: '[#fcd535]' },
-                      ].map(pm => (
-                        <button key={pm.id} onClick={() => setPayMethod(pm.id)} className={`py-2.5 rounded-xl text-[9px] font-bold tracking-widest transition border ${payMethod === pm.id ? `bg-${pm.color}/15 border-${pm.color}/50 text-${pm.color === 'gold' ? 'gold' : pm.color === '[#741bd1]' ? '[#b366ff]' : '[#fcd535]'}` : 'bg-bg border-line text-cream/35'}`}>
-                          {pm.label}
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="bg-bg rounded-xl p-4 border border-line">
-                      {payMethod === 'pagomovil' && (
-                        <div className="space-y-2">
-                          <div className="flex justify-between"><span className="text-xs text-cream/40">Monto Bs:</span><span className="font-bold text-gold text-lg">{bcvRate ? moneyVES(finalTotal, bcvRate) : '...'}</span></div>
-                          <hr className="divider-fade" />
-                          {[['Banco', catalog?.settings?.banco], ['Teléfono', catalog?.settings?.telefonoPago], ['Cédula', catalog?.settings?.cedulaPago]].map(([l, v]) => (
-                            <div key={l}><span className="text-[10px] text-cream/35 block">{l}</span><span className="font-semibold tracking-wider text-cream/80">{v}</span></div>
-                          ))}
-                        </div>
-                      )}
-                      {payMethod === 'zelle' && (
-                        <div><span className="text-[10px] text-[#b366ff]/60 block mb-1">Correo Zelle</span><span className="font-semibold text-cream/80 break-all">{catalog?.settings?.zelleEmail}</span></div>
-                      )}
-                      {payMethod === 'binance' && (
-                        <div className="space-y-2">
-                          <div><span className="text-[10px] text-[#fcd535]/60 block mb-1">Binance Pay ID</span><span className="font-semibold text-cream/80 break-all">{catalog?.settings?.binanceId}</span></div>
-                          <div><span className="text-[10px] text-[#fcd535]/60 block mb-1">Email</span><span className="font-semibold text-cream/80 break-all">{catalog?.settings?.binanceEmail}</span></div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div><label className="text-[9px] tracking-[0.25em] text-gold font-semibold ml-1">REFERENCIA / NOMBRE</label><input type="text" name="ref" value={formData.ref} onChange={handleInput} placeholder="Ref o Nombre" className="mt-1 w-full bg-bg border border-gold/30 rounded-xl px-4 py-3 text-lg font-semibold text-cream outline-none focus:border-gold transition text-center tracking-widest" /></div>
-                  <div><label className="text-[9px] tracking-[0.25em] text-cream/50 font-semibold ml-1">O SUBE CAPTURE</label><input type="file" accept="image/*" onChange={e => setReceiptFile(e.target.files[0])} className="mt-1 w-full bg-bg border border-line rounded-xl px-4 py-3 text-sm text-cream file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-gold file:text-bg hover:file:brightness-110 transition" /></div>
-                  <div className="pt-4 flex gap-3">
-                    <button className="flex-1 btn-ghost" onClick={() => setStep(1)} disabled={loading}>← ATRÁS</button>
-                    <button className="flex-1 btn-primary" onClick={handleCheckout} disabled={(!formData.ref && !receiptFile) || loading} style={{ opacity: ((!formData.ref && !receiptFile) || loading) ? 0.4 : 1 }}>{loading ? "PROCESANDO..." : "✓ CONFIRMAR PAGO"}</button>
-                  </div>
-                </div>
-              )}
-
-              {step === 3 && (
-                <div className="flex flex-col items-center text-center py-8 space-y-5">
-                  <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 200, delay: 0.2 }} className="w-20 h-20 rounded-full bg-gradient-to-br from-gold to-goldLight flex items-center justify-center text-bg text-3xl shadow-glowStrong">✓</motion.div>
-                  <h3 className="text-2xl font-display font-bold text-gradient-cream">¡Pedido Recibido!</h3>
-                  <p className="text-sm text-cream/50 font-light">Estamos verificando tu pago.</p>
-                  <div className="w-full glass-gold rounded-2xl p-6">
-                    <p className="text-[9px] tracking-[0.3em] text-cream/50 mb-2">CÓDIGO DE RASTREO</p>
-                    <p className="text-3xl font-display font-bold text-shimmer tracking-widest">{orderId}</p>
-                    <p className="mt-3 text-[10px] text-cream/35">Usa este código para rastrear tu pedido.</p>
-                  </div>
-                  <button className="w-full btn-ghost" onClick={close}>VOLVER AL MENÚ</button>
-                </div>
-              )}
-            </div>
-          </motion.aside>
-        </motion.div>
-      );
-    }
-
-    // ═══════════════════════════
-    // ADMIN LOGIN
-    // ═══════════════════════════
-    function AdminLogin({ onLogin, onClose }) {
-      const [pin, setPin] = useState("");
-      return (
-        <BottomSheet title="ZONA RESTRINGIDA" subtitle="Acceso del equipo Divinée" onClose={onClose}>
-          <div className="space-y-4">
-            <input type="password" value={pin} onChange={e => setPin(e.target.value)} placeholder="••••" className="w-full bg-bg border border-line rounded-xl px-4 py-4 text-center text-3xl tracking-[1em] text-gold outline-none focus:border-gold transition" />
-            <button className="w-full btn-primary" onClick={() => { if (pin === "7777") onLogin(); else alert("PIN incorrecto."); }}>ENTRAR</button>
-          </div>
-        </BottomSheet>
-      );
-    }
-
-    // ═══════════════════════════════════════════════════════
-    // ADMIN DASHBOARD — COMPLETE (orders, inventory, invoice, settings)
-    // ═══════════════════════════════════════════════════════
     function AdminDashboard({ onClose, supabaseClient, localBurgers, localDesserts, localDrinks, localCatalog, onSaveInventory, onAddProduct }) {
       const [orders, setOrders] = useState([]);
       const [disabledItems, setDisabledItems] = useState([]);
@@ -1902,7 +1657,7 @@
       const renderIngSelector = (selArr, isE) => (
         <div className="h-48 overflow-y-auto bg-bg rounded-xl border border-line p-3 space-y-3 scroll-smooth-ios">
           {Object.entries(localCatalog).map(([cat, arr]) => {
-            if (!Array.isArray(arr)) return null;
+            if (!Array.isArray(arr)) return null; // EL ESCUDO ESTÁ AQUÍ
             return (<div key={cat}><p className="text-[9px] text-gold mb-1 uppercase tracking-widest font-semibold">{cat==='buns'?'Pan':cat==='proteins'?'Proteína':cat==='cheeses'?'Queso':'Toppings'}</p>
               {arr.map(it => { if (it.id==='none') return null; const q = selArr.filter(x=>x===it.id).length; return (
                 <div key={it.id} className={`flex items-center justify-between p-2 rounded-lg mb-1 transition ${q>0?'bg-gold/10 border border-gold/30':'hover:bg-panel border border-transparent'}`}>
@@ -2136,8 +1891,14 @@
       useEffect(() => { localStorage.setItem('divinee_cart', JSON.stringify(cartItems)); }, [cartItems]);
 
       useEffect(() => {
-        fetch("https://ve.dolarapi.com/v1/dolares/oficial").then(r => r.json()).then(d => setBcvRate(d.promedio)).catch(() => setBcvRate(60));
+        fetch("https://ve.dolarapi.com/v1/dolares/oficial").then(r => r.json()).then(d => {
+          let tasa = parseFloat(d.promedio);
+          if (tasa > 100) tasa = tasa / 10; // Safety fallback 
+          setBcvRate(tasa.toFixed(2));
+        }).catch(() => setBcvRate(60.00));
+
         const fetchGlobal = async () => {
+          if (!supabaseClient) return;
           const { data } = await supabaseClient.from('store_settings').select('is_open, catalog_data').eq('id', 'divinee').single();
           if (data) {
             setIsStoreOpen(data.is_open);
@@ -2196,6 +1957,12 @@
       const updateQty = (id, qty) => setCartItems(prev => prev.map(p => p.id === id ? { ...p, qty } : p).filter(p => p.qty > 0));
       const wsPhone = localCatalog?.settings?.whatsapp || "584126835635";
 
+      // Hide Sections logic
+      const activePromos = promos.filter(p => !disabledItems.includes(p.id));
+      const activeBurgers = localBurgers.filter(b => !b.isPromo && !disabledItems.includes(b.id));
+      const activeDrinks = localDrinks.filter(d => !d.isPromo && !disabledItems.includes(d.id));
+      const activeDesserts = localDesserts.filter(d => !d.isPromo && !disabledItems.includes(d.id));
+
       return (
         <div className="min-h-screen relative z-[1]">
           <ScrollProgressBar />
@@ -2220,44 +1987,54 @@
           <main className="mx-auto max-w-7xl px-4 lg:px-8 pb-32 pt-32 lg:pt-36">
 
             {/* Hero */}
-            <HeroSection onExplore={() => scrollTo(promos.length > 0 ? 'promos' : 'burgers')} onTrack={() => setTrackingOpen(true)} bcvRate={bcvRate} />
+            <HeroSection onExplore={() => scrollTo(activePromos.length > 0 ? 'promos' : 'burgers')} onTrack={() => setTrackingOpen(true)} bcvRate={bcvRate} />
 
             {/* Promos */}
-            {promos.length > 0 && (
+            {activePromos.length > 0 && (
               <div ref={refs.promos} className="scroll-mt-32">
                 <SectionShell eyebrow="⭐ DESTACADO" title="Promociones Especiales" subtitle="Ofertas y novedades por tiempo limitado.">
-                  <ProductShowcase items={promos} badge="PROMO" onOpen={setActiveBurger} onAdd={item => handleInitialAdd(item, !!item.config)} disabledItems={disabledItems} promoOnly={true} />
+                  <ProductShowcase items={activePromos} badge="PROMO" onOpen={setActiveBurger} onAdd={item => handleInitialAdd(item, !!item.config)} disabledItems={disabledItems} promoOnly={true} />
                 </SectionShell>
               </div>
             )}
 
             {/* Burgers */}
-            <div ref={refs.burgers} className="scroll-mt-32">
-              <SectionShell eyebrow="COLECCIÓN SIGNATURE" title="Hamburguesas Gourmet" subtitle={`${BRAND_SLOGAN} Cada creación es una experiencia única.`}>
-                <ProductShowcase items={localBurgers.filter(b => !b.isPromo)} badge="VER 360°" onOpen={setActiveBurger} onAdd={item => handleInitialAdd(item, true)} disabledItems={disabledItems} />
-              </SectionShell>
-            </div>
+            {activeBurgers.length > 0 && (
+              <div ref={refs.burgers} className="scroll-mt-32">
+                <SectionShell eyebrow="COLECCIÓN SIGNATURE" title="Hamburguesas Gourmet" subtitle={`${BRAND_SLOGAN} Cada creación es una experiencia única.`}>
+                  <ProductShowcase items={activeBurgers} badge="VER 360°" onOpen={setActiveBurger} onAdd={item => handleInitialAdd(item, true)} disabledItems={disabledItems} />
+                </SectionShell>
+              </div>
+            )}
+
+            {/* Drinks */}
+            {activeDrinks.length > 0 && (
+              <>
+                <hr className="divider-gold my-8 lg:my-12" />
+                <div ref={refs.drinks} className="scroll-mt-32">
+                  <SectionShell eyebrow="REFRESHING" title="Bebidas" subtitle="El complemento perfecto para tu experiencia.">
+                    <ProductShowcase items={activeDrinks} badge="BEBIDA" onOpen={p => handleInitialAdd({ ...p, qty: 1 }, false)} onAdd={item => handleInitialAdd(item, false)} disabledItems={disabledItems} />
+                  </SectionShell>
+                </div>
+              </>
+            )}
+
+            {/* Desserts */}
+            {activeDesserts.length > 0 && (
+              <>
+                <hr className="divider-gold my-8 lg:my-12" />
+                <div ref={refs.desserts} className="scroll-mt-32">
+                  <SectionShell eyebrow="PATISSERIE" title="Postres Artesanales" subtitle="Selección corta y elegante de delicias dulces.">
+                    <ProductShowcase items={activeDesserts} badge="DULCE" onOpen={p => handleInitialAdd({ ...p, qty: 1 }, false)} onAdd={item => handleInitialAdd(item, false)} disabledItems={disabledItems} />
+                  </SectionShell>
+                </div>
+              </>
+            )}
 
             <hr className="divider-gold my-8 lg:my-12" />
 
             {/* About Section */}
             <AboutSection />
-
-            {/* Drinks */}
-            <div ref={refs.drinks} className="scroll-mt-32">
-              <SectionShell eyebrow="REFRESHING" title="Bebidas" subtitle="El complemento perfecto para tu experiencia.">
-                <ProductShowcase items={localDrinks.filter(d => !d.isPromo)} badge="BEBIDA" onOpen={p => handleInitialAdd({ ...p, qty: 1 }, false)} onAdd={item => handleInitialAdd(item, false)} disabledItems={disabledItems} />
-              </SectionShell>
-            </div>
-
-            {/* Desserts */}
-            <div ref={refs.desserts} className="scroll-mt-32">
-              <SectionShell eyebrow="PATISSERIE" title="Postres Artesanales" subtitle="Selección corta y elegante de delicias dulces.">
-                <ProductShowcase items={localDesserts.filter(d => !d.isPromo)} badge="DULCE" onOpen={p => handleInitialAdd({ ...p, qty: 1 }, false)} onAdd={item => handleInitialAdd(item, false)} disabledItems={disabledItems} />
-              </SectionShell>
-            </div>
-
-            <hr className="divider-gold my-8 lg:my-12" />
 
             {/* Testimonials */}
             <TestimonialsSection />
@@ -2280,10 +2057,15 @@
           {/* Footer */}
           <Footer whatsapp={wsPhone} />
 
-          {/* Floating Buttons */}
-          <div className="lg:hidden"><CartButton cartCount={cartCount} onClick={() => setCartOpen(true)} /></div>
+          {/* Floating Buttons Mobile (CORRECTED POSITIONS) */}
+          <div className="lg:hidden">
+            <button onClick={() => setCartOpen(true)} className="fixed z-40 bottom-4 right-4 rounded-2xl glass-gold px-4 py-3 shadow-glowStrong hover:brightness-110 transition-all duration-300 flex items-center gap-3">
+              <span className="text-gold">{Icons.cart}</span>
+              <span className="bg-gradient-to-br from-gold to-goldDark text-bg text-[10px] font-bold px-2 py-0.5 rounded-full">{cartCount}</span>
+            </button>
+          </div>
 
-          <a href={`https://wa.me/${wsPhone}?text=${encodeURIComponent('Hola Divinée, tengo una consulta...')}`} target="_blank" rel="noopener noreferrer" className="fixed z-40 floating-safe floating-safe-left rounded-2xl glass border border-[#25D366]/30 px-4 py-3 shadow-glow hover:bg-[#25D366]/10 transition-all duration-300 flex items-center gap-2">
+          <a href={`https://wa.me/${wsPhone}?text=${encodeURIComponent('Hola Divinée, tengo una consulta...')}`} target="_blank" rel="noopener noreferrer" className="fixed z-40 bottom-4 left-4 lg:bottom-8 lg:left-8 rounded-2xl glass border border-[#25D366]/30 px-4 py-3 shadow-glow hover:bg-[#25D366]/10 transition-all duration-300 flex items-center gap-2">
             <span className="text-xl">💬</span>
             <span className="text-[10px] tracking-[0.2em] text-[#25D366] font-semibold hidden sm:inline">AYUDA</span>
           </a>
