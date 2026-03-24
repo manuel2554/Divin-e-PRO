@@ -1032,7 +1032,7 @@
     // Modal de Upsell (Recomendación de Papas)
     // =========================
     function UpsellModal({ product, catalog, onAccept, onDecline }) {
-      const papaObj = catalog?.toppings?.find(t => t.id === 'papas-grandes') || { id: "papas-grandes", price: 1.50, name: "Papas Fritas Grandes" };
+      const papaObj = catalog?.toppings?.find(t => t.id === 'papas-grandes' || t.name.toLowerCase().includes('papas')) || { id: "papas-grandes", price: 1.00, name: "Servicio de Papas Grandes" };
       return (
         <motion.div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 px-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
           <motion.div initial={{ y: 20, scale: 0.9 }} animate={{ y: 0, scale: 1 }} className="bg-divineInk border border-divineGold/50 rounded-3xl p-6 w-full max-w-sm shadow-promoglow text-center relative overflow-hidden">
@@ -1421,7 +1421,7 @@
         </BottomSheet>
       );
     }
-        function AdminDashboard({ onClose, supabaseClient, localBurgers, localDesserts, localDrinks, localCatalog, onSaveInventory, onAddProduct }) {
+    function AdminDashboard({ onClose, supabaseClient, localBurgers, localDesserts, localDrinks, localCatalog, onSaveInventory, onAddProduct }) {
       const [orders, setOrders] = useState([]);
       const [disabledItems, setDisabledItems] = useState([]);
       const [loading, setLoading] = useState(true);
@@ -1560,7 +1560,7 @@
           try {
              finalImgUrl = await uploadImage(imgFile);
           } catch (e) {
-             alert("Error al subir imagen. Verifica que el bucket 'imagenes' sea público en Supabase.");
+             alert("Error al subir imagen. Verifica los permisos de Supabase.");
              setIsUploading(false);
              return;
           }
@@ -1623,7 +1623,7 @@
           try {
              finalImgUrl = await uploadImage(imgFile);
           } catch (e) {
-             alert("Error al subir imagen. Verifica que el bucket 'imagenes' sea público en Supabase.");
+             alert("Error al subir imagen. Verifica los permisos de Supabase.");
              setIsUploading(false);
              return;
           }
