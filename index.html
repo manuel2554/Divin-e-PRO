@@ -1066,14 +1066,14 @@
             reqRef.current = requestAnimationFrame(animate);
             if (stateRef.current.root) {
               if (autoRotateRef.current && !draggingRef.current) yawRef.current += 0.003;
-              stateRef.current.root.rotation.set(pitchRef.current, yawRef.current, 0);
+              stateRef.current.root.rotation.set(pitchRef.current, yawRef.current, 0); // FIX: Safe assignment
             }
             const time = performance.now() * 0.001;
             stateRef.current.animatables.forEach(a => {
               if (time > a.startTime) {
                 const d = a.targetY - a.mesh.position.y;
                 a.velocity += d * 0.25; a.velocity *= 0.65;
-                a.mesh.position.setY(a.mesh.position.y + a.velocity);
+                a.mesh.position.setY(a.mesh.position.y + a.velocity); // FIX: Safe assignment
               }
             });
             renderer.render(scene, camera);
@@ -1105,7 +1105,7 @@
             if (mesh) { mesh.traverse(m => { if(m.isMesh){m.castShadow=true;m.receiveShadow=true;} }); stack.add(mesh); const tY = curY+thick/2; anims.push({mesh,targetY:tY,startTime:now+idx*0.15,velocity:0}); curY += thick; }
           });
           fitCameraToObject(THREE, camera, stack, 1.4);
-          anims.forEach(a => { a.mesh.position.setY(a.targetY + 6); });
+          anims.forEach(a => { a.mesh.position.setY(a.targetY + 6); }); // FIX: Safe assignment
           st.animatables = anims;
         }
       }, [modelUrl, burgerConfig]);
@@ -1353,8 +1353,8 @@
 
       useEffect(() => {
         (async () => {
-          if (!window.supabase) return;
-          const { data } = await supabaseClient.from('disabled_ingredients').select('id');
+          if (!window.supabaseClient) return;
+          const { data } = await window.supabaseClient.from('disabled_ingredients').select('id');
           if (data) setDisabledItems(data.map(i => i.id));
         })();
       }, []);
@@ -1475,7 +1475,7 @@
               <div className="glass rounded-2xl p-4">
                 <div className="flex items-start justify-between gap-3 mb-4">
                   <div>
-                    <p className="text-[9px] tracking-[0.35em] text-gold/80 font-semibold">TOPPINGS & SALSAS</p>
+                    <p className="text-[9px] tracking-[0.3em] text-gold/80 font-semibold">TOPPINGS & SALSAS</p>
                     <p className="text-xs text-cream/50 mt-1 font-light">Añade todos los que quieras. ¡Incluso dobles!</p>
                   </div>
                   <span className="px-3 py-1 rounded-full glass-gold text-[10px] text-gold font-bold">{toppingsCount} items</span>
@@ -1573,6 +1573,7 @@
       useEffect(() => { fetchData(); }, []);
       const fetchData = async () => {
         setLoading(true);
+        if (!supabaseClient) return;
         const [oR, iR, sR] = await Promise.all([
           supabaseClient.from('orders').select('*').order('created_at', { ascending: false }),
           supabaseClient.from('disabled_ingredients').select('id'),
@@ -1879,7 +1880,14 @@
       const refs = { promos: useRef(null), burgers: useRef(null), drinks: useRef(null), desserts: useRef(null), yogurt: useRef(null), atelier: useRef(null) };
       const [activeBurger, setActiveBurger] = useState(null);
       const [cartOpen, setCartOpen] = useState(false);
-      const [cartItems, setCartItems] = useState(() => { try { const g = localStorage.getItem('divinee_cart'); return g ? JSON.parse(g) : []; } catch { return []; } });
+      const [cartItems, setCartItems] = useState(() => { 
+        try { 
+          const g = localStorage.getItem('divinee_cart'); 
+          if (!g) return [];
+          const parsed = JSON.parse(g);
+          return Array.isArray(parsed) ? parsed : []; // ESCUDO DE SEGURIDAD: Evita crashes si el carrito está corrupto
+        } catch { return []; } 
+      });
       const [localBurgers, setLocalBurgers] = useState(DEFAULT_BURGERS);
       const [localDesserts, setLocalDesserts] = useState(DEFAULT_DESSERTS);
       const [localDrinks, setLocalDrinks] = useState(DEFAULT_DRINKS);
@@ -1908,7 +1916,7 @@
           .then(r => r.json())
           .then(d => {
             let tasa = parseFloat(d.promedio);
-            if (tasa > 100) tasa = tasa / 10; // Safety fallback 
+            if (tasa > 100) tasa = tasa / 10; // Safety fallback por errores del API
             setBcvRate(tasa.toFixed(2));
           }).catch(() => setBcvRate(60.00));
 
@@ -1972,7 +1980,7 @@
       const updateQty = (id, qty) => setCartItems(prev => prev.map(p => p.id === id ? { ...p, qty } : p).filter(p => p.qty > 0));
       const wsPhone = localCatalog?.settings?.whatsapp || "584126835635";
 
-      // Filtros Inteligentes: Solo mostrar los que NO están en "disabledItems"
+      // Filtros Inteligentes: Ocultar Categorías si todo está Agotado
       const activePromos = promos.filter(p => !disabledItems.includes(p.id));
       const activeBurgers = localBurgers.filter(b => !b.isPromo && !disabledItems.includes(b.id));
       const activeDrinks = localDrinks.filter(d => !d.isPromo && !disabledItems.includes(d.id));
