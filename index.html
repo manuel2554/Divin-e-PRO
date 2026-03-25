@@ -10,6 +10,20 @@
   <meta property="og:image" content="https://i.imgur.com/uR1d5k7.png" />
   <meta property="og:type" content="website" />
 
+  <link rel="manifest" href="./manifest.json" />
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Error:', err));
+      });
+    }
+    // Atrapamos la invitación a instalar para usarla después en el carrito
+    window.deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      window.deferredPrompt = e;
+    });
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -1020,18 +1034,49 @@
               )}
 
               {step === 3 && (
-                <div className="mt-10 flex flex-col items-center text-center space-y-4"><div className="w-16 h-16 rounded-full border-2 border-divineGold text-divineGold flex items-center justify-center text-2xl">✓</div><h3 className="text-2xl font-semibold">¡Pedido Recibido!</h3><p className="text-sm text-divineCream/70">Estamos verificando tu pago para preparar tu orden.</p><div className="w-full mt-6 p-5 rounded-2xl border border-divineLine2 bg-black/30"><div className="text-xs tracking-[0.28em] text-divineCream/60 mb-2">CÓDIGO DE RASTREO</div><div className="text-3xl font-bold tracking-widest text-divineGold">{orderId}</div><p className="mt-3 text-xs text-divineCream/50">Con este código puedes revisar el estado de tu pedido en la página principal.</p></div><button className="mt-6 w-full btn-ghost" onClick={close}>VOLVER AL MENÚ</button></div>
+                <div className="mt-10 flex flex-col items-center text-center space-y-4">
+                  <div className="w-16 h-16 rounded-full border-2 border-divineGold text-divineGold flex items-center justify-center text-2xl">✓</div>
+                  <h3 className="text-2xl font-semibold">¡Pedido Recibido!</h3>
+                  <p className="text-sm text-divineCream/70">Estamos verificando tu pago para preparar tu orden.</p>
+                  <div className="w-full mt-6 p-5 rounded-2xl border border-divineLine2 bg-black/30">
+                    <div className="text-xs tracking-[0.28em] text-divineCream/60 mb-2">CÓDIGO DE RASTREO</div>
+                    <div className="text-3xl font-bold tracking-widest text-divineGold">{orderId}</div>
+                    <p className="mt-3 text-xs text-divineCream/50">Con este código puedes revisar el estado de tu pedido en la página principal.</p>
+                  </div>
+                  
+                  <button 
+                    onClick={() => {
+                      if (window.deferredPrompt) {
+                        window.deferredPrompt.prompt();
+                        window.deferredPrompt.userChoice.then((choiceResult) => {
+                          if (choiceResult.outcome === 'accepted') {
+                            console.log('El cliente instaló la App');
+                          }
+                          window.deferredPrompt = null;
+                        });
+                      } else {
+                        window.showToast('Tu navegador no soporta instalación directa o ya la tienes instalada.', '📱');
+                      }
+                    }} 
+                    className="mt-4 w-full bg-divineGold text-black py-4 rounded-xl font-bold tracking-widest flex items-center justify-center gap-2 shadow-glow hover:brightness-110 transition"
+                    type="button"
+                  >
+                    📱 INSTALAR APP DIVINÉE
+                  </button>
+
+                  <button className="mt-6 w-full btn-ghost" onClick={close}>VOLVER AL MENÚ</button>
+                </div>
               )}
             </div>
           </motion.aside>
         </motion.div>
       );
     }
-    
     // =========================
     // Modal de Upsell (Recomendación de Papas)
     // =========================
     function UpsellModal({ product, catalog, onAccept, onDecline }) {
+      // Busca Específicamente "papas grandes" para evitar chocar con las "papas hilo"
       const papaObj = catalog?.toppings?.find(t => 
         t.name.toLowerCase().includes('papas grandes') || 
         t.id === 'papas-grandes'
@@ -1425,7 +1470,8 @@
         </BottomSheet>
       );
     }
-        function AdminDashboard({ onClose, supabaseClient, localBurgers, localDesserts, localDrinks, localCatalog, onSaveInventory, onAddProduct }) {
+
+    function AdminDashboard({ onClose, supabaseClient, localBurgers, localDesserts, localDrinks, localCatalog, onSaveInventory, onAddProduct }) {
       const [orders, setOrders] = useState([]);
       const [disabledItems, setDisabledItems] = useState([]);
       const [loading, setLoading] = useState(true);
