@@ -1,0 +1,17 @@
+{
+  "name": "Divinée Gourmet Bar",
+  "short_name": "Divinée",
+  "description": "Exquisito. Divino. Divinée. Hamburguesas y postres de lujo.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#07070A",
+  "theme_color": "#07070A",
+  "icons": [
+    {
+      "src": "https://i.imgur.com/uR1d5k7.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
