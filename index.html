@@ -293,6 +293,7 @@
         zelleEmail: "tu_correo@zelle.com",
         binanceId: "123456789",
         binanceEmail: "tu_correo@binance.com",
+        drinkFlavors: "Regular / Original, Zero / Sin Azúcar, Limón, Naranja, Uva, Chinotto / Sprite, Otro (Especificar en nota)",
         deliveryZones: [
           { id: 'retiro', name: 'Retiro por el local', cost: 0.00 },
           { id: 'centro', name: 'Delivery: Pueblo Llano Centro', cost: 0.00 },
@@ -820,13 +821,9 @@
               <div className="text-xs tracking-[0.28em] text-divineGold mb-3">SABOR / VARIANTE</div>
               <select value={selectedFlavor} onChange={(e) => setSelectedFlavor(e.target.value)} className="w-full bg-black/60 border border-divineLine2 rounded-xl px-3 py-2 text-sm text-divineCream outline-none focus:border-divineGold transition">
                 <option value="" disabled>Selecciona el sabor...</option>
-                <option value="Regular / Original">Regular / Original</option>
-                <option value="Zero / Sin Azúcar">Zero / Sin Azúcar</option>
-                <option value="Limón">Limón</option>
-                <option value="Naranja">Naranja</option>
-                <option value="Uva">Uva</option>
-                <option value="Chinotto">Chinotto / Sprite</option>
-                <option value="Otro (Especificar en nota)">Otro (Especificar en nota del pedido)</option>
+                {(catalog?.settings?.drinkFlavors || "Regular / Original, Zero / Sin Azúcar, Limón, Naranja, Uva, Chinotto / Sprite, Otro (Especificar en nota)").split(',').map((f, i) => (
+                  <option key={i} value={f.trim()}>{f.trim()}</option>
+                ))}
               </select>
             </div>
           )}
@@ -1591,6 +1588,7 @@
         zelleEmail: localCatalog?.settings?.zelleEmail || "tu_correo@zelle.com",
         binanceId: localCatalog?.settings?.binanceId || "123456789",
         binanceEmail: localCatalog?.settings?.binanceEmail || "tu_correo@binance.com",
+        drinkFlavors: localCatalog?.settings?.drinkFlavors || "Regular / Original, Zero / Sin Azúcar, Limón, Naranja, Uva, Chinotto / Sprite, Otro (Especificar en nota)"
       });
 
       const [deliveryZonesConfig, setDeliveryZonesConfig] = useState(localCatalog?.settings?.deliveryZones || [
@@ -1989,10 +1987,10 @@
                 <div className="bg-divinePanel border border-[#741bd1]/50 rounded-2xl p-6 shadow-[0_0_15px_rgba(116,27,209,0.15)]">
                    <h3 className="text-sm tracking-[0.2em] text-[#b366ff] mb-4 font-bold border-b border-[#741bd1]/30 pb-2">🟣 PAGOS INTERNACIONALES</h3>
                    <div className="space-y-4">
-                     <div><label className="text-xs text-divineCream/70 mb-1 block">Correo Zelle</label><input type="email" value={settingsForm.zelleEmail} onChange={(e)=>setSettingsForm({...settingsForm, zelleEmail: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-[#741bd1] outline-none" /></div>
+                     <div><label className="text-xs text-divineCream/70 mb-1 block">Correo Zelle</label><div className="flex items-center gap-2"><input type="email" value={settingsForm.zelleEmail} onChange={(e)=>setSettingsForm({...settingsForm, zelleEmail: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-[#741bd1] outline-none" /></div></div>
                      <div className="grid grid-cols-2 gap-4 pt-2 border-t border-divineLine2/30 mt-2">
-                       <div><label className="text-xs text-divineCream/70 mb-1 block">Binance Pay ID</label><input type="text" value={settingsForm.binanceId} onChange={(e)=>setSettingsForm({...settingsForm, binanceId: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-[#fcd535] outline-none" /></div>
-                       <div><label className="text-xs text-divineCream/70 mb-1 block">Binance Email</label><input type="email" value={settingsForm.binanceEmail} onChange={(e)=>setSettingsForm({...settingsForm, binanceEmail: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-[#fcd535] outline-none" /></div>
+                       <div><label className="text-xs text-divineCream/70 mb-1 block">Binance Pay ID</label><div className="flex items-center gap-2"><input type="text" value={settingsForm.binanceId} onChange={(e)=>setSettingsForm({...settingsForm, binanceId: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-[#fcd535] outline-none" /></div></div>
+                       <div><label className="text-xs text-divineCream/70 mb-1 block">Binance Email</label><div className="flex items-center gap-2"><input type="email" value={settingsForm.binanceEmail} onChange={(e)=>setSettingsForm({...settingsForm, binanceEmail: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-[#fcd535] outline-none" /></div></div>
                      </div>
                    </div>
                 </div>
@@ -2002,9 +2000,17 @@
                    <div className="space-y-4">
                      <div><label className="text-xs text-divineCream/70 mb-1 block">Banco</label><input type="text" value={settingsForm.banco} onChange={(e)=>setSettingsForm({...settingsForm, banco: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none uppercase" /></div>
                      <div className="grid grid-cols-2 gap-4">
-                       <div><label className="text-xs text-divineCream/70 mb-1 block">Teléfono</label><input type="text" value={settingsForm.telefonoPago} onChange={(e)=>setSettingsForm({...settingsForm, telefonoPago: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
-                       <div><label className="text-xs text-divineCream/70 mb-1 block">Cédula o RIF</label><input type="text" value={settingsForm.cedulaPago} onChange={(e)=>setSettingsForm({...settingsForm, cedulaPago: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none uppercase" /></div>
+                       <div><label className="text-xs text-divineCream/70 mb-1 block">Teléfono</label><div className="flex items-center gap-2"><input type="text" value={settingsForm.telefonoPago} onChange={(e)=>setSettingsForm({...settingsForm, telefonoPago: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div></div>
+                       <div><label className="text-xs text-divineCream/70 mb-1 block">Cédula o RIF</label><div className="flex items-center gap-2"><input type="text" value={settingsForm.cedulaPago} onChange={(e)=>setSettingsForm({...settingsForm, cedulaPago: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none uppercase" /></div></div>
                      </div>
+                   </div>
+                </div>
+
+                <div className="bg-divinePanel border border-[#0088cc]/50 rounded-2xl p-6 shadow-[0_0_15px_rgba(0,136,204,0.15)]">
+                   <h3 className="text-sm tracking-[0.2em] text-[#0088cc] mb-4 font-bold border-b border-[#0088cc]/30 pb-2">🥤 SABORES DE BEBIDAS</h3>
+                   <p className="text-xs text-divineCream/50 mb-4">Separa cada sabor con una coma (,).</p>
+                   <div>
+                     <textarea rows="3" value={settingsForm.drinkFlavors || ""} onChange={(e)=>setSettingsForm({...settingsForm, drinkFlavors: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-[#0088cc] outline-none text-sm" placeholder="Ej: Cola, Naranja, Limón"></textarea>
                    </div>
                 </div>
 
