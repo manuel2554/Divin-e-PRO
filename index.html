@@ -472,29 +472,31 @@
     
     function ProductCard({ product, badge, onClick, onAdd, isDisabled, isPromoDesign }) {
       return (
-        <motion.div whileHover={!isDisabled ? { y: -6 } : {}} transition={{ type: "spring", stiffness: 260, damping: 22 }} className={`group overflow-hidden rounded-2xl border ${isDisabled ? 'border-red-500/30 bg-black/40' : (isPromoDesign ? 'border-divineGold/60 shadow-promoglow bg-divineGold/5' : 'border-divineLine bg-divineInk')} shadow-divine relative`}>
-          <div onClick={isDisabled ? undefined : onClick} className={`block w-full text-left ${isDisabled ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}>
-            <div className="relative aspect-[4/3] overflow-hidden card-premium">
+        <motion.div whileHover={!isDisabled ? { y: -6 } : {}} transition={{ type: "spring", stiffness: 260, damping: 22 }} className={`group overflow-hidden rounded-2xl border ${isDisabled ? 'border-red-500/30 bg-black/40' : (isPromoDesign ? 'border-divineGold/60 shadow-promoglow bg-divineGold/5' : 'border-divineLine bg-divineInk')} shadow-divine relative h-full`}>
+          <div onClick={isDisabled ? undefined : onClick} className={`flex flex-col h-full w-full text-left ${isDisabled ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}>
+            <div className="relative aspect-[4/3] sm:aspect-[4/3] overflow-hidden card-premium shrink-0">
               <img src={product.img} alt={product.name} className={`h-full w-full object-cover transition duration-700 ${isDisabled ? 'grayscale' : 'group-hover:scale-[1.08]'}`} loading="lazy" />
-              <div className={`absolute left-3 top-3 rounded-full border ${isPromoDesign ? 'border-divineGold/80 bg-divineGold text-[#0A1128]' : 'border-divineLine2 bg-[#060A17]/80 text-divineCream'} px-3 py-1.5 text-xs tracking-[0.2em] font-bold backdrop-blur`}>
-                {isPromoDesign ? '🌟 PROMO ESTRELLA' : badge}
+              <div className={`absolute left-2 sm:left-3 top-2 sm:top-3 rounded-full border ${isPromoDesign ? 'border-divineGold/80 bg-divineGold text-[#0A1128]' : 'border-divineLine2 bg-[#060A17]/80 text-divineCream'} px-2 sm:px-3 py-1 sm:py-1.5 text-[9px] sm:text-xs tracking-widest sm:tracking-[0.2em] font-bold backdrop-blur`}>
+                {isPromoDesign ? '🌟 PROMO' : badge}
               </div>
-              <div className="absolute right-3 top-3 rounded-full border border-divineLine2 bg-[#060A17]/80 px-3 py-1.5 text-sm tracking-[0.1em] text-divineGold backdrop-blur font-bold">{money(product.price)}</div>
+              <div className="absolute right-2 sm:right-3 top-2 sm:top-3 rounded-full border border-divineLine2 bg-[#060A17]/80 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm tracking-wide sm:tracking-[0.1em] text-divineGold backdrop-blur font-bold">{money(product.price)}</div>
               
               {isDisabled && (
                 <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center z-10">
-                  <span className="text-red-400 font-bold tracking-widest border-2 border-red-500/50 bg-black/90 px-6 py-3 rounded-xl transform -rotate-12 shadow-[0_0_15px_rgba(239,68,68,0.3)] text-lg">AGOTADO</span>
+                  <span className="text-red-400 font-bold tracking-widest border-2 border-red-500/50 bg-black/90 px-3 sm:px-6 py-1.5 sm:py-3 rounded-xl transform -rotate-12 shadow-[0_0_15px_rgba(239,68,68,0.3)] text-sm sm:text-lg">AGOTADO</span>
                 </div>
               )}
             </div>
-            <div className="p-5 relative z-0 flex flex-col h-full">
-              <div className="text-lg font-bold">{product.name}</div>
-              <div className="mt-2 text-sm text-divineCream/80 line-clamp-2">{product.description}</div>
-              <div className="mt-5 flex-1 flex items-end">
-                <button disabled={isDisabled} onClick={(e) => { e.stopPropagation(); onAdd?.(); }} className={`w-full rounded-xl border px-4 py-3 text-sm font-bold tracking-[0.15em] transition flex items-center justify-center gap-2 ${isDisabled ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'btn-primary shadow-glow'}`} type="button">
+            <div className="p-3 sm:p-5 flex flex-col flex-1 justify-between bg-divineInk/50">
+              <div>
+                <div className="text-sm sm:text-lg font-bold leading-tight">{product.name}</div>
+                <div className="mt-1.5 sm:mt-2 text-[11px] sm:text-sm text-divineCream/80 line-clamp-2 leading-snug">{product.description}</div>
+              </div>
+              <div className="mt-3 sm:mt-5">
+                <button disabled={isDisabled} onClick={(e) => { e.stopPropagation(); onAdd?.(); }} className={`w-full rounded-xl border px-2 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-sm font-bold tracking-wider sm:tracking-[0.15em] transition flex items-center justify-center gap-1 sm:gap-2 ${isDisabled ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'btn-primary shadow-glow'}`} type="button">
                   {isDisabled ? 'AGOTADO' : (
                     <>
-                      <span>➕</span> AGREGAR AL CARRITO
+                      <span>➕</span> <span className="hidden sm:inline">AGREGAR AL CARRITO</span><span className="sm:hidden">AGREGAR</span>
                     </>
                   )}
                 </button>
@@ -507,7 +509,7 @@
 
     function ProductShowcase({ items, badge, onOpen, onAdd, disabledItems = [], promoOnly = false, forceModal = false }) {
       return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
           {items.map((p) => {
             const isOff = disabledItems.includes(p.id);
             const desc = p.description ? p.description.toLowerCase() : "";
