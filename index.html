@@ -1629,10 +1629,15 @@
         binanceId: localCatalog?.settings?.binanceId || "123456789",
         binanceEmail: localCatalog?.settings?.binanceEmail || "tu_correo@binance.com",
         drinkFlavors: localCatalog?.settings?.drinkFlavors || "Regular / Original, Zero / Sin Azúcar, Limón, Naranja, Uva, Chinotto / Sprite, Otro (Especificar en nota)",
-        // Nuevos estados de Lealtad
         loyaltyRate: localCatalog?.settings?.loyalty?.rate || 10,
         loyaltyRoulette: (localCatalog?.settings?.loyalty?.roulette || [10, 20, 50, 100, 200, 500]).join(', ')
       });
+
+      const [deliveryZonesConfig, setDeliveryZonesConfig] = useState(localCatalog?.settings?.deliveryZones || [
+        { id: 'retiro', name: 'Retiro por el local', cost: 0.00 },
+        { id: 'centro', name: 'Delivery: Pueblo Llano Centro', cost: 0.00 },
+        { id: 'afueras', name: 'Delivery: Zonas alejadas', cost: 1.50 }
+      ]);
 
       const [loyaltyCatalog, setLoyaltyCatalog] = useState(localCatalog?.settings?.loyalty?.catalog || [
         { id: "r-papas", name: "🍟 Papas Fritas Extra", cost: 200, type: "side", price: 0 },
@@ -1719,7 +1724,6 @@
         setLoyaltyCatalog(loyaltyCatalog.filter(z => z.id !== id));
       };
 
-      const openEditModal = (item, type, catIdx = null, groupName = null) => {
       const openEditModal = (item, type, catIdx = null, groupName = null) => {
         setItemToEdit({ id: item.id, type, catIdx, groupName });
         setEditForm({ name: item.name, description: item.description || '', price: item.price, cost: item.cost || 0, ingredients: item.ingredientIds || [], isPromo: item.isPromo || false, showUpsell: item.showUpsell !== false, img: item.img || '', menuSection: item.menuSection || 'clasica', flavors: item.flavors || '' });
@@ -1835,7 +1839,7 @@
         
         onAddProduct(finalAddForm);
         setShowAddModal(false);
-        setAddForm({ type: 'burger', group: 'buns', name: '', price: '', cost: '', description: '', img: '', ingredients: [], isPromo: false, showUpsell: true });
+        setAddForm({ type: 'burger', group: 'buns', name: '', price: '', cost: '', description: '', img: '', ingredients: [], isPromo: false, showUpsell: true, menuSection: 'clasica', flavors: '' });
         setImgFile(null);
         setIsUploading(false);
       };
@@ -2112,10 +2116,6 @@
               </div>
              ) : tab === 'inventory' ? (
               <div className="space-y-8 relative">
-                <button onClick={saveSettingsForm} className="btn-primary w-full py-4 text-sm font-bold tracking-widest shadow-glow">GUARDAR TODOS LOS AJUSTES</button>
-              </div>
-             ) : tab === 'inventory' ? (
-              <div className="space-y-8 relative">
 
                 {/* Modal para Editar o Eliminar */}
                 {itemToEdit && (
@@ -2128,27 +2128,29 @@
                         
                         {(itemToEdit.type === 'burger' || itemToEdit.type === 'dessert' || itemToEdit.type === 'drink') && (
                           <>
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className={`grid gap-2 ${itemToEdit.type === 'burger' ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2'}`}>
                               <label className="flex items-center gap-2 cursor-pointer bg-divineGold/10 p-3 rounded-xl border border-divineGold/30">
                                 <input type="checkbox" checked={editForm.isPromo} onChange={(e)=>setEditForm({...editForm, isPromo: e.target.checked})} className="w-4 h-4 accent-divineGold" />
                                 <span className="text-[10px] font-bold text-divineGold uppercase">🌟 Promo Especial</span>
                               </label>
                               {itemToEdit.type === 'burger' && (
-                                <label className="flex items-center gap-2 cursor-pointer bg-[#25D366]/10 p-3 rounded-xl border border-[#25D366]/30">
-                                  <input type="checkbox" checked={editForm.showUpsell} onChange={(e)=>setEditForm({...editForm, showUpsell: e.target.checked})} className="w-4 h-4 accent-[#25D366]" />
-                                  <span className="text-[10px] font-bold text-[#25D366] uppercase">🍟 Sugerir Papas</span>
-                                </label>
+                                <>
+                                  <label className="flex items-center gap-2 cursor-pointer bg-[#25D366]/10 p-3 rounded-xl border border-[#25D366]/30">
+                                    <input type="checkbox" checked={editForm.showUpsell} onChange={(e)=>setEditForm({...editForm, showUpsell: e.target.checked})} className="w-4 h-4 accent-[#25D366]" />
+                                    <span className="text-[10px] font-bold text-[#25D366] uppercase">🍟 Sugerir Papas</span>
+                                  </label>
+                                  <label className="flex items-center gap-2 cursor-pointer bg-purple-500/10 p-3 rounded-xl border border-purple-500/30">
+                                    <input type="checkbox" checked={editForm.menuSection === 'premium'} onChange={(e)=>setEditForm({...editForm, menuSection: e.target.checked ? 'premium' : 'clasica'})} className="w-4 h-4 accent-purple-500" />
+                                    <span className="text-[10px] font-bold text-purple-400 uppercase">🔥 ¡DIVINAS!</span>
+                                  </label>
+                                </>
                               )}
                             </div>
                             <div><label className="text-xs text-divineCream/70 mb-1 block">Descripción</label><textarea rows="2" value={editForm.description} onChange={(e)=>setEditForm({...editForm, description: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
-                            {itemToEdit.type === 'burger' && (
-                               <div><label className="text-xs text-divineCream/70 mb-1 block">Categoría de Hamburguesa</label><select value={editForm.menuSection} onChange={(e)=>setEditForm({...editForm, menuSection: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none"><option value="clasica">Sencillas / Clásicas</option><option value="premium">Mixtas / Potentes</option></select></div>
-                            )}
                             {itemToEdit.type === 'drink' && (
                                <div><label className="text-xs text-divineCream/70 mb-1 block">Sabores disponibles (separados por coma)</label><input type="text" value={editForm.flavors} onChange={(e)=>setEditForm({...editForm, flavors: e.target.value})} placeholder="Ej: Fresa, Limón, Cola" className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
                             )}
                             
-                            {/* NUEVO: Selector de imagen o carga directa */}
                             <div>
                                <label className="text-xs text-divineCream/70 mb-1 block">Imagen del Producto</label>
                                <input type="file" accept="image/*" onChange={(e) => setImgFile(e.target.files[0])} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white outline-none file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:bg-divineGold file:text-black hover:file:bg-divineGold2 cursor-pointer" />
@@ -2158,7 +2160,6 @@
                           </>
                         )}
 
-                        {/* Selector de ingredientes para Hamburguesas */}
                         {itemToEdit.type === 'burger' && (
                           <div>
                             <div className="flex justify-between items-center mb-1">
@@ -2216,21 +2217,26 @@
                         <div><label className="text-xs text-divineCream/70 mb-1 block">Nombre</label><input type="text" value={addForm.name} onChange={(e) => setAddForm({...addForm, name: e.target.value})} placeholder="Ej: Triple Bacon" className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
                         
                         {(addForm.type === 'burger' || addForm.type === 'dessert' || addForm.type === 'drink') && (
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className={`grid gap-2 ${addForm.type === 'burger' ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2'}`}>
                             <label className="flex items-center gap-2 cursor-pointer bg-divineGold/10 p-3 rounded-xl border border-divineGold/30">
                               <input type="checkbox" checked={addForm.isPromo} onChange={(e)=>setAddForm({...addForm, isPromo: e.target.checked})} className="w-4 h-4 accent-divineGold" />
                               <span className="text-[10px] font-bold text-divineGold uppercase">🌟 Promo Especial</span>
                             </label>
                             {addForm.type === 'burger' && (
-                              <label className="flex items-center gap-2 cursor-pointer bg-[#25D366]/10 p-3 rounded-xl border border-[#25D366]/30">
-                                <input type="checkbox" checked={addForm.showUpsell} onChange={(e)=>setAddForm({...addForm, showUpsell: e.target.checked})} className="w-4 h-4 accent-[#25D366]" />
-                                <span className="text-[10px] font-bold text-[#25D366] uppercase">🍟 Sugerir Papas</span>
-                              </label>
+                              <>
+                                <label className="flex items-center gap-2 cursor-pointer bg-[#25D366]/10 p-3 rounded-xl border border-[#25D366]/30">
+                                  <input type="checkbox" checked={addForm.showUpsell} onChange={(e)=>setAddForm({...addForm, showUpsell: e.target.checked})} className="w-4 h-4 accent-[#25D366]" />
+                                  <span className="text-[10px] font-bold text-[#25D366] uppercase">🍟 Sugerir Papas</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer bg-purple-500/10 p-3 rounded-xl border border-purple-500/30">
+                                  <input type="checkbox" checked={addForm.menuSection === 'premium'} onChange={(e)=>setAddForm({...addForm, menuSection: e.target.checked ? 'premium' : 'clasica'})} className="w-4 h-4 accent-purple-500" />
+                                  <span className="text-[10px] font-bold text-purple-400 uppercase">🔥 ¡DIVINAS!</span>
+                                </label>
+                              </>
                             )}
                           </div>
                         )}
 
-                        {/* Selector de ingredientes para nuevas Hamburguesas */}
                         {addForm.type === 'burger' && (
                           <div>
                             <div className="flex justify-between items-center mb-1">
@@ -2248,9 +2254,6 @@
                         {(addForm.type === 'burger' || addForm.type === 'dessert' || addForm.type === 'drink') && (
                           <motion.div initial={{opacity:0}} animate={{opacity:1}} className="space-y-4">
                             <div><label className="text-xs text-divineCream/70 mb-1 block">Descripción (Opcional)</label><textarea value={addForm.description} onChange={(e) => setAddForm({...addForm, description: e.target.value})} rows="2" className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none"></textarea></div>
-                            {addForm.type === 'burger' && (
-                               <div><label className="text-xs text-divineCream/70 mb-1 block">Categoría de Hamburguesa</label><select value={addForm.menuSection} onChange={(e)=>setAddForm({...addForm, menuSection: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none"><option value="clasica">Sencillas / Clásicas</option><option value="premium">Mixtas / Potentes</option></select></div>
-                            )}
                             {addForm.type === 'drink' && (
                                <div><label className="text-xs text-divineCream/70 mb-1 block">Sabores disponibles (separados por coma)</label><input type="text" value={addForm.flavors} onChange={(e)=>setAddForm({...addForm, flavors: e.target.value})} placeholder="Ej: Fresa, Limón, Cola" className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
                             )}
