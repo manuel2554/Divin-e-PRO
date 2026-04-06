@@ -2257,6 +2257,58 @@
     }
 
     // =========================
+    // Tutorial Rápido para Nuevos Clientes
+    // =========================
+    function TutorialModal() {
+      const [isOpen, setIsOpen] = useState(false);
+
+      useEffect(() => {
+        const onOpen = () => setIsOpen(true);
+        window.addEventListener('open-tutorial', onOpen);
+        // Si quieres que se abra automáticamente la primera vez que entran, puedes descomentar la siguiente línea:
+        // if (!localStorage.getItem('divinee_tutorial_seen')) { setIsOpen(true); localStorage.setItem('divinee_tutorial_seen', 'true'); }
+        return () => window.removeEventListener('open-tutorial', onOpen);
+      }, []);
+
+      if (!isOpen) return null;
+
+      return (
+        <BottomSheet title="GUÍA RÁPIDA" subtitle="¿Cómo hago mi pedido?" onClose={() => setIsOpen(false)}>
+          <div className="space-y-6 text-divineCream">
+            
+            <div className="flex gap-4 items-start">
+              <div className="w-10 h-10 rounded-full bg-divineGold text-[#0A1128] font-black text-xl flex items-center justify-center shrink-0">1</div>
+              <div>
+                <h4 className="font-bold text-lg text-divineGold">Elige tus productos</h4>
+                <p className="text-sm mt-1 text-divineCream/80 leading-relaxed">Toca cualquier hamburguesa, bebida o postre. Si es una hamburguesa mixta o un refresco, te pediremos que elijas el sabor o las carnes antes de agregarlo al carrito.</p>
+              </div>
+            </div>
+
+            <div className="flex gap-4 items-start">
+              <div className="w-10 h-10 rounded-full bg-divineGold text-[#0A1128] font-black text-xl flex items-center justify-center shrink-0">2</div>
+              <div>
+                <h4 className="font-bold text-lg text-divineGold">Abre el Carrito</h4>
+                <p className="text-sm mt-1 text-divineCream/80 leading-relaxed">Cuando estés listo, toca el botón gigante en la parte de abajo que dice "VER MI PEDIDO". Ahí verás el total exacto.</p>
+              </div>
+            </div>
+
+            <div className="flex gap-4 items-start">
+              <div className="w-10 h-10 rounded-full bg-divineGold text-[#0A1128] font-black text-xl flex items-center justify-center shrink-0">3</div>
+              <div>
+                <h4 className="font-bold text-lg text-divineGold">Ingresa tus datos y Paga</h4>
+                <p className="text-sm mt-1 text-divineCream/80 leading-relaxed">Te pediremos tu nombre, a dónde enviarlo (o si lo retiras en el local) y cómo quieres pagar (Pago Móvil, Zelle o Binance). ¡Copia nuestros datos, haz el pago, adjunta el capture y listo!</p>
+              </div>
+            </div>
+
+            <div className="bg-[#060A17] p-5 rounded-2xl border-2 border-divineLine2 text-center mt-4">
+               <p className="text-sm font-bold text-divineCream/90 mb-3">Si te equivocas o necesitas ayuda, el botón de "SOPORTE" abajo a la izquierda te comunica directo con nosotros.</p>
+               <button onClick={() => setIsOpen(false)} className="btn-primary w-full py-4 text-sm font-bold shadow-glow">¡ENTENDIDO, A PEDIR!</button>
+            </div>
+          </div>
+        </BottomSheet>
+      );
+    }
+    // =========================
     // Pantalla de Carga de Lujo (Preloader)
     // =========================
     function Preloader({ onComplete }) {
@@ -2483,7 +2535,7 @@
                   <p className="mt-4 max-w-2xl text-base text-divineCream/80 md:text-lg font-medium">Explora el menú y arma tu burger con un configurador premium.</p>
                   <div className="mt-8 flex flex-col sm:flex-row flex-wrap gap-4">
                     <button className="btn-primary w-full sm:w-auto py-4 px-8 text-sm" onClick={() => scrollTo(promos.length > 0 ? "promos" : "burgers")} type="button">📜 EXPLORAR MENÚ</button>
-                    <button className="btn-ghost w-full sm:w-auto py-4 px-8 text-sm" onClick={() => setTrackingModalOpen(true)} type="button">📍 RASTREAR PEDIDO</button>
+                    <button className="btn-ghost w-full sm:w-auto py-4 px-8 text-sm" onClick={() => window.dispatchEvent(new Event('open-tutorial'))} type="button">❓ ¿CÓMO PEDIR?</button>
                   </div>
                 </div>
               </div>
@@ -2513,6 +2565,9 @@
           <AnimatePresence>{cartOpen && <CartDrawer items={cartItems} total={cartTotal} bcvRate={bcvRate} catalog={localCatalog} onClose={() => setCartOpen(false)} onQty={updateQty} onClearCart={() => setCartItems([])} supabaseClient={supabaseClient} />}</AnimatePresence>
           <AnimatePresence>{!!activeBurger && <ProductModal product={activeBurger} catalog={localCatalog} onClose={() => setActiveBurger(null)} onAdd={(itemWithMeta) => handleInitialAddToCart(itemWithMeta, true)} />}</AnimatePresence>
           <AnimatePresence>{trackingModalOpen && <TrackingModal onClose={() => setTrackingModalOpen(false)} supabaseClient={supabaseClient} />}</AnimatePresence>
+          
+          <TutorialModal />
+
           <AnimatePresence>
             {adminModalOpen && !isAdminLogged && <AdminLogin onLogin={() => setIsAdminLogged(true)} onClose={() => setAdminModalOpen(false)} />}
             {adminModalOpen && isAdminLogged && <AdminDashboard supabaseClient={supabaseClient} onClose={() => setAdminModalOpen(false)} localBurgers={localBurgers} localDesserts={localDesserts} localDrinks={localDrinks} localCatalog={localCatalog} onSaveInventory={handleSaveInventory} onAddProduct={handleAddNewProduct} />}
