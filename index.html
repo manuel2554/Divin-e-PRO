@@ -762,7 +762,11 @@
     }
 
     function ProductModal({ product, catalog, onClose, onAdd }) {
-      const isMobile = useIsMobile(); useLockBodyScroll(true);
+      const isMobile = useIsMobile(); 
+      useLockBodyScroll(true);
+      const close = useHistoryClose(true, onClose); 
+      useEscape(close, true);
+      
       const viewer = <BurgerViewer3D heightClass={isMobile ? "h-[260px]" : "h-[360px] lg:h-[520px]"} modelUrl={product.modelUrl} burgerConfig={product.config} showUI={true} />;
       
       const desc = product.description ? product.description.toLowerCase() : "";
@@ -775,9 +779,7 @@
       const [selectedMeats, setSelectedMeats] = useState(Array(requiredMeats).fill(""));
       
       const isDrink = product.flavors || desc.includes('bebida') || name.includes('coca') || name.includes('pepsi') || name.includes('refresco');
-          const [selectedFlavor, setSelectedFlavor] = useState("");
-
-      const close = useHistoryClose(true, onClose); useEscape(close, true);
+      const [selectedFlavor, setSelectedFlavor] = useState("");
 
       const handleAdd = () => {
         if (requiredMeats > 0 && selectedMeats.some(m => !m)) {
@@ -844,7 +846,7 @@
           </BottomSheet>
         );
       }
-      const close = useHistoryClose(true, onClose); useEscape(close, true);
+      
       return (
         <motion.div className="fixed inset-0 z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} aria-modal="true" role="dialog">
           <div className="absolute inset-0 bg-[#0A1128]/80 backdrop-blur-sm" onClick={close}></div>
