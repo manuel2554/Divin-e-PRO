@@ -1222,6 +1222,23 @@
     // =========================
     // Panel de Administrador (Con Configuración General y Ajustes)
     // =========================
+    // =========================
+    // Yogurt Coming Soon
+    // =========================
+    function YogurtComingSoonCard() {
+      return (
+        <div className="rounded-3xl border-2 border-divineLine2 bg-[#060A17] p-6 md:p-8 shadow-divine">
+          <div className="text-xs font-bold tracking-[0.3em] text-divineGold/90 mb-2">GREEK YOGURT</div>
+          <div className="text-3xl md:text-4xl font-black text-divineCream">¡MUY PRONTO!</div>
+          <p className="mt-4 text-base text-divineCream/80 font-medium">
+            Estamos preparando una experiencia divina para ti.
+          </p>
+          <div className="mt-6 inline-flex items-center gap-3 rounded-xl border-2 border-divineLine2/50 bg-black/40 px-5 py-3 text-xs font-bold tracking-[0.2em] text-divineCream/70">
+            <span className="text-red-400">🔴</span> YOGURT DE MÁQUINA • NO DISPONIBLE
+          </div>
+        </div>
+      );
+    }
     function AdminLogin({ onLogin, onClose }) {
       const [pin, setPin] = useState("");
       const handleLogin = () => {
