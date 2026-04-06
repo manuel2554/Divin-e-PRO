@@ -994,21 +994,21 @@
           setLoading(false); return;
         }
 
-        // --- SISTEMA DE LEALTAD: SUMAR DIVI-TOKENS DINÁMICAMENTE ---
+        // --- SISTEMA DE LEALTAD: DESCONTAR INVENTARIO USADO AL FINALIZAR ---
         try {
-          const dinamicRate = catalog?.settings?.loyalty?.rate || 10;
-          const earnedTokens = Math.floor(finalTotal * dinamicRate);
-          const { data: existingClient } = await supabaseClient.from('clientes').select('tokens').eq('telefono', formData.phone).single();
-          
-          if (existingClient) {
-            await supabaseClient.from('clientes').update({ tokens: existingClient.tokens + earnedTokens, nombre: formData.name }).eq('telefono', formData.phone);
-          } else {
-            await supabaseClient.from('clientes').insert([{ telefono: formData.phone, nombre: formData.name, tokens: earnedTokens }]);
+          const usedRewards = items.filter(item => item.isReward).map(item => item.instanceId);
+          if (usedRewards.length > 0) {
+             const cleanPhone = formData.phone.replace(/\D/g, '');
+             const { data: client } = await supabaseClient.from('clientes').select('inventario').eq('telefono', cleanPhone).single();
+             if (client && client.inventario) {
+                const newInv = client.inventario.filter(i => !usedRewards.includes(i.instanceId));
+                await supabaseClient.from('clientes').update({ inventario: newInv }).eq('telefono', cleanPhone);
+             }
           }
         } catch (e) {
-          console.log("Error silencioso en tokens", e);
+          console.log("Error silencioso en inventario", e);
         }
-        // ---------------------------------------------
+        // --------------------------------------------------------------------
 
         let orderText = `🍔 *NUEVO PEDIDO* ${newOrderId}\n\n👤 *Cliente:* ${formData.name}\n📞 *Teléfono:* ${formData.phone}\n📍 *Dirección:* ${formData.address}\n🛵 *Método:* ${selectedZone.name}\n`;
         if(formData.notes) orderText += `📝 *Nota:* ${formData.notes}\n`;
@@ -1667,8 +1667,30 @@
       };
 
       const updateStatus = async (id, newStatus) => {
+        const order = orders.find(o => o.id === id);
+        
+        // Otorgar Tokens SOLO si se marca como Entregado y no se han dado antes
+        if (newStatus === 'Entregado' && order && !order.tokens_otorgados) {
+           const dinamicRate = localCatalog?.settings?.loyalty?.rate || 10;
+           const earnedTokens = Math.floor(order.total_usd * dinamicRate);
+           const cleanPhone = order.phone.replace(/\D/g, '');
+           
+           if (cleanPhone.length >= 10) {
+              const { data: existingClient } = await supabaseClient.from('clientes').select('tokens').eq('telefono', cleanPhone).single();
+              if (existingClient) {
+                 await supabaseClient.from('clientes').update({ tokens: existingClient.tokens + earnedTokens }).eq('telefono', cleanPhone);
+              } else {
+                 await supabaseClient.from('clientes').insert([{ telefono: cleanPhone, nombre: order.customer_name, tokens: earnedTokens }]);
+              }
+              await supabaseClient.from('orders').update({ tokens_otorgados: true }).eq('id', id);
+              window.showToast(`+${earnedTokens} Tokens enviados al cliente`, "✅");
+           }
+        }
+
         const { error } = await supabaseClient.from('orders').update({ status: newStatus }).eq('id', id);
-        if (!error) setOrders(orders.map(o => o.id === id ? { ...o, status: newStatus } : o));
+        if (!error) {
+           setOrders(orders.map(o => o.id === id ? { ...o, status: newStatus, tokens_otorgados: newStatus === 'Entregado' ? true : o.tokens_otorgados } : o));
+        }
       };
 
       const toggleIngredient = async (id, isCurrentlyDisabled) => {
@@ -2336,7 +2358,7 @@
     // =========================
     // Sistema de Lealtad VIP (Ruleta Animada, Inventario y Canjes)
     // =========================
-    function RewardsModal({ supabaseClient, catalog, onAddToCart }) {
+    function RewardsModal({ supabaseClient, catalog, cartItems, onAddToCart }) {
       const [isOpen, setIsOpen] = useState(false);
       const [step, setStep] = useState('login'); 
       const [phone, setPhone] = useState('');
@@ -2439,16 +2461,24 @@
       };
 
       const handleUseReward = async (item) => {
-        // Enviar al carrito principal
-        onAddToCart({ ...item, name: `[PREMIO] ${item.name}`, price: 0 });
+        let discountValue = 0;
+        // Magia para Descuentos: Si el nombre dice "Descuento 5" o "Descuento $10", lo detecta y lo vuelve negativo.
+        if (item.name.toUpperCase().includes('DESCUENTO')) {
+           const match = item.name.match(/\d+/);
+           if (match) discountValue = -Number(match[0]);
+        }
+
+        onAddToCart({ 
+          ...item, 
+          id: item.instanceId, 
+          name: `🎁 ${item.name}`, 
+          price: discountValue, 
+          isReward: true,
+          instanceId: item.instanceId
+        });
         
-        // Descontar del inventario
-        setLoading(true);
-        const newInv = clientData.inventario.filter(i => i.instanceId !== item.instanceId);
-        await supabaseClient.from('clientes').update({inventario: newInv}).eq('telefono', clientData.telefono);
-        setClientData({...clientData, inventario: newInv});
-        setIsOpen(false); // Cerramos el modal para que vaya al carrito
-        setLoading(false);
+        setIsOpen(false);
+        window.showToast("Añadido al carrito. No se descontará hasta pagar.", "🛒");
       };
 
       if (!isOpen) return null;
@@ -2485,7 +2515,7 @@
                 <div className="bg-[#0A1128] border border-[#25D366]/40 rounded-3xl p-5 shadow-[0_0_15px_rgba(37,211,102,0.15)]">
                   <h4 className="text-xs font-bold tracking-[0.2em] text-[#25D366] mb-3 uppercase">Tu Inventario (Listos para usar)</h4>
                   <div className="space-y-2">
-                    {clientData.inventario.map((item, idx) => (
+                    {clientData.inventario.filter(item => !(cartItems || []).some(c => c.instanceId === item.instanceId)).map((item, idx) => (
                       <div key={idx} className="flex items-center justify-between bg-black/50 border border-divineLine2 rounded-xl p-3">
                         <span className="text-sm font-bold text-white">{item.name}</span>
                         <button onClick={() => handleUseReward(item)} disabled={loading} className="text-[10px] font-black bg-[#25D366] text-[#0A1128] px-4 py-2 rounded-lg hover:brightness-110 transition shadow-glow">USAR AHORA</button>
@@ -2776,14 +2806,16 @@
 
       function scrollTo(key) { refs[key]?.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }
       
-      // Añadir al carrito modificado con Upsell
       function handleInitialAddToCart(item, isBurger = true) {
         if (!isStoreOpen) { window.showToast("CERRADO POR HOY 🚫", '🚫'); return; }
         if (disabledItems.includes(item.id)) { window.showToast("Este producto está agotado 🚫", '🚫'); return; }
 
         if (isBurger && item.showUpsell !== false) {
-          setPendingItem(item);
-          setShowUpsell(true);
+          // Retraso para evitar el colapso entre cerrar ventana de producto y abrir upsell
+          setTimeout(() => {
+            setPendingItem(item);
+            setShowUpsell(true);
+          }, 350);
         } else {
           addToCart(item);
         }
@@ -2890,7 +2922,7 @@
           <AnimatePresence>{trackingModalOpen && <TrackingModal onClose={() => setTrackingModalOpen(false)} supabaseClient={supabaseClient} />}</AnimatePresence>
           
           <TutorialModal />
-          <RewardsModal supabaseClient={supabaseClient} catalog={localCatalog} onAddToCart={(item) => handleInitialAddToCart(item, false)} />
+          <RewardsModal supabaseClient={supabaseClient} catalog={localCatalog} cartItems={cartItems} onAddToCart={(item) => handleInitialAddToCart(item, false)} />
 
           <AnimatePresence>
             {adminModalOpen && !isAdminLogged && <AdminLogin onLogin={() => setIsAdminLogged(true)} onClose={() => setAdminModalOpen(false)} />}
