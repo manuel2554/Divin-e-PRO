@@ -994,9 +994,10 @@
           setLoading(false); return;
         }
 
-        // --- SISTEMA DE LEALTAD: SUMAR DIVI-TOKENS ---
+        // --- SISTEMA DE LEALTAD: SUMAR DIVI-TOKENS DINÁMICAMENTE ---
         try {
-          const earnedTokens = Math.floor(finalTotal * 10); // 10 tokens por cada $1 gastado
+          const dinamicRate = catalog?.settings?.loyalty?.rate || 10;
+          const earnedTokens = Math.floor(finalTotal * dinamicRate);
           const { data: existingClient } = await supabaseClient.from('clientes').select('tokens').eq('telefono', formData.phone).single();
           
           if (existingClient) {
@@ -1616,7 +1617,7 @@
       const [imgFile, setImgFile] = useState(null);
       const [isUploading, setIsUploading] = useState(false);
 
-      // ESTADO DE AJUSTES GENERALES (Zonas y Pagos) - (Sin tarifa de empaques)
+      // ESTADO DE AJUSTES GENERALES Y LEALTAD
       const [settingsForm, setSettingsForm] = useState({ 
         whatsapp: localCatalog?.settings?.whatsapp || "584126835635",
         telegramToken: localCatalog?.settings?.telegramToken || "8566482559:AAEKenkBkriNlZAjlyIGBWWzGDTB3sFzyCA",
@@ -1627,13 +1628,16 @@
         zelleEmail: localCatalog?.settings?.zelleEmail || "tu_correo@zelle.com",
         binanceId: localCatalog?.settings?.binanceId || "123456789",
         binanceEmail: localCatalog?.settings?.binanceEmail || "tu_correo@binance.com",
-        drinkFlavors: localCatalog?.settings?.drinkFlavors || "Regular / Original, Zero / Sin Azúcar, Limón, Naranja, Uva, Chinotto / Sprite, Otro (Especificar en nota)"
+        drinkFlavors: localCatalog?.settings?.drinkFlavors || "Regular / Original, Zero / Sin Azúcar, Limón, Naranja, Uva, Chinotto / Sprite, Otro (Especificar en nota)",
+        // Nuevos estados de Lealtad
+        loyaltyRate: localCatalog?.settings?.loyalty?.rate || 10,
+        loyaltyRoulette: (localCatalog?.settings?.loyalty?.roulette || [10, 20, 50, 100, 200, 500]).join(', ')
       });
 
-      const [deliveryZonesConfig, setDeliveryZonesConfig] = useState(localCatalog?.settings?.deliveryZones || [
-        { id: 'retiro', name: 'Retiro por el local', cost: 0.00 },
-        { id: 'centro', name: 'Delivery: Pueblo Llano Centro', cost: 0.00 },
-        { id: 'afueras', name: 'Delivery: Zonas alejadas', cost: 1.50 }
+      const [loyaltyCatalog, setLoyaltyCatalog] = useState(localCatalog?.settings?.loyalty?.catalog || [
+        { id: "r-papas", name: "🍟 Papas Fritas Extra", cost: 200, type: "side", price: 0 },
+        { id: "r-bebida", name: "🥤 Bebida Gratis", cost: 300, type: "drink", price: 0 },
+        { id: "r-burger", name: "🍔 Burger Clásica", cost: 850, type: "burger", price: 0 }
       ]);
 
       useEffect(() => { fetchData(); }, []);
@@ -1685,16 +1689,32 @@
         setDeliveryZonesConfig(deliveryZonesConfig.filter(z => z.id !== id));
       };
 
-      // GUARDAR LOS AJUSTES
+      // GUARDAR LOS AJUSTES (Incluyendo Lealtad)
       const saveSettingsForm = () => {
         const newCatalog = { 
           ...localCatalog, 
           settings: { 
             ...settingsForm,
-            deliveryZones: deliveryZonesConfig.map(z => ({...z, cost: Number(z.cost)}))
+            deliveryZones: deliveryZonesConfig.map(z => ({...z, cost: Number(z.cost)})),
+            loyalty: {
+              rate: Number(settingsForm.loyaltyRate),
+              roulette: settingsForm.loyaltyRoulette.split(',').map(v => Number(v.trim())).filter(v => !isNaN(v)),
+              catalog: loyaltyCatalog.map(item => ({...item, cost: Number(item.cost)}))
+            }
           } 
         };
         onSaveInventory(localBurgers, localDesserts, localDrinks, newCatalog);
+      };
+
+      const addLoyaltyItem = () => {
+        const id = 'reward_' + Math.random().toString(36).substr(2, 9);
+        setLoyaltyCatalog([...loyaltyCatalog, { id, name: 'Nuevo Premio', cost: 100, price: 0 }]);
+      };
+      const updateLoyaltyItem = (id, field, value) => {
+        setLoyaltyCatalog(loyaltyCatalog.map(z => z.id === id ? { ...z, [field]: value } : z));
+      };
+      const removeLoyaltyItem = (id) => {
+        setLoyaltyCatalog(loyaltyCatalog.filter(z => z.id !== id));
       };
 
       const openEditModal = (item, type, catIdx = null, groupName = null) => {
@@ -1971,6 +1991,9 @@
               <button onClick={() => setTab('inventory')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'inventory' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>INVENTARIO Y PRECIOS</button>
               <button onClick={() => setTab('invoice')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'invoice' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>FACTURACIÓN</button>
               <button onClick={() => setTab('settings')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'settings' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>⚙️ AJUSTES</button>
+              <button onClick={() => setTab('loyalty')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'loyalty' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-divineCream/50 hover:text-purple-300'}`}>🎁 LEALTAD VIP</button>
+            </div>
+          </div>
             </div>
           </div>
 
@@ -2053,6 +2076,41 @@
                    </div>
                 </div>
 
+                <button onClick={saveSettingsForm} className="btn-primary w-full py-4 text-sm font-bold tracking-widest shadow-glow">GUARDAR TODOS LOS AJUSTES</button>
+              </div>
+             ) : tab === 'loyalty' ? (
+              <div className="max-w-xl mx-auto space-y-6">
+                
+                <div className="bg-[#060A17] border border-purple-500/40 rounded-2xl p-6 shadow-[0_0_15px_rgba(147,51,234,0.15)]">
+                   <h3 className="text-sm tracking-[0.2em] text-purple-400 font-bold border-b border-purple-500/30 pb-2 mb-4">📈 TASA DE CONVERSIÓN</h3>
+                   <div><label className="text-xs text-divineCream/70 mb-1 block font-bold">¿Cuántos Tokens (DT) gana el cliente por cada $1 gastado?</label><input type="number" value={settingsForm.loyaltyRate} onChange={(e)=>setSettingsForm({...settingsForm, loyaltyRate: e.target.value})} className="w-full bg-[#0A1128] border border-divineLine2 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-400" /></div>
+                </div>
+
+                <div className="bg-[#060A17] border border-purple-500/40 rounded-2xl p-6 shadow-[0_0_15px_rgba(147,51,234,0.15)]">
+                   <h3 className="text-sm tracking-[0.2em] text-purple-400 font-bold border-b border-purple-500/30 pb-2 mb-4">🎡 PREMIOS DE LA RULETA</h3>
+                   <p className="text-xs text-divineCream/50 mb-3">Escribe los montos en Tokens separados por comas. Ej: 10, 20, 50, 100, 200, 500</p>
+                   <div><input type="text" value={settingsForm.loyaltyRoulette} onChange={(e)=>setSettingsForm({...settingsForm, loyaltyRoulette: e.target.value})} className="w-full bg-[#0A1128] border border-divineLine2 rounded-xl px-3 py-2 text-white outline-none focus:border-purple-400 font-mono tracking-widest" /></div>
+                </div>
+
+                <div className="bg-[#060A17] border border-divineGold/30 rounded-2xl p-6 shadow-glow">
+                   <div className="flex justify-between items-center mb-4 border-b border-divineLine2 pb-2">
+                     <h3 className="text-sm tracking-[0.2em] text-divineGold font-bold">🎁 TIENDA DE CANJES</h3>
+                     <button onClick={addLoyaltyItem} className="text-xs bg-divineGold/20 text-divineGold px-3 py-1 rounded hover:bg-divineGold hover:text-black transition font-bold">+ AÑADIR PREMIO</button>
+                   </div>
+                   <div className="space-y-3">
+                     {loyaltyCatalog.map(zone => (
+                       <div key={zone.id} className="flex gap-2 items-center bg-black/40 p-2 rounded-xl border border-divineLine2/50">
+                         <div className="flex-1"><input type="text" value={zone.name} onChange={(e) => updateLoyaltyItem(zone.id, 'name', e.target.value)} placeholder="Ej: 🍔 Burger Clásica" className="w-full bg-transparent border-none text-white text-sm outline-none px-2" /></div>
+                         <div className="w-24"><input type="number" value={zone.cost} onChange={(e) => updateLoyaltyItem(zone.id, 'cost', e.target.value)} className="w-full bg-black/60 border border-divineLine2 rounded-lg px-2 py-1 text-divineGold font-bold text-sm outline-none text-center" /></div>
+                         <button onClick={() => removeLoyaltyItem(zone.id)} className="w-8 h-8 flex items-center justify-center text-red-500 hover:bg-red-500/20 rounded-lg transition">✕</button>
+                       </div>
+                     ))}
+                   </div>
+                </div>
+                <button onClick={saveSettingsForm} className="btn-primary w-full py-4 text-sm font-bold tracking-widest shadow-[0_0_20px_rgba(147,51,234,0.4)] bg-gradient-to-r from-purple-600 to-indigo-600 text-white !border-transparent hover:brightness-110">GUARDAR SISTEMA DE LEALTAD</button>
+              </div>
+             ) : tab === 'inventory' ? (
+              <div className="space-y-8 relative">
                 <button onClick={saveSettingsForm} className="btn-primary w-full py-4 text-sm font-bold tracking-widest shadow-glow">GUARDAR TODOS LOS AJUSTES</button>
               </div>
              ) : tab === 'inventory' ? (
@@ -2272,16 +2330,32 @@
     }
 
     // =========================
-    // Sistema de Lealtad (Divi-Tokens) y Gamificación
+    // Sistema de Lealtad VIP (Ruleta Animada, Inventario y Canjes)
     // =========================
-    function RewardsModal({ supabaseClient }) {
+    function RewardsModal({ supabaseClient, catalog, onAddToCart }) {
       const [isOpen, setIsOpen] = useState(false);
       const [step, setStep] = useState('login'); 
       const [phone, setPhone] = useState('');
       const [clientData, setClientData] = useState(null);
       const [loading, setLoading] = useState(false);
+      
+      // Estados de la Ruleta
       const [spinning, setSpinning] = useState(false);
       const [spinResult, setSpinResult] = useState(null);
+      const [wheelRotation, setWheelRotation] = useState(0);
+
+      // Configuración Dinámica de Lealtad (Lee del Admin o usa por defecto)
+      const loyaltySettings = catalog?.settings?.loyalty || {
+        rate: 10,
+        roulette: [10, 20, 50, 100, 200, 500],
+        catalog: [
+          { id: "r-papas", name: "🍟 Papas Fritas Extra", cost: 200, type: "side", price: 0 },
+          { id: "r-bebida", name: "🥤 Bebida Gratis", cost: 300, type: "drink", price: 0 },
+          { id: "r-burger", name: "🍔 Burger Clásica", cost: 850, type: "burger", price: 0 }
+        ]
+      };
+
+      const wheelColors = ['#fcd535', '#741bd1', '#25D366', '#e63946', '#3a86ff', '#f4a261', '#ff006e', '#00b4d8'];
 
       useEffect(() => {
         const onOpen = () => setIsOpen(true);
@@ -2297,10 +2371,11 @@
         const { data, error } = await supabaseClient.from('clientes').select('*').eq('telefono', cleanPhone).single();
         
         if (data) {
+          if(!data.inventario) data.inventario = [];
           setClientData(data);
           setStep('dashboard');
         } else {
-          window.showToast("Aún no tienes tokens. ¡Haz tu primera compra para empezar a sumar!", "💡");
+          window.showToast("Aún no tienes tokens. ¡Haz tu primera compra para empezar!", "💡");
         }
         setLoading(false);
       };
@@ -2311,98 +2386,161 @@
         const today = new Date().toISOString().split('T')[0];
         const lastSpin = clientData.ultimo_giro ? clientData.ultimo_giro.split('T')[0] : null;
         
-        if (lastSpin === today) {
-          window.showToast("Ya giraste la ruleta hoy. ¡Vuelve mañana!", "⏳");
-          return;
-        }
+        if (lastSpin === today) { window.showToast("Ya giraste hoy. ¡Vuelve mañana!", "⏳"); return; }
 
-        setSpinning(true);
-        setSpinResult(null);
+        setSpinning(true); setSpinResult(null);
+        
+        const prizes = loyaltySettings.roulette;
+        // Probabilidad ponderada (Premios bajos salen más)
+        const rand = Math.random();
+        let prizeIndex = 0;
+        if (rand > 0.4) prizeIndex = 1;
+        if (rand > 0.7) prizeIndex = 2;
+        if (rand > 0.85) prizeIndex = 3;
+        if (rand > 0.95 && prizes.length > 4) prizeIndex = 4;
+        if (rand > 0.99 && prizes.length > 5) prizeIndex = 5;
+        
+        if (prizeIndex >= prizes.length) prizeIndex = prizes.length - 1;
+        const won = prizes[prizeIndex];
+
+        // Animación de la ruleta (giros extra + posición del premio)
+        const sliceAngle = 360 / prizes.length;
+        const targetAngle = 360 - (prizeIndex * sliceAngle) - (sliceAngle / 2);
+        const spins = 5 * 360; 
+        const totalRotation = wheelRotation + spins + targetAngle - (wheelRotation % 360);
+
+        setWheelRotation(totalRotation);
         
         setTimeout(async () => {
-          const prizes = [10, 20, 50, 100, 200];
-          // Lógica de probabilidad (más chance de ganar premios pequeños)
-          const rand = Math.random();
-          let won = 10;
-          if (rand > 0.5) won = 20;
-          if (rand > 0.8) won = 50;
-          if (rand > 0.95) won = 100;
-          if (rand > 0.99) won = 200;
-
-          const newTotal = clientData.tokens + won;
-          
-          await supabaseClient.from('clientes').update({ 
-            tokens: newTotal, 
-            ultimo_giro: new Date().toISOString() 
-          }).eq('telefono', clientData.telefono);
-          
+          const newTotal = clientData.tokens + Number(won);
+          await supabaseClient.from('clientes').update({ tokens: newTotal, ultimo_giro: new Date().toISOString() }).eq('telefono', clientData.telefono);
           setClientData({...clientData, tokens: newTotal, ultimo_giro: new Date().toISOString()});
           setSpinResult(won);
           setSpinning(false);
           window.showToast(`¡Ganaste ${won} Divi-Tokens!`, "🎉");
-        }, 2500);
+        }, 4000); // 4 segundos de giro
+      };
+
+      const handleRedeem = async (item) => {
+        if (clientData.tokens < item.cost) { window.showToast("Tokens insuficientes", "⚠️"); return; }
+        setLoading(true);
+        const newTokens = clientData.tokens - item.cost;
+        const rewardInstance = { ...item, instanceId: Date.now() };
+        const newInv = [...(clientData.inventario || []), rewardInstance];
+        
+        await supabaseClient.from('clientes').update({tokens: newTokens, inventario: newInv}).eq('telefono', clientData.telefono);
+        setClientData({...clientData, tokens: newTokens, inventario: newInv});
+        window.showToast(`${item.name} guardado en tu inventario`, "🎁");
+        setLoading(false);
+      };
+
+      const handleUseReward = async (item) => {
+        // Enviar al carrito principal
+        onAddToCart({ ...item, name: `[PREMIO] ${item.name}`, price: 0 });
+        
+        // Descontar del inventario
+        setLoading(true);
+        const newInv = clientData.inventario.filter(i => i.instanceId !== item.instanceId);
+        await supabaseClient.from('clientes').update({inventario: newInv}).eq('telefono', clientData.telefono);
+        setClientData({...clientData, inventario: newInv});
+        setIsOpen(false); // Cerramos el modal para que vaya al carrito
+        setLoading(false);
       };
 
       if (!isOpen) return null;
+
+      // Dibujar la ruleta visualmente
+      const sliceAngle = 360 / loyaltySettings.roulette.length;
+      let conicString = [];
+      loyaltySettings.roulette.forEach((p, i) => {
+        const color = wheelColors[i % wheelColors.length];
+        conicString.push(`${color} ${i * sliceAngle}deg ${(i + 1) * sliceAngle}deg`);
+      });
 
       return (
         <BottomSheet title="CLUB DIVINÉE" subtitle={step === 'login' ? "Tus Recompensas" : `Hola, ${clientData?.nombre.split(' ')[0]}`} onClose={() => {setIsOpen(false); setStep('login'); setPhone(''); setSpinResult(null);}}>
           {step === 'login' ? (
             <div className="space-y-5 text-center py-4">
               <div className="text-6xl mb-2">🎁</div>
-              <p className="text-sm text-divineCream/80 font-medium">Ingresa el número de teléfono con el que realizas tus pedidos para ver tus Divi-Tokens acumulados.</p>
+              <p className="text-sm text-divineCream/80 font-medium">Ingresa tu número de teléfono para acceder a tus Divi-Tokens, jugar a la ruleta y canjear premios.</p>
               <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Ej: 04121234567" className="w-full bg-[#060A17] border-2 border-divineLine2 rounded-xl px-5 py-4 text-xl font-bold text-divineCream outline-none focus:border-divineGold transition tracking-widest text-center" />
-              <button onClick={handleLogin} disabled={loading} className="w-full btn-primary py-4 text-sm font-bold shadow-glow">{loading ? "BUSCANDO..." : "VER MIS TOKENS"}</button>
+              <button onClick={handleLogin} disabled={loading} className="w-full btn-primary py-4 text-sm font-bold shadow-glow">{loading ? "BUSCANDO..." : "VER MI BÓVEDA"}</button>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-8">
+              
+              {/* Saldo y Tasa Dinámica */}
               <div className="bg-gradient-to-br from-divineGold/20 to-[#0A1128] border-2 border-divineGold/50 rounded-3xl p-6 text-center shadow-promoglow relative overflow-hidden">
                 <div className="text-xs font-bold tracking-[0.3em] text-divineGold mb-1">SALDO ACTUAL</div>
                 <div className="text-5xl font-black text-white drop-shadow-lg">{clientData.tokens} <span className="text-lg text-divineGold/80">DT</span></div>
-                <p className="text-[10px] text-divineCream/60 mt-2 uppercase tracking-widest">10 DT por cada $1 en compras</p>
+                <p className="text-[10px] text-divineCream/60 mt-2 uppercase tracking-widest">Ganas {loyaltySettings.rate} DT por cada $1 de compra</p>
               </div>
 
-              <div className="bg-[#060A17] border-2 border-purple-500/40 rounded-3xl p-6 text-center relative overflow-hidden">
-                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-purple-500/20 rounded-full blur-2xl pointer-events-none"></div>
-                 <h4 className="text-sm font-bold tracking-[0.2em] text-purple-400 mb-2">🎰 RULETA DIARIA</h4>
-                 <p className="text-xs text-divineCream/70 mb-4">Gira gratis una vez al día para ganar tokens extra.</p>
+              {/* Inventario de Premios Guardados */}
+              {clientData.inventario && clientData.inventario.length > 0 && (
+                <div className="bg-[#0A1128] border border-[#25D366]/40 rounded-3xl p-5 shadow-[0_0_15px_rgba(37,211,102,0.15)]">
+                  <h4 className="text-xs font-bold tracking-[0.2em] text-[#25D366] mb-3 uppercase">Tu Inventario (Listos para usar)</h4>
+                  <div className="space-y-2">
+                    {clientData.inventario.map((item, idx) => (
+                      <div key={idx} className="flex items-center justify-between bg-black/50 border border-divineLine2 rounded-xl p-3">
+                        <span className="text-sm font-bold text-white">{item.name}</span>
+                        <button onClick={() => handleUseReward(item)} disabled={loading} className="text-[10px] font-black bg-[#25D366] text-[#0A1128] px-4 py-2 rounded-lg hover:brightness-110 transition shadow-glow">USAR AHORA</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Ruleta Animada Dinámica */}
+              <div className="bg-[#060A17] border-2 border-purple-500/40 rounded-3xl p-6 text-center relative overflow-hidden flex flex-col items-center">
+                 <h4 className="text-sm font-bold tracking-[0.2em] text-purple-400 mb-2 z-10">🎰 RULETA DIARIA</h4>
+                 <p className="text-xs text-divineCream/70 mb-6 z-10">Gira gratis 1 vez al día.</p>
                  
-                 {spinning ? (
-                   <div className="py-6 flex flex-col items-center">
-                     <motion.div animate={{ rotate: 360 }} transition={{ duration: 0.5, repeat: Infinity, ease: "linear" }} className="text-5xl">🎡</motion.div>
-                     <div className="mt-3 text-sm font-bold text-purple-300 animate-pulse">GIRANDO...</div>
-                   </div>
-                 ) : spinResult ? (
-                   <div className="py-4 bg-purple-500/10 rounded-2xl border border-purple-500/30">
-                     <div className="text-3xl mb-1">🎉</div>
-                     <div className="text-lg font-black text-white">¡GANASTE {spinResult} TOKENS!</div>
-                     <div className="text-[10px] text-divineCream/50 mt-1">Vuelve mañana para girar otra vez.</div>
+                 <div className="relative w-48 h-48 mb-6">
+                    {/* Flecha indicadora */}
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-[10px] border-r-[10px] border-t-[20px] border-transparent border-t-white z-20 drop-shadow-md"></div>
+                    
+                    {/* Rueda giratoria */}
+                    <div className="w-full h-full rounded-full border-4 border-[#0A1128] shadow-glow overflow-hidden relative" style={{ background: `conic-gradient(${conicString.join(', ')})`, transform: `rotate(${wheelRotation}deg)`, transition: spinning ? 'transform 4s cubic-bezier(0.15, 0.85, 0.15, 1)' : 'none' }}>
+                      {/* Textos dentro de la rueda */}
+                      {loyaltySettings.roulette.map((prize, i) => {
+                        const rot = (i * sliceAngle) + (sliceAngle / 2);
+                        return (
+                          <div key={i} className="absolute inset-0 flex items-start justify-center pt-4" style={{ transform: `rotate(${rot}deg)` }}>
+                            <span className="text-white font-black text-lg drop-shadow-md" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>{prize}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                 </div>
+
+                 {spinResult ? (
+                   <div className="py-2 px-6 bg-purple-500/20 rounded-xl border border-purple-500/50 z-10 animate-pulse">
+                     <div className="text-base font-black text-white">¡GANASTE {spinResult} DT!</div>
                    </div>
                  ) : (
-                   <button onClick={handleSpin} className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-black text-sm tracking-widest shadow-[0_0_20px_rgba(147,51,234,0.4)] hover:brightness-110 transition">
-                     GIRAR RULETA GRATIS
+                   <button onClick={handleSpin} disabled={spinning} className={`w-full py-4 rounded-xl font-black text-sm tracking-widest transition z-10 ${spinning ? 'bg-gray-600 text-gray-400' : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-[0_0_20px_rgba(147,51,234,0.4)] hover:brightness-110'}`}>
+                     {spinning ? "GIRANDO..." : "GIRAR RULETA"}
                    </button>
                  )}
               </div>
 
+              {/* Catálogo de Canje Dinámico */}
               <div>
-                <h4 className="text-xs font-bold tracking-[0.2em] text-divineGold mb-3 uppercase">Catálogo de Canje</h4>
+                <h4 className="text-xs font-bold tracking-[0.2em] text-divineGold mb-3 uppercase">Tienda de Canje</h4>
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between bg-black/40 border border-divineLine2 rounded-xl p-3">
-                    <span className="text-sm font-bold text-divineCream">🍟 Papas Fritas Extra</span>
-                    <span className="text-xs font-black bg-divineLine2/30 px-3 py-1.5 rounded-lg text-divineGold">200 DT</span>
-                  </div>
-                  <div className="flex items-center justify-between bg-black/40 border border-divineLine2 rounded-xl p-3">
-                    <span className="text-sm font-bold text-divineCream">🥤 Bebida Gratis</span>
-                    <span className="text-xs font-black bg-divineLine2/30 px-3 py-1.5 rounded-lg text-divineGold">300 DT</span>
-                  </div>
-                  <div className="flex items-center justify-between bg-black/40 border border-divineLine2 rounded-xl p-3">
-                    <span className="text-sm font-bold text-divineCream">🍔 Burger Clásica</span>
-                    <span className="text-xs font-black bg-divineLine2/30 px-3 py-1.5 rounded-lg text-divineGold">850 DT</span>
-                  </div>
+                  {loyaltySettings.catalog.map((item, i) => (
+                    <div key={i} className="flex items-center justify-between bg-black/40 border border-divineLine2 rounded-xl p-3">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-divineCream">{item.name}</span>
+                        <span className="text-xs text-divineGold font-bold">{item.cost} DT</span>
+                      </div>
+                      <button onClick={() => handleRedeem(item)} disabled={loading} className="text-[10px] font-black tracking-widest bg-divineGold/10 border border-divineGold/40 text-divineGold px-4 py-2 rounded-lg hover:bg-divineGold hover:text-[#0A1128] transition">CANJEAR</button>
+                    </div>
+                  ))}
                 </div>
-                <p className="text-[10px] text-divineCream/50 text-center mt-3">Para canjear, indícanos tu número al hablar con Soporte por WhatsApp.</p>
               </div>
+
             </div>
           )}
         </BottomSheet>
@@ -2748,7 +2886,7 @@
           <AnimatePresence>{trackingModalOpen && <TrackingModal onClose={() => setTrackingModalOpen(false)} supabaseClient={supabaseClient} />}</AnimatePresence>
           
           <TutorialModal />
-          <RewardsModal supabaseClient={supabaseClient} />
+          <RewardsModal supabaseClient={supabaseClient} catalog={localCatalog} onAddToCart={(item) => handleInitialAddToCart(item, false)} />
 
           <AnimatePresence>
             {adminModalOpen && !isAdminLogged && <AdminLogin onLogin={() => setIsAdminLogged(true)} onClose={() => setAdminModalOpen(false)} />}
