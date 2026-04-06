@@ -1689,7 +1689,7 @@
         setDeliveryZonesConfig(deliveryZonesConfig.filter(z => z.id !== id));
       };
 
-      // GUARDAR LOS AJUSTES (Incluyendo Lealtad)
+      // GUARDAR LOS AJUSTES (Incluyendo Lealtad VIP)
       const saveSettingsForm = () => {
         const newCatalog = { 
           ...localCatalog, 
@@ -1697,8 +1697,8 @@
             ...settingsForm,
             deliveryZones: deliveryZonesConfig.map(z => ({...z, cost: Number(z.cost)})),
             loyalty: {
-              rate: Number(settingsForm.loyaltyRate),
-              roulette: settingsForm.loyaltyRoulette.split(',').map(v => Number(v.trim())).filter(v => !isNaN(v)),
+              rate: Number(settingsForm.loyaltyRate || 10),
+              roulette: (settingsForm.loyaltyRoulette || "10, 20, 50, 100, 200").split(',').map(v => Number(v.trim())).filter(v => !isNaN(v)),
               catalog: loyaltyCatalog.map(item => ({...item, cost: Number(item.cost)}))
             }
           } 
@@ -1706,6 +1706,18 @@
         onSaveInventory(localBurgers, localDesserts, localDrinks, newCatalog);
       };
 
+      const addLoyaltyItem = () => {
+        const id = 'reward_' + Math.random().toString(36).substr(2, 9);
+        setLoyaltyCatalog([...loyaltyCatalog, { id, name: 'Nuevo Premio', cost: 100, price: 0 }]);
+      };
+      
+      const updateLoyaltyItem = (id, field, value) => {
+        setLoyaltyCatalog(loyaltyCatalog.map(z => z.id === id ? { ...z, [field]: value } : z));
+      };
+      
+      const removeLoyaltyItem = (id) => {
+        setLoyaltyCatalog(loyaltyCatalog.filter(z => z.id !== id));
+      };
       const addLoyaltyItem = () => {
         const id = 'reward_' + Math.random().toString(36).substr(2, 9);
         setLoyaltyCatalog([...loyaltyCatalog, { id, name: 'Nuevo Premio', cost: 100, price: 0 }]);
