@@ -2265,8 +2265,16 @@
       useEffect(() => {
         const onOpen = () => setIsOpen(true);
         window.addEventListener('open-tutorial', onOpen);
-        // Si quieres que se abra automáticamente la primera vez que entran, puedes descomentar la siguiente línea:
-        // if (!localStorage.getItem('divinee_tutorial_seen')) { setIsOpen(true); localStorage.setItem('divinee_tutorial_seen', 'true'); }
+        
+        // Auto-abrir la primera vez que un cliente entra a la página
+        if (!localStorage.getItem('divinee_tutorial_seen')) { 
+          // Le damos un pequeño retraso de 2.5 segundos para que termine de cargar la animación inicial
+          setTimeout(() => {
+            setIsOpen(true); 
+            localStorage.setItem('divinee_tutorial_seen', 'true'); 
+          }, 2500);
+        }
+        
         return () => window.removeEventListener('open-tutorial', onOpen);
       }, []);
 
