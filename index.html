@@ -279,15 +279,15 @@
     ];
 
     const DEFAULT_DESSERTS = [
-      { id: "noir-cheesecake", name: "Noir Cheesecake", description: "Cheesecake sedoso con cacao oscuro y crumble de avellana.", price: 9.5, cost: 4.0, isPromo: false, img: "https://images.unsplash.com/photo-1541781408260-3c7b8d7a5b61?auto=format&fit=crop&w=1600&q=80" },
-      { id: "gold-mousse", name: "Gold Mousse", description: "Mousse de vainilla de Madagascar con brillo dorado sutil.", price: 10.25, cost: 4.5, isPromo: false, img: "https://images.unsplash.com/photo-1601972602237-8c79241e468b?auto=format&fit=crop&w=1600&q=80" },
-      { id: "creme-brulee-tart", name: "Tarta Crème Brûlée", description: "Caramelo flameado, núcleo de crema y base mantequilla.", price: 10.75, cost: 4.2, isPromo: false, img: "https://images.unsplash.com/photo-1608198093002-ad4e005484ec?auto=format&fit=crop&w=1600&q=80" },
-      { id: "pistachio-opera", name: "Ópera de Pistacho", description: "Capas de pistacho con notas de espresso y glaseado satinado.", price: 11.5, cost: 5.0, isPromo: false, img: "https://images.unsplash.com/photo-1589308078059-be1415eab4c3?auto=format&fit=crop&w=1600&q=80" },
+      { id: "noir-cheesecake", name: "Noir Cheesecake", description: "Cheesecake sedoso con cacao oscuro y crumble de avellana.", price: 9.5, cost: 4.0, isPromo: false, img: "https://images.unsplash.com/photo-1541781408260-3c7b8d7a5b61?auto=format&fit=crop&w=400&q=60" },
+      { id: "gold-mousse", name: "Gold Mousse", description: "Mousse de vainilla de Madagascar con brillo dorado sutil.", price: 10.25, cost: 4.5, isPromo: false, img: "https://images.unsplash.com/photo-1601972602237-8c79241e468b?auto=format&fit=crop&w=400&q=60" },
+      { id: "creme-brulee-tart", name: "Tarta Crème Brûlée", description: "Caramelo flameado, núcleo de crema y base mantequilla.", price: 10.75, cost: 4.2, isPromo: false, img: "https://images.unsplash.com/photo-1608198093002-ad4e005484ec?auto=format&fit=crop&w=400&q=60" },
+      { id: "pistachio-opera", name: "Ópera de Pistacho", description: "Capas de pistacho con notas de espresso y glaseado satinado.", price: 11.5, cost: 5.0, isPromo: false, img: "https://images.unsplash.com/photo-1589308078059-be1415eab4c3?auto=format&fit=crop&w=400&q=60" },
     ];
 
     const DEFAULT_DRINKS = [
-      { id: "coca-cola", name: "Coca-Cola Original", description: "Bebida gaseosa 355ml.", price: 1.50, cost: 0.80, isPromo: false, img: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=800&q=80" },
-      { id: "pepsi", name: "Pepsi Cola", description: "Bebida gaseosa 355ml.", price: 1.50, cost: 0.80, isPromo: false, img: "https://images.unsplash.com/photo-1629203851288-7ececa5f05c4?auto=format&fit=crop&w=800&q=80" }
+      { id: "coca-cola", name: "Coca-Cola Original", description: "Bebida gaseosa 355ml.", price: 1.50, cost: 0.80, isPromo: false, img: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=400&q=60" },
+      { id: "pepsi", name: "Pepsi Cola", description: "Bebida gaseosa 355ml.", price: 1.50, cost: 0.80, isPromo: false, img: "https://images.unsplash.com/photo-1629203851288-7ececa5f05c4?auto=format&fit=crop&w=400&q=60" }
     ];
 
     const DEFAULT_CATALOG = {
@@ -475,7 +475,7 @@
         <motion.div whileHover={!isDisabled ? { y: -6 } : {}} transition={{ type: "spring", stiffness: 260, damping: 22 }} className={`group overflow-hidden rounded-2xl border ${isDisabled ? 'border-red-500/30 bg-black/40' : (isPromoDesign ? 'border-divineGold/60 shadow-promoglow bg-divineGold/5' : 'border-divineLine bg-divineInk')} shadow-divine relative h-full`}>
           <div onClick={isDisabled ? undefined : onClick} className={`flex flex-col h-full w-full text-left ${isDisabled ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}>
             <div className="relative aspect-[4/3] sm:aspect-[4/3] overflow-hidden card-premium shrink-0">
-              <img src={product.img} alt={product.name} className={`h-full w-full object-cover transition duration-700 ${isDisabled ? 'grayscale' : 'group-hover:scale-[1.08]'}`} loading="lazy" />
+              <img src={product.img} alt={product.name} className={`h-full w-full object-cover transition duration-700 ${isDisabled ? 'grayscale' : 'group-hover:scale-[1.08]'}`} loading="lazy" decoding="async" fetchpriority="low" />
               <div className={`absolute left-2 sm:left-3 top-2 sm:top-3 rounded-full border ${isPromoDesign ? 'border-divineGold/80 bg-divineGold text-[#0A1128]' : 'border-divineLine2 bg-[#060A17]/80 text-divineCream'} px-2 sm:px-3 py-1 sm:py-1.5 text-[9px] sm:text-xs tracking-widest sm:tracking-[0.2em] font-bold backdrop-blur`}>
                 {isPromoDesign ? '🌟 PROMO' : badge}
               </div>
@@ -551,14 +551,18 @@
             const r = mount.getBoundingClientRect();
             return { w: Math.max(1, Math.floor(r.width)), h: Math.max(1, Math.floor(r.height)) };
           };
-          const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-          renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+          
+          const isMobileDevice = window.innerWidth < 640;
+          // Desactivamos antialias en móviles y pedimos alto rendimiento
+          const renderer = new THREE.WebGLRenderer({ antialias: !isMobileDevice, alpha: true, powerPreference: "high-performance" });
+          renderer.setPixelRatio(isMobileDevice ? 1 : Math.min(window.devicePixelRatio || 1, 2));
           renderer.outputColorSpace = THREE.SRGBColorSpace;
           renderer.toneMapping = THREE.ACESFilmicToneMapping;
           renderer.toneMappingExposure = 1.2;
-          renderer.shadowMap.enabled = true;
-          renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
+          
+          // Desactivamos sombras en móviles para ganar muchísima velocidad
+          renderer.shadowMap.enabled = !isMobileDevice; 
+          if (!isMobileDevice) renderer.shadowMap.type = THREE.PCFSoftShadowMap;
           const { w, h } = getSize();
           renderer.setSize(w, h);
           renderer.domElement.style.width = "100%";
@@ -2307,7 +2311,8 @@
     // =========================
     function Preloader({ onComplete }) {
       useEffect(() => {
-        const t = setTimeout(onComplete, 2200); 
+        // Reducimos el tiempo de espera de 2.2 segundos a 1 segundo
+        const t = setTimeout(onComplete, 1000); 
         return () => clearTimeout(t);
       }, [onComplete]);
       return (
