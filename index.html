@@ -2883,7 +2883,7 @@
           
          <AnimatePresence>{showUpsell && <UpsellModal product={pendingItem} catalog={localCatalog} onAccept={(papaObj) => processUpsell(true, papaObj)} onDecline={() => processUpsell(false)} />}</AnimatePresence>
           <AnimatePresence>{cartOpen && <CartDrawer items={cartItems} total={cartTotal} bcvRate={bcvRate} catalog={localCatalog} onClose={() => setCartOpen(false)} onQty={updateQty} onClearCart={() => setCartItems([])} supabaseClient={supabaseClient} />}</AnimatePresence>
-          <AnimatePresence>{!!activeBurger && <ProductModal product={activeBurger} catalog={localCatalog} onClose={() => setActiveBurger(null)} onAdd={(itemWithMeta) => handleInitialAddToCart(itemWithMeta, activeBurger.config !== undefined || activeBurger.type === 'burger')} />}</AnimatePresence>
+          <AnimatePresence>{!!activeBurger && <ProductModal product={activeBurger} catalog={localCatalog} onClose={() => setActiveBurger(null)} onAdd={(itemWithMeta) => handleInitialAddToCart(itemWithMeta, activeBurger?.config !== undefined || activeBurger?.type === 'burger')} />}</AnimatePresence>
           <AnimatePresence>{trackingModalOpen && <TrackingModal onClose={() => setTrackingModalOpen(false)} supabaseClient={supabaseClient} />}</AnimatePresence>
           
           <TutorialModal />
