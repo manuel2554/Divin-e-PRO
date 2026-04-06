@@ -505,39 +505,19 @@
       );
     }
 
-    function ProductShowcase({ items, badge, onOpen, onAdd, disabledItems = [], promoOnly = false }) {
+    function ProductShowcase({ items, badge, onOpen, onAdd, disabledItems = [], promoOnly = false, forceModal = false }) {
       return (
-        <>
-          <div className="sm:hidden">
-            <div className="mobile-scroll flex gap-4 pb-4 snap-x snap-mandatory">
-              {items.map((p) => {
-                const isOff = disabledItems.includes(p.id);
-                const desc = p.description ? p.description.toLowerCase() : "";
-                const name = p.name ? p.name.toLowerCase() : "";
-                const needsCustomization = name.includes('mixta') || name.includes('triple') || name.includes('absoluta') || desc.includes('bebida') || name.includes('coca') || name.includes('pepsi') || name.includes('refresco');
-                return (
-                <div key={p.id} className="w-[85vw] max-w-[380px] snap-start shrink-0">
-                  <ProductCard product={p} badge={badge} isDisabled={isOff} isPromoDesign={promoOnly} onClick={() => onOpen(p)} onAdd={() => needsCustomization ? onOpen(p) : onAdd({ ...p, cost: p.cost })} />
-                </div>
-              )})}
-            </div>
-            <div className="flex items-center justify-center gap-2 mt-2 text-sm font-semibold text-divineGold/70">
-               <span>←</span>
-               <span>Desliza para ver más</span>
-               <span>→</span>
-            </div>
-          </div>
-          <div className="hidden sm:grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {items.map((p) => {
-              const isOff = disabledItems.includes(p.id);
-              const desc = p.description ? p.description.toLowerCase() : "";
-              const name = p.name ? p.name.toLowerCase() : "";
-              const needsCustomization = name.includes('mixta') || name.includes('triple') || name.includes('absoluta') || desc.includes('bebida') || name.includes('coca') || name.includes('pepsi') || name.includes('refresco');
-              return (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {items.map((p) => {
+            const isOff = disabledItems.includes(p.id);
+            const desc = p.description ? p.description.toLowerCase() : "";
+            const name = p.name ? p.name.toLowerCase() : "";
+            const needsCustomization = forceModal || name.includes('mixta') || name.includes('triple') || name.includes('absoluta') || desc.includes('bebida') || name.includes('coca') || name.includes('pepsi') || name.includes('refresco') || p.flavors;
+            return (
               <ProductCard key={p.id} product={p} badge={badge} isDisabled={isOff} isPromoDesign={promoOnly} onClick={() => onOpen(p)} onAdd={() => needsCustomization ? onOpen(p) : onAdd({ ...p, cost: p.cost })} />
-            )})}
-          </div>
-        </>
+            );
+          })}
+        </div>
       );
     }
     // =========================
@@ -788,8 +768,8 @@
       
       const [selectedMeats, setSelectedMeats] = useState(Array(requiredMeats).fill(""));
       
-      const isDrink = desc.includes('bebida') || name.includes('coca') || name.includes('pepsi') || name.includes('refresco');
-      const [selectedFlavor, setSelectedFlavor] = useState("");
+      const isDrink = product.flavors || desc.includes('bebida') || name.includes('coca') || name.includes('pepsi') || name.includes('refresco');
+          const [selectedFlavor, setSelectedFlavor] = useState("");
 
       const handleAdd = () => {
         if (requiredMeats > 0 && selectedMeats.some(m => !m)) {
@@ -835,7 +815,7 @@
               <div className="text-sm font-bold tracking-[0.2em] text-divineGold mb-4">SABOR / VARIANTE</div>
               <select value={selectedFlavor} onChange={(e) => setSelectedFlavor(e.target.value)} className="w-full bg-[#0A1128] border-2 border-divineGold/40 rounded-xl px-4 py-4 text-base font-bold text-divineCream outline-none focus:border-divineGold transition appearance-none">
                 <option value="" disabled>Toca aquí para seleccionar el sabor...</option>
-                {(catalog?.settings?.drinkFlavors || "Regular / Original, Zero / Sin Azúcar, Limón, Naranja, Uva, Chinotto / Sprite, Otro (Especificar en nota)").split(',').map((f, i) => (
+                {(product.flavors || catalog?.settings?.drinkFlavors || "Regular / Original, Zero / Sin Azúcar, Limón, Naranja, Uva, Chinotto / Sprite, Otro (Especificar en nota)").split(',').map((f, i) => (
                   <option key={i} value={f.trim()}>{f.trim()}</option>
                 ))}
               </select>
@@ -1597,10 +1577,10 @@
 
       const [editMode, setEditMode] = useState(false);
       const [itemToEdit, setItemToEdit] = useState(null); 
-      const [editForm, setEditForm] = useState({ name: '', description: '', price: 0, cost: 0, ingredients: [], isPromo: false, showUpsell: true, img: '' });
+      const [editForm, setEditForm] = useState({ name: '', description: '', price: 0, cost: 0, ingredients: [], isPromo: false, showUpsell: true, img: '', menuSection: 'clasica', flavors: '' });
       
       const [showAddModal, setShowAddModal] = useState(false);
-      const [addForm, setAddForm] = useState({ type: 'burger', group: 'buns', name: '', price: '', cost: '', description: '', img: '', ingredients: [], isPromo: false, showUpsell: true });
+      const [addForm, setAddForm] = useState({ type: 'burger', group: 'buns', name: '', price: '', cost: '', description: '', img: '', ingredients: [], isPromo: false, showUpsell: true, menuSection: 'clasica', flavors: '' });
 
       const [imgFile, setImgFile] = useState(null);
       const [isUploading, setIsUploading] = useState(false);
@@ -1688,7 +1668,7 @@
 
       const openEditModal = (item, type, catIdx = null, groupName = null) => {
         setItemToEdit({ id: item.id, type, catIdx, groupName });
-        setEditForm({ name: item.name, description: item.description || '', price: item.price, cost: item.cost || 0, ingredients: item.ingredientIds || [], isPromo: item.isPromo || false, showUpsell: item.showUpsell !== false, img: item.img || '' });
+        setEditForm({ name: item.name, description: item.description || '', price: item.price, cost: item.cost || 0, ingredients: item.ingredientIds || [], isPromo: item.isPromo || false, showUpsell: item.showUpsell !== false, img: item.img || '', menuSection: item.menuSection || 'clasica', flavors: item.flavors || '' });
         setImgFile(null);
       };
 
@@ -1737,11 +1717,11 @@
 
         if (itemToEdit.type === 'burger') {
           const nombresIngredientes = buildIngredientNames(editForm.ingredients);
-          newBurgers[itemToEdit.catIdx] = { ...newBurgers[itemToEdit.catIdx], name: editForm.name, description: editForm.description, price: Number(editForm.price), cost: Number(editForm.cost), ingredientIds: editForm.ingredients, ingredients: nombresIngredientes, isPromo: editForm.isPromo, showUpsell: editForm.showUpsell, img: finalImgUrl || newBurgers[itemToEdit.catIdx].img };
+          newBurgers[itemToEdit.catIdx] = { ...newBurgers[itemToEdit.catIdx], name: editForm.name, description: editForm.description, price: Number(editForm.price), cost: Number(editForm.cost), ingredientIds: editForm.ingredients, ingredients: nombresIngredientes, isPromo: editForm.isPromo, showUpsell: editForm.showUpsell, img: finalImgUrl || newBurgers[itemToEdit.catIdx].img, menuSection: editForm.menuSection };
         } else if (itemToEdit.type === 'dessert') {
           newDesserts[itemToEdit.catIdx] = { ...newDesserts[itemToEdit.catIdx], name: editForm.name, description: editForm.description, price: Number(editForm.price), cost: Number(editForm.cost), isPromo: editForm.isPromo, img: finalImgUrl || newDesserts[itemToEdit.catIdx].img };
         } else if (itemToEdit.type === 'drink') {
-          newDrinks[itemToEdit.catIdx] = { ...newDrinks[itemToEdit.catIdx], name: editForm.name, description: editForm.description, price: Number(editForm.price), cost: Number(editForm.cost), isPromo: editForm.isPromo, img: finalImgUrl || newDrinks[itemToEdit.catIdx].img };
+          newDrinks[itemToEdit.catIdx] = { ...newDrinks[itemToEdit.catIdx], name: editForm.name, description: editForm.description, price: Number(editForm.price), cost: Number(editForm.cost), isPromo: editForm.isPromo, img: finalImgUrl || newDrinks[itemToEdit.catIdx].img, flavors: editForm.flavors };
         } else if (itemToEdit.type === 'catalog') {
           const group = newCatalog[itemToEdit.groupName];
           newCatalog[itemToEdit.groupName] = group.map(i => i.id === itemToEdit.id ? { ...i, name: editForm.name, price: Number(editForm.price), cost: Number(editForm.cost) } : i);
@@ -2028,14 +2008,6 @@
                    </div>
                 </div>
 
-                <div className="bg-[#060A17] border border-[#0088cc]/50 rounded-2xl p-6 shadow-[0_0_15px_rgba(0,136,204,0.15)]">
-                   <h3 className="text-sm tracking-[0.2em] text-[#0088cc] mb-4 font-bold border-b border-[#0088cc]/30 pb-2">🥤 SABORES DE BEBIDAS</h3>
-                   <p className="text-xs text-divineCream/50 mb-4">Separa cada sabor con una coma (,).</p>
-                   <div>
-                     <textarea rows="3" value={settingsForm.drinkFlavors || ""} onChange={(e)=>setSettingsForm({...settingsForm, drinkFlavors: e.target.value})} className="w-full bg-[#0A1128] border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-[#0088cc] outline-none text-sm" placeholder="Ej: Cola, Naranja, Limón"></textarea>
-                   </div>
-                </div>
-
                 <div className="bg-[#060A17] border border-[#25D366]/50 rounded-2xl p-6 shadow-[0_0_15px_rgba(37,211,102,0.15)]">
                    <h3 className="text-sm tracking-[0.2em] text-[#25D366] mb-4 font-bold border-b border-[#25D366]/30 pb-2">📞 CONTACTO Y REDES</h3>
                    <div><label className="text-xs text-divineCream/70 mb-1 block font-bold">Número de WhatsApp (Soporte)</label><input type="text" value={settingsForm.whatsapp} onChange={(e)=>setSettingsForm({...settingsForm, whatsapp: e.target.value})} className="w-full bg-[#0A1128] border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-[#25D366] outline-none font-mono tracking-widest" placeholder="Ej: 584126835635" /></div>
@@ -2079,6 +2051,12 @@
                               )}
                             </div>
                             <div><label className="text-xs text-divineCream/70 mb-1 block">Descripción</label><textarea rows="2" value={editForm.description} onChange={(e)=>setEditForm({...editForm, description: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
+                            {itemToEdit.type === 'burger' && (
+                               <div><label className="text-xs text-divineCream/70 mb-1 block">Categoría de Hamburguesa</label><select value={editForm.menuSection} onChange={(e)=>setEditForm({...editForm, menuSection: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none"><option value="clasica">Sencillas / Clásicas</option><option value="premium">Mixtas / Potentes</option></select></div>
+                            )}
+                            {itemToEdit.type === 'drink' && (
+                               <div><label className="text-xs text-divineCream/70 mb-1 block">Sabores disponibles (separados por coma)</label><input type="text" value={editForm.flavors} onChange={(e)=>setEditForm({...editForm, flavors: e.target.value})} placeholder="Ej: Fresa, Limón, Cola" className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
+                            )}
                             
                             {/* NUEVO: Selector de imagen o carga directa */}
                             <div>
@@ -2180,6 +2158,12 @@
                         {(addForm.type === 'burger' || addForm.type === 'dessert' || addForm.type === 'drink') && (
                           <motion.div initial={{opacity:0}} animate={{opacity:1}} className="space-y-4">
                             <div><label className="text-xs text-divineCream/70 mb-1 block">Descripción (Opcional)</label><textarea value={addForm.description} onChange={(e) => setAddForm({...addForm, description: e.target.value})} rows="2" className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none"></textarea></div>
+                            {addForm.type === 'burger' && (
+                               <div><label className="text-xs text-divineCream/70 mb-1 block">Categoría de Hamburguesa</label><select value={addForm.menuSection} onChange={(e)=>setAddForm({...addForm, menuSection: e.target.value})} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none"><option value="clasica">Sencillas / Clásicas</option><option value="premium">Mixtas / Potentes</option></select></div>
+                            )}
+                            {addForm.type === 'drink' && (
+                               <div><label className="text-xs text-divineCream/70 mb-1 block">Sabores disponibles (separados por coma)</label><input type="text" value={addForm.flavors} onChange={(e)=>setAddForm({...addForm, flavors: e.target.value})} placeholder="Ej: Fresa, Limón, Cola" className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white focus:border-divineGold outline-none" /></div>
+                            )}
                             <div>
                                <label className="text-xs text-divineCream/70 mb-1 block">Imagen del Producto</label>
                                <input type="file" accept="image/*" onChange={(e) => setImgFile(e.target.files[0])} className="w-full bg-black/50 border border-divineLine2 rounded-xl px-3 py-2 text-white outline-none file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:bg-divineGold file:text-black hover:file:bg-divineGold2 cursor-pointer" />
@@ -2451,6 +2435,7 @@
             ingredients: newItemData.ingredients || [],
             isPromo: newItemData.isPromo || false,
             showUpsell: newItemData.showUpsell !== false,
+            menuSection: newItemData.menuSection || 'clasica',
             config: [{type:"bunBottom"},{type:"meat"},{type:"generic"},{type:"bunTop"}]
           });
         } else if (newItemData.type === 'dessert') {
@@ -2465,7 +2450,8 @@
             ...baseItem,
             description: newItemData.description || "Bebida refrescante.",
             img: newItemData.img || "https://images.unsplash.com/photo-1543253687-c931c8e01820?auto=format&fit=crop&w=800&q=80",
-            isPromo: newItemData.isPromo || false
+            isPromo: newItemData.isPromo || false,
+            flavors: newItemData.flavors || ''
           });
         } else if (newItemData.type === 'catalog') {
           baseItem.note = "Añadido recientemente";
@@ -2557,9 +2543,26 @@
               </section>
             )}
 
-            <section ref={refs.burgers} className="scroll-mt-32"><SectionShell eyebrow="COLECCIÓN DIVINÉE" title="Hamburguesas" subtitle="Nuestra selección de obras maestras. Exquisito. Divino. Divinée."><ProductShowcase items={localBurgers.filter(b=>!b.isPromo)} badge="VER DETALLES" onOpen={setActiveBurger} onAdd={(item) => handleInitialAddToCart(item, true)} disabledItems={disabledItems} /></SectionShell></section>
-            <section ref={refs.drinks} className="scroll-mt-32"><SectionShell eyebrow="REFRESHING DRINKS" title="Bebidas" subtitle="Para acompañar la experiencia perfecta."><ProductShowcase items={localDrinks.filter(d=>!d.isPromo)} badge="BEBIDA" onOpen={(p) => handleInitialAddToCart({ ...p, qty: 1 }, false)} onAdd={(item) => handleInitialAddToCart(item, false)} disabledItems={disabledItems} /></SectionShell></section>
-            <section ref={refs.desserts} className="scroll-mt-32"><SectionShell eyebrow="EXQUISITE DESSERTS" title="Postres" subtitle="Selección corta, elegante."><ProductShowcase items={localDesserts.filter(d=>!d.isPromo)} badge="PATISSERIE" onOpen={(p) => handleInitialAddToCart({ ...p, qty: 1 }, false)} onAdd={(item) => handleInitialAddToCart(item, false)} disabledItems={disabledItems} /></SectionShell></section>
+            <section ref={refs.burgers} className="scroll-mt-32">
+              <SectionShell eyebrow="COLECCIÓN CLÁSICA" title="Hamburguesas Sencillas" subtitle="La tradición elevada al máximo nivel.">
+                <ProductShowcase items={localBurgers.filter(b=>!b.isPromo && b.menuSection !== 'premium')} badge="VER DETALLES" onOpen={setActiveBurger} onAdd={(item) => handleInitialAddToCart(item, true)} disabledItems={disabledItems} />
+              </SectionShell>
+            </section>
+            <section className="scroll-mt-32">
+              <SectionShell eyebrow="COLECCIÓN POTENTE" title="Hamburguesas Mixtas" subtitle="Fusión imponente para paladares exigentes.">
+                <ProductShowcase items={localBurgers.filter(b=>!b.isPromo && b.menuSection === 'premium')} badge="VER DETALLES" onOpen={setActiveBurger} onAdd={(item) => handleInitialAddToCart(item, true)} disabledItems={disabledItems} forceModal={true} />
+              </SectionShell>
+            </section>
+            <section ref={refs.drinks} className="scroll-mt-32">
+              <SectionShell eyebrow="REFRESHING DRINKS" title="Bebidas" subtitle="Selecciona tu sabor favorito.">
+                <ProductShowcase items={localDrinks.filter(d=>!d.isPromo)} badge="BEBIDA" onOpen={setActiveBurger} onAdd={(item) => handleInitialAddToCart(item, false)} disabledItems={disabledItems} forceModal={true} />
+              </SectionShell>
+            </section>
+            <section ref={refs.desserts} className="scroll-mt-32">
+              <SectionShell eyebrow="EXQUISITE DESSERTS" title="Postres" subtitle="Selección corta, elegante.">
+                <ProductShowcase items={localDesserts.filter(d=>!d.isPromo)} badge="PATISSERIE" onOpen={setActiveBurger} onAdd={(item) => handleInitialAddToCart(item, false)} disabledItems={disabledItems} />
+              </SectionShell>
+            </section>
             
             <section ref={refs.yogurt} className="scroll-mt-32"><SectionShell eyebrow="GREEK YOGURT DE MÁQUINA" title="Yogurt" subtitle="Sección desactivada temporalmente."><YogurtComingSoonCard /></SectionShell></section>
             <section ref={refs.atelier} className="scroll-mt-32"><SectionShell eyebrow="ATELIER" title="Arma tu Hamburguesa" subtitle="Configurador en vivo, agrega ingredientes y verás cómo caen."><BurgerBuilder onAddToCart={handleInitialAddToCart} catalog={localCatalog} /></SectionShell></section>
