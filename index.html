@@ -812,39 +812,7 @@
         </motion.div>
       );
     }
-      const content = (
-        <div className="text-center p-2 sm:p-4">
-          <div className="text-6xl mb-4 animate-bounce" style={{ animationDuration: '2s' }}>🍟</div>
-          <h3 className="text-2xl font-bold text-divineGold mb-2">¡Hazlo un Combo!</h3>
-          <p className="text-sm text-divineCream/80 mb-6">¿Deseas acompañar tu {product?.name} con unas deliciosas {papas.name} por solo {money(papas.price)}?</p>
-          
-          <div className="flex flex-col gap-3">
-            <button onClick={() => onAccept(papas)} className="w-full btn-primary py-4 text-sm font-bold shadow-glow uppercase">
-              SÍ, AGREGAR PAPAS (+{money(papas.price)})
-            </button>
-            <button onClick={onDecline} className="w-full btn-ghost py-4 text-sm font-bold border-transparent hover:border-divineLine2 text-divineCream/60 hover:text-white">
-              NO, SOLO LA HAMBURGUESA
-            </button>
-          </div>
-        </div>
-      );
 
-      if (isMobile) {
-        return <BottomSheet title="SUGERENCIA DEL CHEF" onClose={onDecline}>{content}</BottomSheet>;
-      }
-
-      const close = useHistoryClose(true, onDecline);
-      useEscape(close, true);
-
-      return (
-        <motion.div className="fixed inset-0 z-[70] flex items-center justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-          <div className="absolute inset-0 bg-[#0A1128]/80 backdrop-blur-sm" onClick={onDecline}></div>
-          <motion.div initial={{ y: 20, scale: 0.95 }} animate={{ y: 0, scale: 1 }} className="relative bg-[#060A17] border border-divineGold/50 rounded-3xl max-w-sm w-full p-6 shadow-promoglow z-10">
-             {content}
-          </motion.div>
-        </motion.div>
-      );
-    }
     function ProductModal({ product, catalog, onClose, onAdd }) {
       const isMobile = useIsMobile(); 
       useLockBodyScroll(true);
