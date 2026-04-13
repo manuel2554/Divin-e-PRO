@@ -1045,14 +1045,8 @@
       
       const [paymentMethod, setPaymentMethod] = useState('pagomovil'); // pagomovil, zelle, binance
       // Lógica de Cross-Selling Inteligente Basada en Precios Reales
-      const hasDrinks = items.some(i => {
-         const n = i.name.toLowerCase();
-         return n.includes('coca') || n.includes('pepsi') || n.includes('bebida') || n.includes('agua') || n.includes('refresco') || n.includes('jugo') || n.includes('té');
-      });
-      const hasFries = items.some(i => {
-         const n = i.name.toLowerCase();
-         return n.includes('papas') || n.includes('frita') || n.includes('fritas');
-      });
+      const hasDrinks = items.some(i => i.name.toLowerCase().includes('coca') || i.name.toLowerCase().includes('pepsi') || i.name.toLowerCase().includes('bebida') || i.name.toLowerCase().includes('agua'));
+      const hasFries = items.some(i => i.name.toLowerCase().includes('papas'));
       const postresDisponibles = localDesserts && localDesserts.length > 0 && !localDesserts.every(d => disabledItems.includes(d.id));
 
       let sugerenciaActiva = false;
