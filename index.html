@@ -1028,7 +1028,7 @@
     // =========================
     // Cart Drawer con Zelle, Binance, Pago Móvil y Delivery Dinámico
     // =========================
-    function CartDrawer({ items, total, bcvRate, onClose, onQty, onClearCart, catalog, supabaseClient }) {
+    function CartDrawer({ items, total, bcvRate, onClose, onQty, onClearCart, catalog, supabaseClient, disabledItems = [], localDesserts = [] }) {
       useLockBodyScroll(true); 
       const close = useHistoryClose(true, onClose); 
       useEscape(close, true);
@@ -1047,6 +1047,20 @@
       const crossSellMeta = catalog?.settings_v2?.cross_sell?.meta || 15;
       const faltante = crossSellMeta - total;
       
+      // Lógica de Cross-Selling Inteligente
+      const hasDrinks = items.some(i => i.name.toLowerCase().includes('coca') || i.name.toLowerCase().includes('pepsi') || i.name.toLowerCase().includes('bebida') || i.name.toLowerCase().includes('agua'));
+      const hasFries = items.some(i => i.name.toLowerCase().includes('papas'));
+      const postresDisponibles = localDesserts.length > 0 && !localDesserts.every(d => disabledItems.includes(d.id));
+
+      let sugerenciaTexto = "de elevar tu pedido al Nivel Divino con un extra.";
+      if (!hasDrinks) {
+         sugerenciaTexto = "de completar tu experiencia con una bebida bien fría.";
+      } else if (!hasFries) {
+         sugerenciaTexto = "de acompañar tu orden con unas deliciosas papas fritas.";
+      } else if (postresDisponibles) {
+         sugerenciaTexto = "de cerrar con broche de oro agregando un postre.";
+      }
+
       // Sistema de Cupones
       const [inputCupon, setInputCupon] = useState("");
       const [descuentoAplicado, setDescuentoAplicado] = useState(0);
@@ -1168,10 +1182,10 @@
                   {faltante > 0 && items.length > 0 && (
                     <div className="bg-gradient-to-r from-divineGold/20 to-transparent border-l-4 border-divineGold p-4 rounded-r-2xl mb-6 animate-pulse">
                       <div className="text-[11px] font-black text-divineGold tracking-widest uppercase">
-                        ✨ NIVEL DIVINÉE A LA VISTA
+                        ✨ COMPLETA TU EXPERIENCIA
                       </div>
                       <div className="text-[10px] text-divineCream/60 mt-1 font-bold">
-                        Estás a solo <span className="text-white">{money(faltante)}</span> de completar la experiencia con un postre.
+                        Estás a solo <span className="text-white">{money(faltante)}</span> {sugerenciaTexto}
                       </div>
                     </div>
                   )}
