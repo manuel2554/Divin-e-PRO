@@ -484,26 +484,15 @@
     }
     
     function ProductCard({ product, badge, onClick, onAdd, isDisabled, isPromoDesign }) {
-      // MAGIA DE OPTIMIZACIÓN: Pasa la imagen por un servidor ultrarrápido, la redimensiona a 500px y la convierte a WebP (pesa 90% menos).
-      const optimizedImg = product.img && product.img.startsWith('http') 
-        ? `https://wsrv.nl/?url=${encodeURIComponent(product.img)}&w=500&output=webp&q=80` 
-        : product.img;
-
       return (
         <motion.div whileHover={!isDisabled ? { y: -6 } : {}} transition={{ type: "spring", stiffness: 260, damping: 22 }} className={`group overflow-hidden rounded-2xl border ${isDisabled ? 'border-red-500/30 bg-black/40' : (isPromoDesign ? 'border-divineGold/60 shadow-promoglow bg-divineGold/5' : 'border-divineLine bg-divineInk')} shadow-divine relative h-full`}>
           <div onClick={isDisabled ? undefined : onClick} className={`flex flex-col h-full w-full text-left ${isDisabled ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}>
-            
-            {/* INICIO DE LA IMAGEN Y ETIQUETAS */}
             <div className="relative aspect-[4/3] sm:aspect-[4/3] overflow-hidden card-premium shrink-0">
-              <img src={optimizedImg} alt={product.name} className={`h-full w-full object-cover transition duration-700 ${isDisabled ? 'grayscale' : 'group-hover:scale-[1.08]'}`} loading="lazy" decoding="async" fetchpriority="low" />
-              
+              <img src={product.img} alt={product.name} className={`h-full w-full object-cover transition duration-700 ${isDisabled ? 'grayscale' : 'group-hover:scale-[1.08]'}`} loading="lazy" decoding="async" fetchpriority="low" />
               <div className={`absolute left-2 sm:left-3 top-2 sm:top-3 rounded-full border ${isPromoDesign ? 'border-divineGold/80 bg-divineGold text-[#0A1128]' : 'border-divineLine2 bg-[#060A17]/80 text-divineCream'} px-2 sm:px-3 py-1 sm:py-1.5 text-[9px] sm:text-xs tracking-widest sm:tracking-[0.2em] font-bold backdrop-blur`}>
                 {isPromoDesign ? '🌟 PROMO' : badge}
               </div>
-              
-              <div className="absolute right-2 sm:right-3 top-2 sm:top-3 rounded-full border border-divineLine2 bg-[#060A17]/80 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm tracking-wide sm:tracking-[0.1em] text-divineGold backdrop-blur font-bold">
-                {money(product.price)}
-              </div>
+              <div className="absolute right-2 sm:right-3 top-2 sm:top-3 rounded-full border border-divineLine2 bg-[#060A17]/80 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm tracking-wide sm:tracking-[0.1em] text-divineGold backdrop-blur font-bold">{money(product.price)}</div>
               
               {isDisabled && (
                 <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center z-10">
@@ -511,8 +500,6 @@
                 </div>
               )}
             </div>
-            {/* FIN DE LA IMAGEN Y ETIQUETAS */}
-
             <div className="p-3 sm:p-5 flex flex-col flex-1 justify-between bg-divineInk/50">
               <div>
                 <div className="text-sm sm:text-lg font-bold leading-tight">{product.name}</div>
@@ -528,7 +515,6 @@
                 </button>
               </div>
             </div>
-
           </div>
         </motion.div>
       );
