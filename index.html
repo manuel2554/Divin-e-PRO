@@ -920,7 +920,7 @@
     }
 
     // =========================
-    // Módulo de Rastreo Real (Supabase)
+    // Pizza Tracker Visual VIP
     // =========================
     function TrackingModal({ onClose, supabaseClient }) {
       const [inputCode, setInputCode] = useState("");
@@ -932,11 +932,7 @@
         if (!inputCode) return;
         setLoading(true); setErrorMsg(""); setStatusData(null);
 
-        const { data, error } = await supabaseClient
-          .from('orders')
-          .select('status, customer_name')
-          .eq('tracking_code', inputCode.trim().toUpperCase())
-          .single();
+        const { data, error } = await supabaseClient.from('orders').select('status, customer_name').eq('tracking_code', inputCode.trim().toUpperCase()).single();
 
         if (error || !data) {
           setErrorMsg("No encontramos este código. Verifica que esté bien escrito (Ej: #DIV-1234).");
@@ -946,17 +942,59 @@
         setLoading(false);
       };
 
+      const getProgress = (status) => {
+        const steps = ['Pendiente', 'Preparando', 'En camino', 'Entregado'];
+        if (status === 'Cancelado') return -1;
+        if (status === 'Listo para retirar') return 2;
+        const idx = steps.indexOf(status);
+        return idx >= 0 ? idx : 0;
+      };
+
       return (
-        <BottomSheet title="RASTREO DE PEDIDO" subtitle="Ingresa tu código de orden" onClose={onClose}>
+        <BottomSheet title="RASTREO VIP" subtitle="Sigue tu orden en vivo" onClose={onClose}>
           <div className="space-y-5">
-            <input type="text" value={inputCode} onChange={(e) => setInputCode(e.target.value)} placeholder="Ej: #DIV-1234" className="w-full bg-[#060A17] border-2 border-divineLine2 rounded-xl px-5 py-4 text-base font-bold text-divineCream outline-none focus:border-divineGold transition uppercase tracking-widest text-center" />
-            <button className="w-full btn-primary py-4 text-sm" onClick={searchOrder} disabled={loading}>{loading ? "BUSCANDO..." : "🔍 BUSCAR ESTADO"}</button>
-            {errorMsg && <div className="text-red-400 text-sm font-bold mt-2 text-center">{errorMsg}</div>}
-            {statusData && (
-              <div className="mt-4 p-6 rounded-2xl border-2 border-divineGold/50 bg-[#060A17] shadow-glow text-center">
-                <div className="text-sm font-bold tracking-[0.2em] text-divineCream/70 mb-2">HOLA, {statusData.customer_name.toUpperCase()}</div>
-                <div className="text-base text-divineCream/90 mb-3">El estatus actual de tu pedido es:</div>
-                <div className="text-3xl font-black text-divineGold bg-divineGold/10 py-3 rounded-xl border border-divineGold/30">{statusData.status.toUpperCase()}</div>
+            {!statusData ? (
+              <>
+                <input type="text" value={inputCode} onChange={(e) => setInputCode(e.target.value)} placeholder="Ej: #DIV-1234" className="w-full bg-[#060A17] border-2 border-divineLine2 rounded-xl px-5 py-4 text-base font-bold text-divineCream outline-none focus:border-divineGold transition uppercase tracking-widest text-center" />
+                <button className="w-full btn-primary py-4 text-sm" onClick={searchOrder} disabled={loading}>{loading ? "BUSCANDO..." : "🔍 BUSCAR PEDIDO"}</button>
+                {errorMsg && <div className="text-red-400 text-sm font-bold mt-2 text-center">{errorMsg}</div>}
+              </>
+            ) : (
+              <div className="mt-2 space-y-8">
+                <div className="text-center">
+                  <div className="text-xs font-bold tracking-[0.2em] text-divineCream/50 mb-1">PEDIDO A NOMBRE DE</div>
+                  <div className="text-2xl font-black text-divineGold uppercase">{statusData.customer_name}</div>
+                  <div className="text-sm font-bold text-divineCream mt-2">ESTATUS: <span className="text-[#25D366]">{statusData.status.toUpperCase()}</span></div>
+                </div>
+
+                {statusData.status === 'Cancelado' ? (
+                  <div className="p-6 rounded-2xl border-2 border-red-500/50 bg-red-500/10 text-center text-red-400 font-bold">🚫 Tu pedido fue cancelado. Comunícate con Soporte.</div>
+                ) : (
+                  <div className="relative pt-6 pb-4">
+                     <div className="absolute top-10 left-6 right-6 h-2 bg-black rounded-full border border-divineLine2 overflow-hidden">
+                        <motion.div initial={{ width: 0 }} animate={{ width: `${(getProgress(statusData.status) / 3) * 100}%` }} className="h-full bg-gradient-to-r from-divineGold to-[#25D366] transition-all duration-1000 ease-out"></motion.div>
+                     </div>
+                     <div className="relative flex justify-between z-10">
+                        <div className={`flex flex-col items-center gap-2 ${getProgress(statusData.status) >= 0 ? 'opacity-100' : 'opacity-40 grayscale'}`}>
+                           <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl shadow-glow transition-all duration-500 ${getProgress(statusData.status) === 0 ? 'bg-divineGold text-black scale-110 animate-pulse' : getProgress(statusData.status) > 0 ? 'bg-divineGold text-black' : 'bg-[#060A17] border border-divineLine2'}`}>📝</div>
+                           <div className="text-[9px] font-bold tracking-widest text-center">RECIBIDO</div>
+                        </div>
+                        <div className={`flex flex-col items-center gap-2 ${getProgress(statusData.status) >= 1 ? 'opacity-100' : 'opacity-40 grayscale'}`}>
+                           <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl shadow-glow transition-all duration-500 ${getProgress(statusData.status) === 1 ? 'bg-divineGold text-black scale-110 animate-pulse' : getProgress(statusData.status) > 1 ? 'bg-divineGold text-black' : 'bg-[#060A17] border border-divineLine2'}`}>🔥</div>
+                           <div className="text-[9px] font-bold tracking-widest text-center">PARRILLA</div>
+                        </div>
+                        <div className={`flex flex-col items-center gap-2 ${getProgress(statusData.status) >= 2 ? 'opacity-100' : 'opacity-40 grayscale'}`}>
+                           <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl shadow-glow transition-all duration-500 ${getProgress(statusData.status) === 2 ? 'bg-divineGold text-black scale-110 animate-pulse' : getProgress(statusData.status) > 2 ? 'bg-divineGold text-black' : 'bg-[#060A17] border border-divineLine2'}`}>🛵</div>
+                           <div className="text-[9px] font-bold tracking-widest text-center">EN VÍA</div>
+                        </div>
+                        <div className={`flex flex-col items-center gap-2 ${getProgress(statusData.status) >= 3 ? 'opacity-100' : 'opacity-40 grayscale'}`}>
+                           <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl shadow-glow transition-all duration-500 ${getProgress(statusData.status) >= 3 ? 'bg-[#25D366] text-black scale-125' : 'bg-[#060A17] border border-divineLine2'}`}>✅</div>
+                           <div className="text-[9px] font-bold tracking-widest text-center">LISTO</div>
+                        </div>
+                     </div>
+                  </div>
+                )}
+                <button className="w-full btn-ghost py-3 text-xs" onClick={() => setStatusData(null)}>← BUSCAR OTRO PEDIDO</button>
               </div>
             )}
           </div>
@@ -999,10 +1037,34 @@
       const selectedZone = deliveryZonesList.find(z => z.id === deliveryZoneId) || deliveryZonesList[0];
       
       const [paymentMethod, setPaymentMethod] = useState('pagomovil'); // pagomovil, zelle, binance
+      const crossSellMeta = catalog?.settings_v2?.cross_sell?.meta || 15;
+      const faltante = crossSellMeta - total;
       
-      // Cálculos Dinámicos (Sin tarifa de servicio)
+      // Sistema de Cupones
+      const [inputCupon, setInputCupon] = useState("");
+      const [descuentoAplicado, setDescuentoAplicado] = useState(0);
+      const [codigoAplicado, setCodigoAplicado] = useState("");
+
+      const aplicarCupon = () => {
+        if (!inputCupon) return;
+        const cuponesStr = catalog?.settings_v2?.cupones || "";
+        const listaCupones = cuponesStr.split(',').map(c => c.trim().split(':'));
+        const cuponValido = listaCupones.find(c => c[0].toUpperCase() === inputCupon.toUpperCase());
+        
+        if (cuponValido) {
+           setDescuentoAplicado(Number(cuponValido[1]));
+           setCodigoAplicado(cuponValido[0].toUpperCase());
+           window.showToast(`Cupón de $${cuponValido[1]} aplicado`, "🎟️");
+        } else {
+           window.showToast("Cupón inválido o expirado", "⚠️");
+           setDescuentoAplicado(0);
+           setCodigoAplicado("");
+        }
+      };
+
+      // Cálculos Dinámicos
       const deliveryCost = Number(selectedZone?.cost || 0);
-      const finalTotal = total + deliveryCost;
+      const finalTotal = Math.max(0, total + deliveryCost - descuentoAplicado);
 
       // Variables dinámicas desde ajustes
       const botToken = catalog?.settings?.telegramToken || TELEGRAM_BOT_TOKEN;
@@ -1065,6 +1127,7 @@
         });
         
         if (deliveryCost > 0) orderText += `\n🛵 *Costo Delivery:* $${deliveryCost.toFixed(2)}`;
+        if (descuentoAplicado > 0) orderText += `\n🎟️ *Cupón (${codigoAplicado}):* -$${descuentoAplicado.toFixed(2)}`;
         orderText += `\n💰 *Total USD:* $${finalTotal.toFixed(2)}`;
         if (paymentMethod === 'pagomovil' && bcvRate) orderText += `\n🇻🇪 *Total BCV:* ${(finalTotal * bcvRate).toFixed(2)} Bs`;
         
@@ -1094,6 +1157,16 @@
               </div>
 
               {step === 0 && (
+          {faltante > 0 && items.length > 0 && (
+                    <div className="bg-gradient-to-r from-divineGold/20 to-transparent border-l-4 border-divineGold p-4 rounded-r-2xl mb-6 animate-pulse">
+                      <div className="text-[11px] font-black text-divineGold tracking-widest uppercase">
+                        ✨ NIVEL DIVINÉE A LA VISTA
+                      </div>
+                      <div className="text-[10px] text-divineCream/60 mt-1 font-bold">
+                        Estás a solo <span className="text-white">{money(faltante)}</span> de completar la experiencia con un postre.
+                      </div>
+                    </div>
+                  )}
                 <>
                   <div className="mt-4 space-y-4">
                     {items.length === 0 ? (<div className="rounded-2xl border-2 border-dashed border-divineLine2 bg-[#060A17] p-6 text-base font-semibold text-divineCream/70 text-center py-12">Tu carrito está vacío. ¡Agrega algo delicioso!</div>) : (
@@ -1121,10 +1194,21 @@
                   </div>
                   {items.length > 0 && (
                     <div className="mt-6 space-y-4">
+                      <div className="flex gap-2 mb-4">
+                        <input type="text" value={inputCupon} onChange={(e)=>setInputCupon(e.target.value)} placeholder="Código Promocional" className="flex-1 bg-[#060A17] border-2 border-divineLine2 rounded-xl px-4 py-3 text-sm text-divineCream outline-none focus:border-pink-400 transition uppercase tracking-widest" />
+                        <button onClick={aplicarCupon} className="bg-divineLine2/30 hover:bg-pink-500/20 text-pink-400 border-2 border-transparent hover:border-pink-500/50 px-4 rounded-xl font-bold text-xs transition" type="button">APLICAR</button>
+                      </div>
+
                       <div className="rounded-2xl border-2 border-divineGold/40 bg-[#0A1128] p-5 shadow-glow">
+                        {descuentoAplicado > 0 && (
+                          <div className="flex items-center justify-between mb-2 text-pink-400 border-b border-divineLine2/30 pb-2">
+                             <span className="text-xs font-bold uppercase tracking-widest">Cupón {codigoAplicado}</span>
+                             <span className="font-bold">-{money(descuentoAplicado)}</span>
+                          </div>
+                        )}
                         <div className="flex items-center justify-between mb-4">
                            <span className="text-base text-divineCream/90 font-bold">SUBTOTAL</span>
-                           <div className="text-right"><div className="text-2xl font-black text-divineGold">{money(total)}</div></div>
+                           <div className="text-right"><div className="text-2xl font-black text-divineGold">{money(total - descuentoAplicado)}</div></div>
                         </div>
                         <button className="w-full btn-primary py-4 text-sm" onClick={() => setStep(1)} type="button">PROCESAR COMPRA →</button>
                       </div>
@@ -1242,10 +1326,13 @@
                   <div className="w-20 h-20 rounded-full border-4 border-divineGold text-divineGold flex items-center justify-center text-4xl shadow-glow">✓</div>
                   <h3 className="text-3xl font-black">¡Pedido Recibido!</h3>
                   <p className="text-base text-divineCream/80 font-medium">Estamos verificando tu pago para preparar tu orden.</p>
-                  <div className="w-full mt-8 p-8 rounded-3xl border-2 border-divineLine2 bg-[#0A1128] shadow-inner">
-                    <div className="text-sm font-bold tracking-[0.3em] text-divineCream/60 mb-3">CÓDIGO DE RASTREO</div>
+                  <div className="w-full mt-8 p-8 rounded-3xl border-2 border-divineLine2 bg-[#0A1128] shadow-inner relative overflow-hidden">
+                    <div className="absolute top-0 right-0 bg-blue-500/20 text-blue-400 text-[10px] font-bold px-3 py-1 rounded-bl-xl border-l border-b border-blue-500/30 tracking-widest">
+                       ⏱️ ENTREGA EST.: {catalog?.settings_v2?.deliveryEta || "35-45 MIN"}
+                    </div>
+                    <div className="text-sm font-bold tracking-[0.3em] text-divineCream/60 mb-3 mt-2">CÓDIGO DE RASTREO</div>
                     <div className="text-4xl font-black tracking-widest text-divineGold">{orderId}</div>
-                    <p className="mt-4 text-sm font-medium text-divineCream/60">Copia o guarda este código. Lo usarás para ver si tu pedido ya va en camino.</p>
+                    <p className="mt-4 text-sm font-medium text-divineCream/60">Copia o guarda este código. Lo usarás en la lupa de Rastreo para ver tu pedido en vivo.</p>
                   </div>
                   
                   <button 
@@ -1676,7 +1763,14 @@
         binanceEmail: localCatalog?.settings?.binanceEmail || "tu_correo@binance.com",
         drinkFlavors: localCatalog?.settings?.drinkFlavors || "Regular / Original, Zero / Sin Azúcar, Limón, Naranja, Uva, Chinotto / Sprite, Otro (Especificar en nota)",
         loyaltyRate: localCatalog?.settings?.loyalty?.rate || 10,
-        loyaltyRoulette: (localCatalog?.settings?.loyalty?.roulette || [10, 20, 50, 100, 200, 500]).join(', ')
+        loyaltyRoulette: (localCatalog?.settings?.loyalty?.roulette || [10, 20, 50, 100, 200, 500]).join(', '),
+        // Nuevas variables VIP
+        horarioActivo: localCatalog?.settings_v2?.horario?.activo || false,
+        apertura: localCatalog?.settings_v2?.horario?.apertura || "17:00",
+        cierre: localCatalog?.settings_v2?.horario?.cierre || "23:00",
+        crossSellMeta: localCatalog?.settings_v2?.cross_sell?.meta || 15,
+        deliveryEta: localCatalog?.settings_v2?.deliveryEta || "35 - 45 min",
+        cupones: localCatalog?.settings_v2?.cupones || "FLASH20:2"
       });
 
       const [deliveryZonesConfig, setDeliveryZonesConfig] = useState(localCatalog?.settings?.deliveryZones || [
@@ -1762,7 +1856,7 @@
         setDeliveryZonesConfig(deliveryZonesConfig.filter(z => z.id !== id));
       };
 
-      // GUARDAR LOS AJUSTES (Incluyendo Lealtad VIP)
+      // GUARDAR LOS AJUSTES (Incluyendo Lealtad VIP y Nuevos Ajustes V2)
       const saveSettingsForm = () => {
         const newCatalog = { 
           ...localCatalog, 
@@ -1774,10 +1868,22 @@
               roulette: String(settingsForm.loyaltyRoulette || "10, 20, 50, 100, 200").split(',').map(v => Number(v.trim())).filter(v => !isNaN(v)),
               catalog: loyaltyCatalog.map(item => ({...item, cost: Number(item.cost)}))
             }
-          } 
+          },
+          settings_v2: {
+            horario: {
+              activo: settingsForm.horarioActivo,
+              apertura: settingsForm.apertura,
+              cierre: settingsForm.cierre
+            },
+            cross_sell: {
+              activo: true,
+              meta: Number(settingsForm.crossSellMeta)
+            },
+            deliveryEta: settingsForm.deliveryEta,
+            cupones: settingsForm.cupones
+          }
         };
         onSaveInventory(localBurgers, localDesserts, localDrinks, newCatalog);
-      };
 
       const addLoyaltyItem = () => {
         const id = 'reward_' + Math.random().toString(36).substr(2, 9);
@@ -2149,7 +2255,44 @@
                    </div>
                 </div>
 
-                <button onClick={saveSettingsForm} className="btn-primary w-full py-4 text-sm font-bold tracking-widest shadow-glow">GUARDAR TODOS LOS AJUSTES</button>
+                <div className="bg-[#060A17] border border-divineGold/50 rounded-2xl p-6 shadow-glow">
+                   <h3 className="text-sm tracking-[0.2em] text-divineGold font-bold mb-4 border-b border-divineLine2 pb-2">⏰ CERRAR LOCAL AUTOMÁTICAMENTE</h3>
+                   <div className="space-y-4">
+                      <label className="flex items-center gap-3 cursor-pointer bg-[#0A1128] p-3 rounded-xl border border-divineLine2">
+                        <input type="checkbox" checked={settingsForm.horarioActivo} onChange={(e)=>setSettingsForm({...settingsForm, horarioActivo: e.target.checked})} className="w-5 h-5 accent-divineGold" />
+                        <span className="text-xs font-bold text-divineCream">Activar Piloto Automático</span>
+                      </label>
+                      {settingsForm.horarioActivo && (
+                        <div className="grid grid-cols-2 gap-4">
+                           <div><label className="text-[10px] text-divineCream/50 block mb-1">Abre a las (Ej: 17:00)</label><input type="time" value={settingsForm.apertura} onChange={(e)=>setSettingsForm({...settingsForm, apertura: e.target.value})} className="w-full bg-[#0A1128] border border-divineLine2 rounded-lg px-3 py-2 text-white outline-none focus:border-divineGold" /></div>
+                           <div><label className="text-[10px] text-divineCream/50 block mb-1">Cierra a las (Ej: 23:00)</label><input type="time" value={settingsForm.cierre} onChange={(e)=>setSettingsForm({...settingsForm, cierre: e.target.value})} className="w-full bg-[#0A1128] border border-divineLine2 rounded-lg px-3 py-2 text-white outline-none focus:border-divineGold" /></div>
+                        </div>
+                      )}
+                   </div>
+                </div>
+
+                <div className="bg-[#060A17] border border-[#25D366]/50 rounded-2xl p-6 shadow-[0_0_15px_rgba(37,211,102,0.15)]">
+                   <h3 className="text-sm tracking-[0.2em] text-[#25D366] font-bold mb-2 border-b border-[#25D366]/30 pb-2">💰 TÁCTICA: "TE FALTA POCO"</h3>
+                   <p className="text-[10px] text-divineCream/50 mb-3">Monto objetivo en el carrito para decirle al cliente que le falta poco para su postre.</p>
+                   <div>
+                     <label className="text-xs text-divineCream/70 mb-1 block font-bold">Meta del Carrito ($)</label>
+                     <input type="number" value={settingsForm.crossSellMeta} onChange={(e)=>setSettingsForm({...settingsForm, crossSellMeta: e.target.value})} className="w-full bg-[#0A1128] border border-divineLine2 rounded-lg px-3 py-2 text-white outline-none focus:border-[#25D366]" />
+                   </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="bg-[#060A17] border border-blue-500/50 rounded-2xl p-6 shadow-[0_0_15px_rgba(59,130,246,0.15)]">
+                     <h3 className="text-sm tracking-[0.2em] text-blue-400 font-bold mb-2 border-b border-blue-500/30 pb-2">⏳ TIEMPO DE ENTREGA (ETA)</h3>
+                     <input type="text" value={settingsForm.deliveryEta} onChange={(e)=>setSettingsForm({...settingsForm, deliveryEta: e.target.value})} placeholder="Ej: 35-45 min" className="w-full bg-[#0A1128] border border-divineLine2 rounded-lg px-3 py-2 text-white outline-none focus:border-blue-400 font-bold text-center" />
+                  </div>
+                  <div className="bg-[#060A17] border border-pink-500/50 rounded-2xl p-6 shadow-[0_0_15px_rgba(236,72,153,0.15)]">
+                     <h3 className="text-sm tracking-[0.2em] text-pink-400 font-bold mb-2 border-b border-pink-500/30 pb-2">🎟️ CUPONES SECRETOS</h3>
+                     <p className="text-[9px] text-divineCream/50 mb-2">Formato: CODIGO:DESCUENTO (Separados por coma)</p>
+                     <input type="text" value={settingsForm.cupones} onChange={(e)=>setSettingsForm({...settingsForm, cupones: e.target.value})} placeholder="FLASH20:2, VIP:5" className="w-full bg-[#0A1128] border border-divineLine2 rounded-lg px-3 py-2 text-white outline-none focus:border-pink-400 font-mono text-xs" />
+                  </div>
+                </div>
+
+                <button onClick={saveSettingsForm} className="btn-primary w-full py-4 text-sm font-bold tracking-widest shadow-glow mt-4">GUARDAR TODOS LOS AJUSTES</button>
               </div>
              ) : tab === 'loyalty' ? (
               <div className="max-w-xl mx-auto space-y-6">
@@ -2410,6 +2553,7 @@
       const [phone, setPhone] = useState('');
       const [clientData, setClientData] = useState(null);
       const [loading, setLoading] = useState(false);
+      const [lastOrder, setLastOrder] = useState(null);
       
       // Estados de la Ruleta
       const [spinning, setSpinning] = useState(false);
@@ -2446,6 +2590,9 @@
           if(!data.inventario) data.inventario = [];
           setClientData(data);
           setStep('dashboard');
+          // Buscar último pedido para el Re-order
+          const { data: lastO } = await supabaseClient.from('orders').select('*').eq('phone', cleanPhone).order('created_at', { ascending: false }).limit(1).single();
+          if (lastO) setLastOrder(lastO);
         } else {
           window.showToast("Aún no tienes tokens. ¡Haz tu primera compra para empezar!", "💡");
         }
@@ -2555,6 +2702,28 @@
                 <div className="text-5xl font-black text-white drop-shadow-lg">{clientData.tokens} <span className="text-lg text-divineGold/80">DT</span></div>
                 <p className="text-[10px] text-divineCream/60 mt-2 uppercase tracking-widest">Ganas {loyaltySettings.rate} DT por cada $1 de compra</p>
               </div>
+              {lastOrder && (
+                <div className="bg-divineGold/5 border border-divineGold/30 rounded-3xl p-5 mb-6 shadow-inner">
+                  <h4 className="text-[10px] font-bold tracking-[0.2em] text-divineGold mb-3 uppercase">Pedir lo mismo de siempre</h4>
+                  <div className="flex flex-col gap-1 mb-4">
+                    {lastOrder.items.map((it, idx) => (
+                      <div key={idx} className="text-xs text-divineCream/70 font-medium">
+                        • {it.qty}x {it.name}
+                      </div>
+                    ))}
+                  </div>
+                  <button 
+                    onClick={() => {
+                      lastOrder.items.forEach(it => onAddToCart(it, it.name.toLowerCase().includes('hamburguesa')));
+                      setIsOpen(false);
+                      window.showToast("¡Pedido anterior cargated!", "🍔");
+                    }}
+                    className="w-full py-3 bg-divineGold text-black rounded-xl font-black text-[10px] tracking-widest hover:brightness-110 transition"
+                  >
+                    REPETIR ÚLTIMA ORDEN
+                  </button>
+                </div>
+              )}
 
               {/* Inventario de Premios Guardados */}
               {clientData.inventario && clientData.inventario.length > 0 && (
@@ -2757,9 +2926,19 @@
         
         const fetchGlobalData = async () => {
           if (supabaseClient) {
-            const { data } = await supabaseClient.from('store_settings').select('is_open, catalog_data').eq('id', 'divinee').single();
+            const { data } = await supabaseClient.from('store_settings').select('is_open, catalog_data, settings_v2').eq('id', 'divinee').single();
             if (data) {
-              setIsStoreOpen(data.is_open);
+              // Lógica de Horario Inteligente
+              const config = data.settings_v2?.horario;
+              if (config?.activo) {
+                const ahora = new Date();
+                const horaActual = ahora.getHours() + ":" + ahora.getMinutes().toString().padStart(2, '0');
+                const estaAbierto = horaActual >= config.apertura && horaActual <= config.cierre;
+                setIsStoreOpen(estaAbierto);
+              } else {
+                setIsStoreOpen(data.is_open);
+              }
+
               if (data.catalog_data) {
                 if (data.catalog_data.burgers) setLocalBurgers(data.catalog_data.burgers);
                 if (data.catalog_data.desserts) setLocalDesserts(data.catalog_data.desserts);
@@ -2767,6 +2946,8 @@
                 if (data.catalog_data.catalog) {
                    const loadedCatalog = data.catalog_data.catalog;
                    if (!loadedCatalog.settings) loadedCatalog.settings = DEFAULT_CATALOG.settings;
+                   // Inyectamos los settings_v2 para que estén disponibles en toda la app
+                   loadedCatalog.settings_v2 = data.settings_v2;
                    setLocalCatalog(loadedCatalog);
                 }
               }
@@ -2924,6 +3105,31 @@
                 </div>
               </div>
             </motion.section>
+
+            {/* PRUEBA SOCIAL DE LUJO (Marquee de Reviews) */}
+            <div className="mb-12 md:mb-20 overflow-hidden relative border-y border-divineLine2 bg-black/40 py-3 shadow-inner">
+              <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-divineBg to-transparent z-10 pointer-events-none"></div>
+              <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-divineBg to-transparent z-10 pointer-events-none"></div>
+              <motion.div animate={{ x: ["0%", "-50%"] }} transition={{ duration: 30, ease: "linear", repeat: Infinity }} className="flex w-[200%] gap-12 whitespace-nowrap items-center text-sm font-bold tracking-wide text-divineCream/70">
+                <span className="flex items-center gap-2"><span className="text-divineGold text-lg tracking-tighter">★★★★★</span> "La mejor smash que he probado en Pueblo Llano." <span className="text-divineCream/40">- Carlos M.</span></span>
+                <span className="text-divineGold/30">✦</span>
+                <span className="flex items-center gap-2"><span className="text-divineGold text-lg tracking-tighter">★★★★★</span> "El empaque y la calidad son nivel Caracas." <span className="text-divineCream/40">- Sofía P.</span></span>
+                <span className="text-divineGold/30">✦</span>
+                <span className="flex items-center gap-2"><span className="text-divineGold text-lg tracking-tighter">★★★★★</span> "La Divinée Absoluta es una locura total." <span className="text-divineCream/40">- Luis R.</span></span>
+                <span className="text-divineGold/30">✦</span>
+                <span className="flex items-center gap-2"><span className="text-divineGold text-lg tracking-tighter">★★★★★</span> "Excelente atención y llegó súper rápido." <span className="text-divineCream/40">- Ana G.</span></span>
+                <span className="text-divineGold/30">✦</span>
+                
+                {/* Repetimos el bloque para el bucle infinito */}
+                <span className="flex items-center gap-2"><span className="text-divineGold text-lg tracking-tighter">★★★★★</span> "La mejor smash que he probado en Pueblo Llano." <span className="text-divineCream/40">- Carlos M.</span></span>
+                <span className="text-divineGold/30">✦</span>
+                <span className="flex items-center gap-2"><span className="text-divineGold text-lg tracking-tighter">★★★★★</span> "El empaque y la calidad son nivel Caracas." <span className="text-divineCream/40">- Sofía P.</span></span>
+                <span className="text-divineGold/30">✦</span>
+                <span className="flex items-center gap-2"><span className="text-divineGold text-lg tracking-tighter">★★★★★</span> "La Divinée Absoluta es una locura total." <span className="text-divineCream/40">- Luis R.</span></span>
+                <span className="text-divineGold/30">✦</span>
+                <span className="flex items-center gap-2"><span className="text-divineGold text-lg tracking-tighter">★★★★★</span> "Excelente atención y llegó súper rápido." <span className="text-divineCream/40">- Ana G.</span></span>
+              </motion.div>
+            </div>
             
             {promos.length > 0 && (
               <section ref={refs.promos} className="scroll-mt-32 mb-12 md:mb-20 bg-divineGold/5 border-2 border-divineGold/30 p-6 md:p-10 rounded-3xl shadow-promoglow">
