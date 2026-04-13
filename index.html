@@ -1761,6 +1761,50 @@
       const [loading, setLoading] = useState(true);
       const [tab, setTab] = useState('orders'); 
       const [searchCode, setSearchCode] = useState('');
+
+      // --- MÓDULO DE FINANZAS ---
+      const [financeDate, setFinanceDate] = useState(new Date().toISOString().split('T')[0]);
+      const [financeOrders, setFinanceOrders] = useState([]);
+      const [financeLoading, setFinanceLoading] = useState(false);
+
+      const loadFinanceData = async (dateStr) => {
+         setFinanceLoading(true);
+         const start = new Date(dateStr + "T00:00:00").toISOString();
+         const end = new Date(dateStr + "T23:59:59.999").toISOString();
+
+         const { data } = await supabaseClient.from('orders')
+           .select('*')
+           .gte('created_at', start)
+           .lte('created_at', end);
+           
+         if (data) setFinanceOrders(data);
+         setFinanceLoading(false);
+      };
+
+      useEffect(() => {
+         if (tab === 'finance') loadFinanceData(financeDate);
+      }, [tab, financeDate]);
+
+      const handleResetDay = async () => {
+         const pwd = window.prompt(`⚠️ PELIGRO: Vas a ELIMINAR TODOS los pedidos del ${financeDate}.\n\nPara confirmar, escribe la palabra: BORRAR`);
+         if (pwd !== 'BORRAR') { window.showToast("Operación cancelada", "❌"); return; }
+         
+         setFinanceLoading(true);
+         const start = new Date(financeDate + "T00:00:00").toISOString();
+         const end = new Date(financeDate + "T23:59:59.999").toISOString();
+
+         const { error } = await supabaseClient.from('orders').delete().gte('created_at', start).lte('created_at', end);
+         
+         if (error) {
+            window.showToast("Error al borrar", "❌");
+         } else {
+            window.showToast("Contabilidad del día reseteada", "🗑️");
+            loadFinanceData(financeDate);
+            fetchData(); // Recarga la pestaña de pedidos principal
+         }
+         setFinanceLoading(false);
+      };
+      // ---------------------------
       const [invoiceOrder, setInvoiceOrder] = useState(null);
       const [isStoreOpen, setIsStoreOpen] = useState(true);
 
@@ -2198,6 +2242,7 @@
               <button onClick={() => setTab('invoice')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'invoice' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>FACTURACIÓN</button>
               <button onClick={() => setTab('settings')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'settings' ? 'text-divineGold border-b-2 border-divineGold' : 'text-divineCream/50 hover:text-divineCream'}`}>⚙️ AJUSTES</button>
               <button onClick={() => setTab('loyalty')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'loyalty' ? 'text-purple-400 border-b-2 border-purple-400' : 'text-divineCream/50 hover:text-purple-300'}`}>🎁 LEALTAD VIP</button>
+              <button onClick={() => setTab('finance')} className={`py-3 text-xs tracking-widest whitespace-nowrap transition-colors ${tab === 'finance' ? 'text-[#25D366] border-b-2 border-[#25D366]' : 'text-divineCream/50 hover:text-[#25D366]/70'}`}>📊 FINANZAS</button>
             </div>
           </div>
 
@@ -2532,7 +2577,86 @@
                   <><div id="invoice-print-area" className="bg-white text-black p-6 md:p-8 rounded-2xl shadow-xl font-mono text-sm"><div className="text-center mb-6 border-b-2 border-dashed border-black/20 pb-6"><h2 className="text-2xl font-bold tracking-widest">{BRAND_NAME.toUpperCase()}</h2><p className="text-xs mt-1 text-gray-600">GOURMET BAR</p><p className="text-xs text-gray-600 mt-1">RIF: V-30158858-1</p></div><div className="mb-6 space-y-1 text-xs"><div className="flex"><span>TICKET:</span> <strong className="text-base">{invoiceOrder.tracking_code}</strong></div><div className="flex"><span>FECHA:</span> <span>{new Date(invoiceOrder.created_at).toLocaleString('es-VE')}</span></div><div className="flex mt-3"><span>CLIENTE:</span> <span className="font-bold uppercase text-right truncate">{invoiceOrder.customer_name}</span></div><div className="flex"><span>TLF:</span> <span>{invoiceOrder.phone}</span></div></div><div className="mb-6 border-t-2 border-b-2 border-dashed border-black/20 py-4"><div className="flex font-bold mb-3 text-xs"><span>CANT DESCRIPCIÓN</span><span>TOTAL</span></div>{invoiceOrder.items.map((it, i) => (<div key={i} className="mb-3 text-xs"><div className="flex font-semibold"><span>{it.qty}x {it.name.replace('Hamburguesa Divinée (Atelier)', 'Atelier')}</span><span>{money(it.price * it.qty)}</span></div>{it.meta && (<div className="text-xs text-gray-500 pl-4 mt-1 space-y-1">{Object.entries(it.meta).map(([k,v]) => <div key={k}>- {k}: {Array.isArray(v) ? v.join(", ") : String(v)}</div>)}</div>)}</div>))}</div><div className="mb-8 space-y-1"><div className="flex text-base font-bold"><span>TOTAL USD:</span><span>{money(invoiceOrder.total_usd)}</span></div>{invoiceOrder.bcv_rate && (<div className="flex text-xs text-gray-500 font-bold"><span>TOTAL BCV (TASA {invoiceOrder.bcv_rate}):</span><span>{(invoiceOrder.total_usd * invoiceOrder.bcv_rate).toFixed(2)} Bs</span></div>)}<div className="flex text-xs text-gray-400 mt-2"><span>METODO:</span><span className="uppercase">{invoiceOrder.payment_ref}</span></div></div><div className="text-center text-xs text-gray-600 font-bold space-y-1"><p>¡GRACIAS POR SU COMPRA!</p><p>Exquisito. Divino. Divinée🍔✨</p></div></div><button onClick={handlePrintTicket} className="mt-8 w-full bg-black text-white py-4 rounded-xl font-sans font-bold tracking-widest hover:bg-gray-800 transition shadow-lg">🖨️ IMPRIMIR TICKET</button></>
                 ) : (<div className="text-center py-10 text-divineCream/40 text-sm border border-dashed border-divineLine2 rounded-2xl">Ingresa el código arriba o selecciona un pedido de la lista para generar su factura.</div>)}
               </div>
-             )
+             ) : tab === 'finance' ? (
+                (() => {
+                   const activeFin = financeOrders.filter(o => o.status !== 'Cancelado');
+                   const finIngresos = activeFin.reduce((acc, o) => acc + (o.total_usd || 0), 0);
+                   let finCostos = 0;
+                   activeFin.forEach(o => { (o.items || []).forEach(it => { finCostos += (it.cost || 0) * (it.qty || 1); }); });
+                   const finGanancia = finIngresos - finCostos;
+
+                   return (
+                     <div className="max-w-4xl mx-auto space-y-6">
+                       <div className="flex flex-col md:flex-row justify-between items-center bg-[#060A17] border border-divineLine2 rounded-2xl p-5 shadow-glow gap-4">
+                          <div>
+                            <h3 className="text-sm tracking-[0.2em] text-divineGold font-bold mb-1">REPORTE FINANCIERO</h3>
+                            <p className="text-xs text-divineCream/60">Selecciona una fecha para ver el balance y las órdenes.</p>
+                          </div>
+                          <input type="date" value={financeDate} onChange={(e) => setFinanceDate(e.target.value)} className="bg-[#0A1128] border border-divineLine2 rounded-xl px-4 py-3 text-white focus:border-[#25D366] outline-none font-bold" />
+                       </div>
+
+                       {financeLoading ? <div className="text-center py-10 text-divineCream/50">Calculando finanzas...</div> : (
+                         <>
+                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                             <div className="bg-[#0A1128] border border-divineLine2/50 rounded-2xl p-6 shadow-inner text-center">
+                               <div className="text-[10px] tracking-[0.2em] text-divineCream/50 mb-2">INGRESOS BRUTOS</div>
+                               <div className="text-3xl font-black text-white">{money(finIngresos)}</div>
+                               <div className="text-xs text-divineCream/40 mt-1">{activeFin.length} pedidos completados</div>
+                             </div>
+                             <div className="bg-[#0A1128] border border-red-500/20 rounded-2xl p-6 shadow-inner text-center">
+                               <div className="text-[10px] tracking-[0.2em] text-red-400/70 mb-2">COSTO INGREDIENTES</div>
+                               <div className="text-3xl font-black text-red-400">{money(finCostos)}</div>
+                               <div className="text-xs text-divineCream/40 mt-1">Gastos operativos del día</div>
+                             </div>
+                             <div className="bg-[#0A1128] border border-[#25D366]/40 rounded-2xl p-6 shadow-[0_0_20px_rgba(37,211,102,0.1)] text-center">
+                               <div className="text-[10px] tracking-[0.2em] text-[#25D366] mb-2">GANANCIA NETA</div>
+                               <div className="text-3xl font-black text-[#25D366]">{money(finGanancia)}</div>
+                               <div className="text-xs text-[#25D366]/50 mt-1">Margen de beneficio real</div>
+                             </div>
+                           </div>
+
+                           <div className="bg-[#060A17] border border-divineLine2 rounded-2xl p-6 shadow-divine">
+                              <div className="flex justify-between items-center mb-4 border-b border-divineLine2/30 pb-3">
+                                <h3 className="text-xs tracking-[0.2em] text-divineGold font-bold">DESGLOSE DE PEDIDOS ({financeOrders.length})</h3>
+                              </div>
+                              {financeOrders.length === 0 ? <div className="text-center py-6 text-divineCream/40 text-sm">No hay registros para este día.</div> : (
+                                <div className="space-y-2 max-h-96 overflow-y-auto pr-2 scroll-smooth-ios">
+                                  {financeOrders.map(o => {
+                                     let c = 0; (o.items||[]).forEach(i => c += (i.cost||0)*i.qty);
+                                     return (
+                                       <div key={o.id} className={`flex justify-between items-center p-3 rounded-xl border ${o.status === 'Cancelado' ? 'border-red-500/20 bg-red-500/5 opacity-60' : 'border-divineLine2/50 bg-black/40'}`}>
+                                          <div>
+                                            <div className="text-sm font-bold text-white">{o.tracking_code} - {o.customer_name}</div>
+                                            <div className="text-[10px] text-divineCream/50 mt-0.5">{o.status} • {o.items?.length} items</div>
+                                          </div>
+                                          <div className="text-right">
+                                            <div className={`text-sm font-black ${o.status === 'Cancelado' ? 'text-red-400 line-through' : 'text-[#25D366]'}`}>{money(o.total_usd)}</div>
+                                            {o.status !== 'Cancelado' && <div className="text-[9px] text-divineCream/40">Costo: {money(c)}</div>}
+                                          </div>
+                                       </div>
+                                     )
+                                  })}
+                                </div>
+                              )}
+                           </div>
+
+                           <div className="pt-6 border-t border-divineLine2/30 mt-6">
+                              <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-5 flex flex-col sm:flex-row justify-between items-center gap-4">
+                                 <div>
+                                   <h4 className="text-sm font-bold text-red-400">Zona de Peligro: Limpiar Día</h4>
+                                   <p className="text-xs text-red-400/70 mt-1">Borra de la base de datos TODOS los pedidos de la fecha seleccionada. Ideal para eliminar pruebas.</p>
+                                 </div>
+                                 <button onClick={handleResetDay} className="shrink-0 bg-red-500 text-white font-black text-xs tracking-widest px-6 py-3 rounded-xl hover:bg-red-600 transition shadow-[0_0_15px_rgba(239,68,68,0.4)]">
+                                   🗑️ RESETEAR CONTABILIDAD
+                                 </button>
+                              </div>
+                           </div>
+                         </>
+                       )}
+                     </div>
+                   );
+                })()
+             ) : null
             }
           </div>
         </motion.div>
