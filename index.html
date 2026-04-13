@@ -1044,21 +1044,28 @@
       const selectedZone = deliveryZonesList.find(z => z.id === deliveryZoneId) || deliveryZonesList[0];
       
       const [paymentMethod, setPaymentMethod] = useState('pagomovil'); // pagomovil, zelle, binance
-      const crossSellMeta = catalog?.settings_v2?.cross_sell?.meta || 15;
-      const faltante = crossSellMeta - total;
-      
-      // Lógica de Cross-Selling Inteligente
+      // Lógica de Cross-Selling Inteligente Basada en Precios Reales
       const hasDrinks = items.some(i => i.name.toLowerCase().includes('coca') || i.name.toLowerCase().includes('pepsi') || i.name.toLowerCase().includes('bebida') || i.name.toLowerCase().includes('agua'));
       const hasFries = items.some(i => i.name.toLowerCase().includes('papas'));
-      const postresDisponibles = localDesserts.length > 0 && !localDesserts.every(d => disabledItems.includes(d.id));
+      const postresDisponibles = localDesserts && localDesserts.length > 0 && !localDesserts.every(d => disabledItems.includes(d.id));
 
-      let sugerenciaTexto = "de elevar tu pedido al Nivel Divino con un extra.";
+      let sugerenciaActiva = false;
+      let sugerenciaMonto = 0;
+      let sugerenciaTexto = "";
+
       if (!hasDrinks) {
-         sugerenciaTexto = "de completar tu experiencia con una bebida bien fría.";
+         sugerenciaActiva = true;
+         sugerenciaMonto = 1.50; // Precio de la bebida
+         sugerenciaTexto = "añade una bebida bien fría y completa tu experiencia.";
       } else if (!hasFries) {
-         sugerenciaTexto = "de acompañar tu orden con unas deliciosas papas fritas.";
+         sugerenciaActiva = true;
+         sugerenciaMonto = catalog?.toppings?.find(t => t.id === 'papas-grandes')?.price || 1.50;
+         sugerenciaTexto = "acompaña tu orden con unas deliciosas papas fritas.";
       } else if (postresDisponibles) {
-         sugerenciaTexto = "de cerrar con broche de oro agregando un postre.";
+         const postreSug = localDesserts.find(d => !disabledItems.includes(d.id));
+         sugerenciaActiva = true;
+         sugerenciaMonto = postreSug?.price || 5.00;
+         sugerenciaTexto = `cierra con broche de oro agregando un ${postreSug?.name || 'postre'}.`;
       }
 
       // Sistema de Cupones
@@ -1179,13 +1186,13 @@
 
               {step === 0 && (
                 <>
-                  {faltante > 0 && items.length > 0 && (
+                  {sugerenciaActiva && items.length > 0 && (
                     <div className="bg-gradient-to-r from-divineGold/20 to-transparent border-l-4 border-divineGold p-4 rounded-r-2xl mb-6 animate-pulse">
                       <div className="text-[11px] font-black text-divineGold tracking-widest uppercase">
-                        ✨ COMPLETA TU EXPERIENCIA
+                        ✨ MEJORA TU PEDIDO
                       </div>
                       <div className="text-[10px] text-divineCream/60 mt-1 font-bold">
-                        Estás a solo <span className="text-white">{money(faltante)}</span> {sugerenciaTexto}
+                        Por solo <span className="text-white">{money(sugerenciaMonto)}</span> {sugerenciaTexto}
                       </div>
                     </div>
                   )}
