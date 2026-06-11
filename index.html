@@ -1265,16 +1265,13 @@
             await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, { method: 'POST', body: fd });
           }
         } catch (e) { console.log("Telegram falló"); }
-        // ... (código de telegram existente) ...
-        } catch (e) { console.log("Telegram falló"); }
         
         // NUEVO: Grito de Gol al procesar el pedido
         window.dispatchEvent(new CustomEvent('play-goal'));
-        fireWorldCupConfetti(); // Tiramos confeti también aquí
+        if (typeof fireWorldCupConfetti === "function") fireWorldCupConfetti(); // Tiramos confeti
 
         setOrderId(newOrderId); setStep(3); onClearCart(); setLoading(false);
       };
-
       const handleRemoveItem = (id) => onQty(id, 0);
 
       return (
