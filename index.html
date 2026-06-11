@@ -115,6 +115,52 @@
     .animate-marquee {
       animation: scrollVIP 30s linear infinite;
     }
+    /* Fondo del Estadio para la portada */
+    .hero-grid {
+      background: linear-gradient(to bottom, rgba(11, 33, 21, 0.7), #0B2115), url('https://images.unsplash.com/photo-1518605368461-1e1e38ce81b0?auto=format&fit=crop&w=1600&q=80');
+      background-size: cover;
+      background-position: center;
+      border: 2px solid #FFD700;
+      box-shadow: 0 0 40px rgba(255, 215, 0, 0.2);
+    }
+
+    /* Efecto Holográfico (Barajita Panini) para las cartas */
+    .panini-shine {
+      position: relative;
+    }
+    .panini-shine::before {
+      content: "";
+      position: absolute;
+      top: 0; left: -150%; width: 100%; height: 100%;
+      background: linear-gradient(to right, transparent, rgba(255, 215, 0, 0.3), rgba(255, 255, 255, 0.7), rgba(255, 215, 0, 0.3), transparent);
+      transform: skewX(-25deg);
+      animation: sweep 4s infinite;
+      z-index: 20;
+      pointer-events: none;
+    }
+    @keyframes sweep {
+      0% { left: -150%; }
+      20% { left: 200%; }
+      100% { left: 200%; }
+    }
+
+    /* Animación de Balones y Copas Flotantes */
+    .world-cup-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; opacity: 0.15; }
+    .floating-item { position: absolute; font-size: 3rem; animation: floatUp 20s linear infinite; bottom: -10%; }
+    .f1 { left: 10%; animation-duration: 25s; animation-delay: 0s; }
+    .f2 { left: 30%; font-size: 5rem; animation-duration: 30s; animation-delay: 5s; }
+    .f3 { left: 50%; font-size: 4rem; animation-duration: 22s; animation-delay: 2s; }
+    .f4 { left: 70%; animation-duration: 28s; animation-delay: 8s; }
+    .f5 { left: 85%; animation-duration: 35s; animation-delay: 1s; }
+    .f6 { left: 20%; animation-duration: 32s; animation-delay: 12s; }
+    .f7 { left: 80%; animation-duration: 26s; animation-delay: 15s; }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-120vh) rotate(360deg); opacity: 0; }
+    }
   </style>
 
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -129,6 +175,18 @@
 <body>
   <div class="divine-spotlight"></div>
   <div class="divine-noise"></div>
+  
+  <!-- Decoración Mundialista Flotante Constante -->
+  <div class="world-cup-bg">
+     <div class="floating-item f1">⚽</div>
+     <div class="floating-item f2">🏆</div>
+     <div class="floating-item f3">🏟️</div>
+     <div class="floating-item f4">⚽</div>
+     <div class="floating-item f5">🇲🇽</div>
+     <div class="floating-item f6">🇨🇦</div>
+     <div class="floating-item f7">🇺🇸</div>
+  </div>
+
   <div id="root"></div>
 
   <script type="text/babel" data-presets="env,react">
@@ -517,31 +575,37 @@
     
     function ProductCard({ product, badge, onClick, onAdd, isDisabled, isPromoDesign }) {
       return (
-        <motion.div whileHover={!isDisabled ? { y: -6 } : {}} transition={{ type: "spring", stiffness: 260, damping: 22 }} className={`group overflow-hidden rounded-2xl border ${isDisabled ? 'border-red-500/30 bg-black/40' : (isPromoDesign ? 'border-divineGold/60 shadow-promoglow bg-divineGold/5' : 'border-divineLine bg-divineInk')} shadow-divine relative h-full`}>
+        <motion.div whileHover={!isDisabled ? { y: -6 } : {}} transition={{ type: "spring", stiffness: 260, damping: 22 }} className={`group overflow-hidden rounded-2xl border ${isDisabled ? 'border-red-500/30 bg-black/40' : (isPromoDesign ? 'border-[#FFD700] shadow-promoglow bg-[#FFD700]/10 panini-shine' : 'border-divineLine bg-divineInk')} shadow-divine relative h-full`}>
           <div onClick={isDisabled ? undefined : onClick} className={`flex flex-col h-full w-full text-left ${isDisabled ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}>
             <div className="relative aspect-[4/3] sm:aspect-[4/3] overflow-hidden card-premium shrink-0">
               <img src={product.img} alt={product.name} className={`h-full w-full object-cover transition duration-700 ${isDisabled ? 'grayscale' : 'group-hover:scale-[1.08]'}`} loading="lazy" decoding="async" fetchpriority="low" />
-              <div className={`absolute left-2 sm:left-3 top-2 sm:top-3 rounded-full border ${isPromoDesign ? 'border-divineGold/80 bg-divineGold text-[#0A1128]' : 'border-divineLine2 bg-[#060A17]/80 text-divineCream'} px-2 sm:px-3 py-1 sm:py-1.5 text-[9px] sm:text-xs tracking-widest sm:tracking-[0.2em] font-bold backdrop-blur`}>
-                {isPromoDesign ? '⚽ MUNDIAL' : badge}
+              
+              {/* Sombra de lujo para integrar la imagen con el verde de la carta */}
+              {!isDisabled && (
+                 <div className="absolute inset-0 bg-gradient-to-t from-[#0B2115] via-transparent to-transparent opacity-90 pointer-events-none"></div>
+              )}
+
+              <div className={`absolute left-2 sm:left-3 top-2 sm:top-3 rounded-full border ${isPromoDesign ? 'border-[#FFD700] bg-[#FFD700] text-[#0A1128]' : 'border-[#FFD700]/50 bg-[#060A17]/80 text-white'} px-2 sm:px-3 py-1 sm:py-1.5 text-[9px] sm:text-xs tracking-widest sm:tracking-[0.2em] font-bold backdrop-blur z-10`}>
+                {isPromoDesign ? '🏆 FINALISTA' : badge}
               </div>
-              <div className="absolute right-2 sm:right-3 top-2 sm:top-3 rounded-full border border-divineLine2 bg-[#060A17]/80 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm tracking-wide sm:tracking-[0.1em] text-divineGold backdrop-blur font-bold">{money(product.price)}</div>
+              <div className="absolute right-2 sm:right-3 top-2 sm:top-3 rounded-full border border-[#FFD700] bg-[#0B2115]/90 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm tracking-wide sm:tracking-[0.1em] text-[#FFD700] backdrop-blur font-black z-10 shadow-[0_0_10px_rgba(255,215,0,0.5)]">{money(product.price)}</div>
               
               {isDisabled && (
                 <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center z-10">
-                  <span className="text-red-400 font-bold tracking-widest border-2 border-red-500/50 bg-black/90 px-3 sm:px-6 py-1.5 sm:py-3 rounded-xl transform -rotate-12 shadow-[0_0_15px_rgba(239,68,68,0.3)] text-sm sm:text-lg">AGOTADO</span>
+                  <span className="text-red-400 font-bold tracking-widest border-2 border-red-500/50 bg-black/90 px-3 sm:px-6 py-1.5 sm:py-3 rounded-xl transform -rotate-12 shadow-[0_0_15px_rgba(239,68,68,0.3)] text-sm sm:text-lg">TARJETA ROJA (AGOTADO)</span>
                 </div>
               )}
             </div>
-            <div className="p-3 sm:p-5 flex flex-col flex-1 justify-between bg-divineInk/50">
+            <div className="p-3 sm:p-5 flex flex-col flex-1 justify-between bg-[#0B2115]/80 relative z-10 border-t border-[#FFD700]/20">
               <div>
-                <div className="text-sm sm:text-lg font-bold leading-tight">{product.name}</div>
-                <div className="mt-1.5 sm:mt-2 text-[11px] sm:text-sm text-divineCream/80 line-clamp-2 leading-snug">{product.description}</div>
+                <div className="text-sm sm:text-lg font-black leading-tight text-white">{product.name}</div>
+                <div className="mt-1.5 sm:mt-2 text-[11px] sm:text-sm text-gray-300 line-clamp-2 leading-snug font-medium">{product.description}</div>
               </div>
               <div className="mt-3 sm:mt-5">
-                <button disabled={isDisabled} onClick={(e) => { e.stopPropagation(); onAdd?.(); }} className={`w-full rounded-xl border px-2 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-sm font-bold tracking-wider sm:tracking-[0.15em] transition flex items-center justify-center gap-1 sm:gap-2 ${isDisabled ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'btn-primary shadow-glow'}`} type="button">
+                <button disabled={isDisabled} onClick={(e) => { e.stopPropagation(); onAdd?.(); }} className={`w-full rounded-xl border px-2 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-sm font-black tracking-wider sm:tracking-[0.15em] transition flex items-center justify-center gap-1 sm:gap-2 ${isDisabled ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'btn-primary shadow-glow'}`} type="button">
                   {isDisabled ? 'AGOTADO' : (
                     <>
-                      <span>➕</span> <span className="hidden sm:inline">AGREGAR AL CARRITO</span><span className="sm:hidden">AGREGAR</span>
+                      <span className="text-lg">⚽</span> <span className="hidden sm:inline text-white">CONVOCAR AL EQUIPO</span><span className="sm:hidden text-white">CONVOCAR</span>
                     </>
                   )}
                 </button>
