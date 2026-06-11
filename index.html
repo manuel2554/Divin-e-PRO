@@ -54,6 +54,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%23E2D8C3' d='M32 6l7 14 15 2-11 11 3 15-14-7-14 7 3-15-11-11 15-2z'/%3E%3C/svg%3E"/>
   
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
   <style>
     :root { color-scheme: dark; --mx: 50vw; --my: 20vh; }
     html, body { height: 100%; }
@@ -167,6 +169,28 @@
     // =========================
     // Utils + Hooks
     // =========================
+    const money = (n) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
+    
+    // NUEVO: Explosión de Confeti de Lujo Mundialista
+    function fireWorldCupConfetti() {
+      const count = 200;
+      const defaults = {
+        origin: { y: 0.7 },
+        colors: ['#E2D8C3', '#FFFDF7', '#c7a35c'] // Solo dorados y hueso
+      };
+
+      function fire(particleRatio, opts) {
+        window.confetti(Object.assign({}, defaults, opts, {
+          particleCount: Math.floor(count * particleRatio)
+        }));
+      }
+
+      fire(0.25, { spread: 26, startVelocity: 55 });
+      fire(0.2, { spread: 60 });
+      fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+      fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+      fire(0.1, { spread: 120, startVelocity: 45 });
+    }
     const money = (n) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
     function useLockBodyScroll(locked) {
       useEffect(() => {
@@ -490,7 +514,7 @@
             <div className="relative aspect-[4/3] sm:aspect-[4/3] overflow-hidden card-premium shrink-0">
               <img src={product.img} alt={product.name} className={`h-full w-full object-cover transition duration-700 ${isDisabled ? 'grayscale' : 'group-hover:scale-[1.08]'}`} loading="lazy" decoding="async" fetchpriority="low" />
               <div className={`absolute left-2 sm:left-3 top-2 sm:top-3 rounded-full border ${isPromoDesign ? 'border-divineGold/80 bg-divineGold text-[#0A1128]' : 'border-divineLine2 bg-[#060A17]/80 text-divineCream'} px-2 sm:px-3 py-1 sm:py-1.5 text-[9px] sm:text-xs tracking-widest sm:tracking-[0.2em] font-bold backdrop-blur`}>
-                {isPromoDesign ? '🌟 PROMO' : badge}
+                {isPromoDesign ? '⚽ MUNDIAL' : badge}
               </div>
               <div className="absolute right-2 sm:right-3 top-2 sm:top-3 rounded-full border border-divineLine2 bg-[#060A17]/80 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm tracking-wide sm:tracking-[0.1em] text-divineGold backdrop-blur font-bold">{money(product.price)}</div>
               
@@ -3073,6 +3097,13 @@
       const [adminModalOpen, setAdminModalOpen] = useState(false);
       const [isAdminLogged, setIsAdminLogged] = useState(false);
       const [appLoaded, setAppLoaded] = useState(false);
+      // NUEVO: Efecto Mundialista al terminar de cargar
+      useEffect(() => {
+        if (appLoaded) {
+          // Pequeño retraso para que la pantalla se despeje antes de la explosión
+          setTimeout(fireWorldCupConfetti, 150); 
+        }
+      }, [appLoaded]);
       
       const [isStoreOpen, setIsStoreOpen] = useState(true);
       const [disabledItems, setDisabledItems] = useState([]);
@@ -3269,8 +3300,8 @@
                 </div>
                 <div className="relative z-10">
                   <div className="flex justify-between items-start"><p className="mb-4 text-sm font-bold tracking-[0.35em] text-divineGold/90">{BRAND_NAME.toUpperCase()} • GOURMET BAR</p>{bcvRate && <div className="text-xs font-bold tracking-[0.28em] text-divineCream/60 border-2 border-divineLine2/50 rounded-full px-4 py-1.5 bg-[#060A17]/80 backdrop-blur shadow-inner">TASA BCV: {bcvRate} Bs</div>}</div>
-                  <h1 className="text-4xl font-extrabold leading-tight md:text-6xl"><span className="bg-gradient-to-r from-divineCream via-divineCream to-divineGold bg-clip-text text-transparent">Hamburguesas, postres y yogurt griego</span> con estética de lujo.</h1>
-                  <p className="mt-4 max-w-2xl text-base text-divineCream/80 md:text-lg font-medium">Explora el menú y arma tu burger con un configurador premium.</p>
+                  <h1 className="text-4xl font-extrabold leading-tight md:text-6xl"><span className="bg-gradient-to-r from-divineCream via-divineCream to-divineGold bg-clip-text text-transparent">Temporada Mundialista 2026</span> al más alto nivel.</h1>
+<p className="mt-4 max-w-2xl text-base text-divineCream/80 md:text-lg font-medium">Hamburguesas de lujo, postres artesanales y la mejor vibra para coronarte campeón. Arma tu jugada maestra en el Atelier.</p>
                   <div className="mt-8 flex flex-col sm:flex-row flex-wrap gap-4">
                     <button className="btn-primary w-full sm:w-auto py-4 px-8 text-sm" onClick={() => scrollTo(promos.length > 0 ? "promos" : "burgers")} type="button">📜 EXPLORAR MENÚ</button>
                     <button className="btn-ghost w-full sm:w-auto py-4 px-8 text-sm" onClick={() => window.dispatchEvent(new Event('open-tutorial'))} type="button">❓ ¿CÓMO PEDIR?</button>
