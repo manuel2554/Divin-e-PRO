@@ -3155,36 +3155,45 @@
     // =========================
 
     // =========================
-    // MODAL FANÁTICO (Selección de Equipo)
+    // MODAL FANÁTICO (Selección de Equipo VIP)
     // =========================
     function FanModeModal({ onSelect }) {
+      // Lista de selecciones top para el Mundial (Ahora con Francia)
+      const teams = [
+        { id: 'mexico', flag: '🇲🇽', name: 'MÉXICO', bg: 'from-[#006847] to-[#CE1126]', text: 'text-white' },
+        { id: 'argentina', flag: '🇦🇷', name: 'ARGENTINA', bg: 'from-[#43A1D5] to-[#FFFFFF]', text: 'text-[#001226]' },
+        { id: 'brasil', flag: '🇧🇷', name: 'BRASIL', bg: 'from-[#009B3A] to-[#0B2115]', text: 'text-[#FFD700]' },
+        { id: 'colombia', flag: '🇨🇴', name: 'COLOMBIA', bg: 'from-[#FCD116] to-[#003893]', text: 'text-white' },
+        { id: 'usa', flag: '🇺🇸', name: 'USA', bg: 'from-[#002868] to-[#BF0A30]', text: 'text-white' },
+        { id: 'espana', flag: '🇪🇸', name: 'ESPAÑA', bg: 'from-[#AA151B] to-[#F1BF00]', text: 'text-[#FFD700]' },
+        { id: 'alemania', flag: '🇩🇪', name: 'ALEMANIA', bg: 'from-[#000000] to-[#FFCE00]', text: 'text-white' },
+        { id: 'francia', flag: '🇫🇷', name: 'FRANCIA', bg: 'from-[#002395] to-[#ED2939]', text: 'text-white' },
+        { id: 'neutral', flag: '🏆', name: 'NEUTRAL', bg: 'from-divineInk to-black', text: 'text-divineGold' }
+      ];
+
       return (
-        <div className="fixed inset-0 z-[300] bg-[#0A1128]/95 backdrop-blur-xl flex items-center justify-center p-4">
-          <div className="bg-[#060A17] border-2 border-[#FFD700] rounded-3xl p-6 md:p-10 max-w-lg w-full text-center shadow-[0_0_60px_rgba(255,215,0,0.2)]">
-            <h2 className="text-3xl font-black text-white mb-2">⚽ BIENVENIDO AL ESTADIO</h2>
-            <p className="text-divineCream/80 mb-8 font-medium">Para una experiencia inmersiva, elige a tu selección para personalizar la página y enciende el sonido.</p>
+        <div className="fixed inset-0 z-[400] bg-[#0A1128]/95 backdrop-blur-2xl flex items-center justify-center p-4">
+          <div className="bg-[#060A17] border border-[#FFD700]/50 rounded-3xl p-6 md:p-10 max-w-4xl w-full text-center shadow-[0_0_80px_rgba(255,215,0,0.3)] relative overflow-hidden">
             
-            <div className="grid grid-cols-2 gap-4">
-              <button onClick={() => onSelect('mexico')} className="p-4 rounded-2xl border-2 border-[#FFD700] bg-gradient-to-br from-[#006847] to-[#CE1126] hover:scale-105 transition shadow-glow">
-                <div className="text-4xl mb-2">🇲🇽</div>
-                <div className="text-white font-black tracking-widest text-sm">MÉXICO</div>
-              </button>
+            {/* Animación de luces de estadio rotando en el fondo del modal */}
+            <div className="absolute -top-[50%] -left-[50%] w-[200%] h-[200%] bg-[conic-gradient(from_0deg,transparent_0_340deg,rgba(255,215,0,0.25)_360deg)] animate-[spin_4s_linear_infinite] pointer-events-none opacity-50"></div>
+            
+            <div className="relative z-10">
+              <h2 className="text-3xl md:text-5xl font-black text-white mb-2 tracking-tight drop-shadow-md">⚽ ELIGE TU SELECCIÓN</h2>
+              <p className="text-divineCream/80 mb-8 font-medium text-sm md:text-base">El estadio se pintará con tus colores y la hinchada cantará para ti.</p>
               
-              <button onClick={() => onSelect('argentina')} className="p-4 rounded-2xl border-2 border-white bg-gradient-to-br from-[#43A1D5] to-[#FFFFFF] hover:scale-105 transition shadow-glow">
-                <div className="text-4xl mb-2">🇦🇷</div>
-                <div className="text-[#001226] font-black tracking-widest text-sm">ARGENTINA</div>
-              </button>
-
-              <button onClick={() => onSelect('brasil')} className="p-4 rounded-2xl border-2 border-[#FFD700] bg-gradient-to-br from-[#009B3A] to-[#0B2115] hover:scale-105 transition shadow-glow">
-                <div className="text-4xl mb-2">🇧🇷</div>
-                <div className="text-white font-black tracking-widest text-sm">BRASIL</div>
-              </button>
-
-              <button onClick={() => onSelect('neutral')} className="p-4 rounded-2xl border-2 border-divineLine2 bg-divineInk hover:scale-105 transition shadow-divine">
-                <div className="text-4xl mb-2">🏆</div>
-                <div className="text-divineGold font-black tracking-widest text-sm">NEUTRAL</div>
-              </button>
+              {/* CAMBIO AQUÍ: grid-cols-3 para que las 9 opciones cuadren perfecto */}
+              <div className="grid grid-cols-3 gap-2 md:gap-5">
+                {teams.map(t => (
+                  <button key={t.id} onClick={() => onSelect(t.id)} className={`relative overflow-hidden p-3 md:p-6 rounded-2xl border-2 border-white/10 bg-gradient-to-br ${t.bg} hover:scale-105 hover:border-[#FFD700] hover:shadow-[0_0_20px_rgba(255,215,0,0.6)] transition-all duration-300 group`}>
+                    <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors"></div>
+                    <div className="text-4xl md:text-6xl mb-1 md:mb-2 drop-shadow-lg transform group-hover:-translate-y-1 transition-transform">{t.flag}</div>
+                    <div className={`font-black tracking-widest text-[9px] md:text-sm drop-shadow-md ${t.text}`}>{t.name}</div>
+                  </button>
+                ))}
+              </div>
             </div>
+            
           </div>
         </div>
       );
@@ -3259,7 +3268,12 @@
         mexico: `body { background: #003323 !important; } .btn-primary { background: linear-gradient(135deg, #006847, #CE1126) !important; border-color: #FFFFFF !important; color: #FFFFFF !important; } .divine-spotlight { background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(255, 255, 255, 0.15), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(206, 17, 38, 0.3), transparent 65%) !important; }`,
         argentina: `body { background: #001226 !important; } .btn-primary { background: linear-gradient(135deg, #43A1D5, #FFFFFF) !important; border-color: #FFFFFF !important; color: #001226 !important; } .divine-spotlight { background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(255, 255, 255, 0.15), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(67, 161, 213, 0.3), transparent 65%) !important; }`,
         brasil: `body { background: #0b2115 !important; } .btn-primary { background: linear-gradient(135deg, #009B3A, #FFD700) !important; border-color: #FFD700 !important; color: #FFFFFF !important; } .divine-spotlight { background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(255, 215, 0, 0.15), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(0, 155, 58, 0.2), transparent 65%) !important; }`,
-        neutral: `` // Usa el verde estadio que pusimos antes
+        colombia: `body { background: #1a1500 !important; } .btn-primary { background: linear-gradient(135deg, #FCD116, #003893) !important; border-color: #CE1126 !important; color: #FFFFFF !important; } .divine-spotlight { background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(252, 209, 22, 0.15), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(0, 56, 147, 0.3), transparent 65%) !important; }`,
+        usa: `body { background: #000a1a !important; } .btn-primary { background: linear-gradient(135deg, #002868, #BF0A30) !important; border-color: #FFFFFF !important; color: #FFFFFF !important; } .divine-spotlight { background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(255, 255, 255, 0.15), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(191, 10, 48, 0.3), transparent 65%) !important; }`,
+        espana: `body { background: #1a0304 !important; } .btn-primary { background: linear-gradient(135deg, #AA151B, #F1BF00) !important; border-color: #FFD700 !important; color: #FFFFFF !important; } .divine-spotlight { background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(241, 191, 0, 0.15), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(170, 21, 27, 0.3), transparent 65%) !important; }`,
+        alemania: `body { background: #000000 !important; } .btn-primary { background: linear-gradient(135deg, #000000, #FFCE00) !important; border-color: #DD0000 !important; color: #FFFFFF !important; } .divine-spotlight { background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(255, 206, 0, 0.15), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(221, 0, 0, 0.3), transparent 65%) !important; }`,
+        francia: `body { background: #000a1f !important; } .btn-primary { background: linear-gradient(135deg, #002395, #ED2939) !important; border-color: #FFFFFF !important; color: #FFFFFF !important; } .divine-spotlight { background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(255, 255, 255, 0.15), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(237, 41, 57, 0.3), transparent 65%) !important; }`,
+        neutral: ``
       };
       const [pendingItem, setPendingItem] = useState(null);
 
