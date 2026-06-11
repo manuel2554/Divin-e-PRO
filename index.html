@@ -3165,19 +3165,19 @@
             <p className="text-divineCream/80 mb-8 font-medium">Para una experiencia inmersiva, elige a tu selección para personalizar la página y enciende el sonido.</p>
             
             <div className="grid grid-cols-2 gap-4">
-              <button onClick={() => onSelect('venezuela')} className="p-4 rounded-2xl border-2 border-[#FFD700] bg-gradient-to-br from-[#800020] to-[#400010] hover:scale-105 transition shadow-glow">
-                <div className="text-4xl mb-2">🇻🇪</div>
-                <div className="text-white font-black tracking-widest text-sm">VINOTINTO</div>
+              <button onClick={() => onSelect('mexico')} className="p-4 rounded-2xl border-2 border-[#FFD700] bg-gradient-to-br from-[#006847] to-[#CE1126] hover:scale-105 transition shadow-glow">
+                <div className="text-4xl mb-2">🇲🇽</div>
+                <div className="text-white font-black tracking-widest text-sm">MÉXICO</div>
               </button>
               
               <button onClick={() => onSelect('argentina')} className="p-4 rounded-2xl border-2 border-white bg-gradient-to-br from-[#43A1D5] to-[#FFFFFF] hover:scale-105 transition shadow-glow">
                 <div className="text-4xl mb-2">🇦🇷</div>
-                <div className="text-[#001226] font-black tracking-widest text-sm">ALBICELESTE</div>
+                <div className="text-[#001226] font-black tracking-widest text-sm">ARGENTINA</div>
               </button>
 
               <button onClick={() => onSelect('brasil')} className="p-4 rounded-2xl border-2 border-[#FFD700] bg-gradient-to-br from-[#009B3A] to-[#0B2115] hover:scale-105 transition shadow-glow">
                 <div className="text-4xl mb-2">🇧🇷</div>
-                <div className="text-white font-black tracking-widest text-sm">CANARINHA</div>
+                <div className="text-white font-black tracking-widest text-sm">BRASIL</div>
               </button>
 
               <button onClick={() => onSelect('neutral')} className="p-4 rounded-2xl border-2 border-divineLine2 bg-divineInk hover:scale-105 transition shadow-divine">
@@ -3227,15 +3227,17 @@
       const [fanTheme, setFanTheme] = useState(null); // null = modal abierto
 
       useEffect(() => {
-        // Enlaces seguros de sonidos de estadio
-        const bg = new Audio("https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3");
-        bg.loop = true; bg.volume = 0.15; // Murmullo de estadio de fondo
+        // SONIDOS CORREGIDOS: Audios reales de estadio, silbato y celebración
+        // TIP: Si quieres tus propios sonidos, cambia el enlace por tu archivo local, ej: "./assets/silbato.mp3"
         
-        const whistle = new Audio("https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3");
-        whistle.volume = 0.4; // Silbato al añadir al carrito
+        const bg = new Audio("https://cdn.pixabay.com/audio/2022/10/24/audio_341936c4b2.mp3"); // Hinchada real de fondo
+        bg.loop = true; bg.volume = 0.2; 
         
-        const goal = new Audio("https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3");
-        goal.volume = 0.8; // Grito de gol al pagar
+        const whistle = new Audio("https://cdn.pixabay.com/audio/2022/03/15/audio_78490a6e0f.mp3"); // Pitazo fuerte de árbitro
+        whistle.volume = 0.5; 
+        
+        const goal = new Audio("https://cdn.pixabay.com/audio/2021/08/04/audio_c8901eb208.mp3"); // Grito de victoria gigante
+        goal.volume = 0.8; 
 
         const playBg = () => { bg.play().catch(()=>{}); };
         const playWhistle = () => { whistle.currentTime = 0; whistle.play().catch(()=>{}); };
@@ -3254,7 +3256,7 @@
       }, []);
 
       const themeStyles = {
-        venezuela: `body { background: #1a050a !important; } .btn-primary { background: linear-gradient(135deg, #800020, #FFD700) !important; border-color: #FFD700 !important; color: #FFFFFF !important; } .divine-spotlight { background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(255, 215, 0, 0.15), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(128, 0, 32, 0.4), transparent 65%) !important; }`,
+        mexico: `body { background: #003323 !important; } .btn-primary { background: linear-gradient(135deg, #006847, #CE1126) !important; border-color: #FFFFFF !important; color: #FFFFFF !important; } .divine-spotlight { background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(255, 255, 255, 0.15), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(206, 17, 38, 0.3), transparent 65%) !important; }`,
         argentina: `body { background: #001226 !important; } .btn-primary { background: linear-gradient(135deg, #43A1D5, #FFFFFF) !important; border-color: #FFFFFF !important; color: #001226 !important; } .divine-spotlight { background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(255, 255, 255, 0.15), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(67, 161, 213, 0.3), transparent 65%) !important; }`,
         brasil: `body { background: #0b2115 !important; } .btn-primary { background: linear-gradient(135deg, #009B3A, #FFD700) !important; border-color: #FFD700 !important; color: #FFFFFF !important; } .divine-spotlight { background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(255, 215, 0, 0.15), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(0, 155, 58, 0.2), transparent 65%) !important; }`,
         neutral: `` // Usa el verde estadio que pusimos antes
