@@ -3390,12 +3390,8 @@
         if (!isStoreOpen) { window.showToast("CERRADO POR HOY 🚫", '🚫'); return; }
         if (disabledItems.includes(item.id)) { window.showToast("Este producto está agotado 🚫", '🚫'); return; }
 
-        // NUEVO: Suena el silbato al seleccionar un jugador (hamburguesa)
+        // NUEVO: Suena el silbato al seleccionar un jugador
         window.dispatchEvent(new CustomEvent('play-whistle'));
-
-        if (isBurger && item.showUpsell !== false) {
-        if (!isStoreOpen) { window.showToast("CERRADO POR HOY 🚫", '🚫'); return; }
-        if (disabledItems.includes(item.id)) { window.showToast("Este producto está agotado 🚫", '🚫'); return; }
 
         if (isBurger && item.showUpsell !== false) {
           // Retraso para evitar el colapso entre cerrar ventana de producto y abrir upsell
@@ -3432,14 +3428,15 @@
       const wsPhone = localCatalog?.settings?.whatsapp || "584126835635";
 
       return (
+        return (
         <div className="min-h-screen relative z-[1]">
           
-          {/* 1. INYECCIÓN DEL TEMA DINÁMICO (Cambia los colores de la página) */}
+          {/* INYECCIÓN DEL TEMA DINÁMICO */}
           {fanTheme && themeStyles[fanTheme] && (
             <style dangerouslySetInnerHTML={{ __html: themeStyles[fanTheme] }} />
           )}
 
-          {/* 2. PANTALLA DE SELECCIÓN DE EQUIPO Y AUDIO */}
+          {/* PANTALLA DE SELECCIÓN DE EQUIPO Y AUDIO */}
           <AnimatePresence>
             {!fanTheme && appLoaded && (
               <FanModeModal onSelect={(team) => {
