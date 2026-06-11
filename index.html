@@ -1265,6 +1265,13 @@
             await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, { method: 'POST', body: fd });
           }
         } catch (e) { console.log("Telegram falló"); }
+        // ... (código de telegram existente) ...
+        } catch (e) { console.log("Telegram falló"); }
+        
+        // NUEVO: Grito de Gol al procesar el pedido
+        window.dispatchEvent(new CustomEvent('play-goal'));
+        fireWorldCupConfetti(); // Tiramos confeti también aquí
+
         setOrderId(newOrderId); setStep(3); onClearCart(); setLoading(false);
       };
 
@@ -3149,6 +3156,43 @@
     // =========================
     // App Base (Con Inventario Sincronizado en la Nube)
     // =========================
+
+    // =========================
+    // MODAL FANÁTICO (Selección de Equipo)
+    // =========================
+    function FanModeModal({ onSelect }) {
+      return (
+        <div className="fixed inset-0 z-[300] bg-[#0A1128]/95 backdrop-blur-xl flex items-center justify-center p-4">
+          <div className="bg-[#060A17] border-2 border-[#FFD700] rounded-3xl p-6 md:p-10 max-w-lg w-full text-center shadow-[0_0_60px_rgba(255,215,0,0.2)]">
+            <h2 className="text-3xl font-black text-white mb-2">⚽ BIENVENIDO AL ESTADIO</h2>
+            <p className="text-divineCream/80 mb-8 font-medium">Para una experiencia inmersiva, elige a tu selección para personalizar la página y enciende el sonido.</p>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <button onClick={() => onSelect('venezuela')} className="p-4 rounded-2xl border-2 border-[#FFD700] bg-gradient-to-br from-[#800020] to-[#400010] hover:scale-105 transition shadow-glow">
+                <div className="text-4xl mb-2">🇻🇪</div>
+                <div className="text-white font-black tracking-widest text-sm">VINOTINTO</div>
+              </button>
+              
+              <button onClick={() => onSelect('argentina')} className="p-4 rounded-2xl border-2 border-white bg-gradient-to-br from-[#43A1D5] to-[#FFFFFF] hover:scale-105 transition shadow-glow">
+                <div className="text-4xl mb-2">🇦🇷</div>
+                <div className="text-[#001226] font-black tracking-widest text-sm">ALBICELESTE</div>
+              </button>
+
+              <button onClick={() => onSelect('brasil')} className="p-4 rounded-2xl border-2 border-[#FFD700] bg-gradient-to-br from-[#009B3A] to-[#0B2115] hover:scale-105 transition shadow-glow">
+                <div className="text-4xl mb-2">🇧🇷</div>
+                <div className="text-white font-black tracking-widest text-sm">CANARINHA</div>
+              </button>
+
+              <button onClick={() => onSelect('neutral')} className="p-4 rounded-2xl border-2 border-divineLine2 bg-divineInk hover:scale-105 transition shadow-divine">
+                <div className="text-4xl mb-2">🏆</div>
+                <div className="text-divineGold font-black tracking-widest text-sm">NEUTRAL</div>
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
     function App() {
       useSpotlight();
       const refs = { promos: useRef(null), burgers: useRef(null), drinks: useRef(null), desserts: useRef(null), yogurt: useRef(null), atelier: useRef(null) };
@@ -3182,6 +3226,42 @@
 
       // Estado para Upsell
       const [showUpsell, setShowUpsell] = useState(false);
+      // ESTADO DEL TEMA Y MOTOR DE AUDIO INMERSIVO
+      const [fanTheme, setFanTheme] = useState(null); // null = modal abierto
+
+      useEffect(() => {
+        // Enlaces seguros de sonidos de estadio
+        const bg = new Audio("https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3");
+        bg.loop = true; bg.volume = 0.15; // Murmullo de estadio de fondo
+        
+        const whistle = new Audio("https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3");
+        whistle.volume = 0.4; // Silbato al añadir al carrito
+        
+        const goal = new Audio("https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3");
+        goal.volume = 0.8; // Grito de gol al pagar
+
+        const playBg = () => { bg.play().catch(()=>{}); };
+        const playWhistle = () => { whistle.currentTime = 0; whistle.play().catch(()=>{}); };
+        const playGoal = () => { goal.currentTime = 0; goal.play().catch(()=>{}); };
+
+        window.addEventListener('start-stadium', playBg);
+        window.addEventListener('play-whistle', playWhistle);
+        window.addEventListener('play-goal', playGoal);
+
+        return () => {
+          window.removeEventListener('start-stadium', playBg);
+          window.removeEventListener('play-whistle', playWhistle);
+          window.removeEventListener('play-goal', playGoal);
+          bg.pause();
+        };
+      }, []);
+
+      const themeStyles = {
+        venezuela: `body { background: #1a050a !important; } .btn-primary { background: linear-gradient(135deg, #800020, #FFD700) !important; border-color: #FFD700 !important; color: #FFFFFF !important; } .divine-spotlight { background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(255, 215, 0, 0.15), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(128, 0, 32, 0.4), transparent 65%) !important; }`,
+        argentina: `body { background: #001226 !important; } .btn-primary { background: linear-gradient(135deg, #43A1D5, #FFFFFF) !important; border-color: #FFFFFF !important; color: #001226 !important; } .divine-spotlight { background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(255, 255, 255, 0.15), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(67, 161, 213, 0.3), transparent 65%) !important; }`,
+        brasil: `body { background: #0b2115 !important; } .btn-primary { background: linear-gradient(135deg, #009B3A, #FFD700) !important; border-color: #FFD700 !important; color: #FFFFFF !important; } .divine-spotlight { background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(255, 215, 0, 0.15), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(0, 155, 58, 0.2), transparent 65%) !important; }`,
+        neutral: `` // Usa el verde estadio que pusimos antes
+      };
       const [pendingItem, setPendingItem] = useState(null);
 
       const cartCount = useMemo(() => cartItems.reduce((acc, it) => acc + it.qty, 0), [cartItems]);
@@ -3309,7 +3389,14 @@
 
       function scrollTo(key) { refs[key]?.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }
       
-      function handleInitialAddToCart(item, isBurger = true) {
+        function handleInitialAddToCart(item, isBurger = true) {
+        if (!isStoreOpen) { window.showToast("CERRADO POR HOY 🚫", '🚫'); return; }
+        if (disabledItems.includes(item.id)) { window.showToast("Este producto está agotado 🚫", '🚫'); return; }
+
+        // NUEVO: Suena el silbato al seleccionar un jugador (hamburguesa)
+        window.dispatchEvent(new CustomEvent('play-whistle'));
+
+        if (isBurger && item.showUpsell !== false) {
         if (!isStoreOpen) { window.showToast("CERRADO POR HOY 🚫", '🚫'); return; }
         if (disabledItems.includes(item.id)) { window.showToast("Este producto está agotado 🚫", '🚫'); return; }
 
@@ -3350,11 +3437,24 @@
       return (
         <div className="min-h-screen relative z-[1]">
           
+          {/* 1. INYECCIÓN DEL TEMA DINÁMICO (Cambia los colores de la página) */}
+          {fanTheme && themeStyles[fanTheme] && (
+            <style dangerouslySetInnerHTML={{ __html: themeStyles[fanTheme] }} />
+          )}
+
+          {/* 2. PANTALLA DE SELECCIÓN DE EQUIPO Y AUDIO */}
+          <AnimatePresence>
+            {!fanTheme && appLoaded && (
+              <FanModeModal onSelect={(team) => {
+                setFanTheme(team);
+                window.dispatchEvent(new CustomEvent('start-stadium'));
+              }} />
+            )}
+          </AnimatePresence>
+
           <AnimatePresence>
             {!isStoreOpen && (
               <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="bg-red-500/90 text-white text-center py-3 text-xs md:text-sm font-bold tracking-widest fixed top-0 w-full z-[300] backdrop-blur shadow-glow">
-                LOCAL CERRADO POR EL MOMENTO - NO SE RECIBEN PEDIDOS
-              </motion.div>
             )}
           </AnimatePresence>
 
