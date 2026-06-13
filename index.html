@@ -3291,7 +3291,17 @@
       useEffect(() => { localStorage.setItem('divinee_cart', JSON.stringify(cartItems)); }, [cartItems]);
 
       useEffect(() => {
-        fetch("https://ve.dolarapi.com/v1/dolares/oficial").then(res => res.json()).then(data => setBcvRate(data.promedio)).catch(err => setBcvRate(60.00)); 
+        fetch("https://ve.dolarapi.com/v1/dolares/oficial")
+          .then(res => res.json())
+          .then(data => {
+            // Aquí le sumamos los 15 puntos directo al promedio oficial
+            const tasaConMargen = data.promedio + 15;
+            setBcvRate(tasaConMargen);
+          })
+          .catch(err => {
+            // Tasa de emergencia por si la API se cae (tus 60 base + 15 de margen)
+            setBcvRate(75.00); 
+          }); 
         
         const fetchGlobalData = async () => {
           if (supabaseClient) {
