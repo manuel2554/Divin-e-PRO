@@ -14,30 +14,6 @@
 
   <link rel="manifest" href="./manifest.json" />
   <script>
-    <script>
-  // 1. ASESINO DE CACHÉ (Obliga a leer el código nuevo)
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(function(registrations) {
-      for(let registration of registrations) {
-        registration.unregister();
-      }
-    });
-  }
-
-  // 2. RADAR DE ERROR (Busca la línea exacta del problema)
-  window.addEventListener('DOMContentLoaded', () => {
-    const babelScripts = document.querySelectorAll('script[type="text/babel"]');
-    babelScripts.forEach(script => {
-      const lines = script.innerHTML.split('\n');
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        if (line.includes('import ') || line.includes('import{') || line.includes('import {') || line.includes('import(')) {
-          alert("🚨 EL CULPABLE ESTÁ AQUÍ 🚨\n\nRevisa la línea " + (i + 1) + " de tu código React.\n\nDice esto:\n" + line.trim());
-          console.error("LÍNEA CULPABLE:", i + 1, "->", line.trim());
-        }
-      }
-    });
-  });
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Error:', err));
@@ -192,6 +168,8 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.umd.js"></script>
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
   
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -213,7 +191,7 @@
 
   <div id="root"></div>
 
-  <script type="text/babel" data-presets="react">
+  <script type="text/babel" data-presets="env,react">
     const React = window.React;
     const { useEffect, useMemo, useRef, useState } = React;
 
