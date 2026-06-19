@@ -9,3 +9,4 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   // Permite que la app funcione interceptando la red, pero en este caso dejamos que pase directo al servidor
 });
+
