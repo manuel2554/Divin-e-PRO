@@ -14,6 +14,30 @@
 
   <link rel="manifest" href="./manifest.json" />
   <script>
+    <script>
+  // 1. ASESINO DE CACHÉ (Obliga a leer el código nuevo)
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+      for(let registration of registrations) {
+        registration.unregister();
+      }
+    });
+  }
+
+  // 2. RADAR DE ERROR (Busca la línea exacta del problema)
+  window.addEventListener('DOMContentLoaded', () => {
+    const babelScripts = document.querySelectorAll('script[type="text/babel"]');
+    babelScripts.forEach(script => {
+      const lines = script.innerHTML.split('\n');
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (line.includes('import ') || line.includes('import{') || line.includes('import {') || line.includes('import(')) {
+          alert("🚨 EL CULPABLE ESTÁ AQUÍ 🚨\n\nRevisa la línea " + (i + 1) + " de tu código React.\n\nDice esto:\n" + line.trim());
+          console.error("LÍNEA CULPABLE:", i + 1, "->", line.trim());
+        }
+      }
+    });
+  });
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Error:', err));
