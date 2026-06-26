@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="es">
 <head>
+  <script src="https://cdn.jsdelivr.net/npm/eruda"></script><script>eruda.init();</script>
+ 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0A1128" />
@@ -167,8 +169,7 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.umd.js"></script>
   <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-  <script src="https://unpkg.com/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.6/babel.min.js"></script>
   
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -189,7 +190,7 @@
 
   <div id="root"></div>
 
-  <script type="text/babel" data-presets="env,react">
+  <script type="text/babel" data-presets="react">
     const React = window.React;
     const { useEffect, useMemo, useRef, useState } = React;
 
@@ -3239,14 +3240,17 @@
         // SONIDOS CORREGIDOS: Audios reales de estadio, silbato y celebración
         // TIP: Si quieres tus propios sonidos, cambia el enlace por tu archivo local, ej: "./assets/silbato.mp3"
         
-        const bg = new Audio("https://cdn.pixabay.com/audio/2022/10/24/audio_341936c4b2.mp3"); // Hinchada real de fondo
-        bg.loop = true; bg.volume = 0.2; 
+        // Sonido de estadio de fondo continuo
+        const bg = new Audio("https://actions.google.com/sounds/v1/crowds/stadium_crowd_exterior.ogg"); 
+        bg.loop = true; bg.volume = 0.3; 
         
-        const whistle = new Audio("https://cdn.pixabay.com/audio/2022/03/15/audio_78490a6e0f.mp3"); // Pitazo fuerte de árbitro
-        whistle.volume = 0.5; 
+        // Silbato corto para cuando seleccionan la hamburguesa
+        const whistle = new Audio("https://actions.google.com/sounds/v1/sports/football_whistle.ogg"); 
+        whistle.volume = 0.6; 
         
-        const goal = new Audio("https://cdn.pixabay.com/audio/2021/08/04/audio_c8901eb208.mp3"); // Grito de victoria gigante
-        goal.volume = 0.8; 
+        // Grito de gol/celebración cuando terminan el pedido
+        const goal = new Audio("https://actions.google.com/sounds/v1/crowds/sports_crowd_cheer.ogg"); 
+        goal.volume = 0.9;
 
         const playBg = () => { bg.play().catch(()=>{}); };
         const playWhistle = () => { whistle.currentTime = 0; whistle.play().catch(()=>{}); };
