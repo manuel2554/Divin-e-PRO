@@ -207,7 +207,7 @@
 // =========================
 const { createClient } = window.supabase;
 const supabaseUrl = "https://qpsahbyqbacdchfvvnyv.supabase.co";
-const supabaseKey = "sb_publishable__9eCHHNacjXhJDpy9HIOzw_zHWqJ6Dt";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwc2FoYnlxYmFjZGNoZnZ2bnl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3MTE0MDQsImV4cCI6MjA5OTI4NzQwNH0.pSSVnFpA1838gQXt3zgTz1R6SyFJ-C59t38YLl25wTw";
 const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
     const moneyVES = (usd, rate) => new Intl.NumberFormat("es-VE", { style: "currency", currency: "VES" }).format(usd * rate);
