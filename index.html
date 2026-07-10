@@ -3349,13 +3349,19 @@ const supabaseClient = createClient(supabaseUrl, supabaseKey);
         setLocalBurgers(newBurgers); setLocalDesserts(newDesserts); setLocalDrinks(newDrinks); setLocalCatalog(newCatalog);
         
         if (supabaseClient) {
-          const { error } = await supabaseClient.from('store_settings').update({
+          // Agregamos .select() al final para obligar a Supabase a decirnos si realmente modificó algo
+          const { data, error } = await supabaseClient.from('store_settings').update({
             catalog_data: { burgers: newBurgers, desserts: newDesserts, drinks: newDrinks, catalog: newCatalog }
-          }).eq('id', 'divinee');
+          }).eq('id', 'divinee').select();
           
           if (error) {
+            // Esto hará saltar una ventana en tu pantalla con el error real
+            alert("⚠️ ERROR DE SUPABASE: " + error.message + " \nDetalles: " + error.details);
+            console.error("Error completo de Supabase:", error);
             window.showToast("Error guardando en la nube", "⚠️");
-            console.error(error);
+          } else if (!data || data.length === 0) {
+            // Esto nos avisa si la tabla está vacía (lo que revisamos en el Paso 1)
+            alert("⚠️ ERROR LOGICO: La actualización se envió, pero no se encontró la fila con id 'divinee' en la base de datos.");
           } else {
             window.showToast("Menú sincronizado en la nube", "☁️");
           }
