@@ -203,12 +203,12 @@
     const YOGURT_ENABLED = false;
     
     // =========================
-    // Configuración de Supabase
-    // =========================
-    const { createClient } = window.supabase;
-    const supabaseUrl = "https://qpsahbyqbacdchfvvnyv.supabase.co/rest/v1/"; 
-    const supabaseKey = "sb_publishable__9eCHHNacjXhJDpy9HIozw_zHWqJ6Dt"; 
-    const supabaseClient = createClient(supabaseUrl, supabaseKey);
+// Configuración de Supabase
+// =========================
+const { createClient } = window.supabase;
+const supabaseUrl = "https://qpsahbyqbacdchfvvnyv.supabase.co";
+const supabaseKey = "sb_publishable__9eCHHNacjXhJDpy9HIOzw_zHWqJ6Dt";
+const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
     const moneyVES = (usd, rate) => new Intl.NumberFormat("es-VE", { style: "currency", currency: "VES" }).format(usd * rate);
 
