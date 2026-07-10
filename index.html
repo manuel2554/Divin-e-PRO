@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="es">
 <head>
+  <script src="https://cdn.jsdelivr.net/npm/eruda"></script><script>eruda.init();</script>
+ 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0A1128" />
@@ -24,6 +26,7 @@
       window.deferredPrompt = e;
     });
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -54,23 +57,37 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%23E2D8C3' d='M32 6l7 14 15 2-11 11 3 15-14-7-14 7 3-15-11-11 15-2z'/%3E%3C/svg%3E"/>
   
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
   <style>
     :root { color-scheme: dark; --mx: 50vw; --my: 20vh; }
     html, body { height: 100%; }
     body {
       margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      background: #0A1128; color: #F5F5DC; overflow-x: hidden;
+      background: #0B2115; color: #FFFFFF; overflow-x: hidden;
     }
-    ::selection { background: rgba(226, 216, 195, 0.35); }
+    ::selection { background: rgba(255, 215, 0, 0.35); }
     /* Textura sutil de mármol/ruido para el fondo */
     .divine-noise{ position:fixed; inset:0; pointer-events:none; opacity:.04; z-index:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.4'/%3E%3C/svg%3E"); mix-blend-mode: overlay; }
-    .divine-spotlight{ position:fixed; inset:0; pointer-events:none; z-index:0; background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(226, 216, 195, 0.08), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(245, 245, 220, 0.03), transparent 65%), radial-gradient(1400px 700px at 80% 10%, rgba(226, 216, 195, 0.05), transparent 65%); filter:saturate(1.1); transition: background 150ms linear; }
+    .divine-spotlight{ 
+      position:fixed; inset:0; pointer-events:none; z-index:0; 
+      background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(255, 215, 0, 0.15), transparent 60%), 
+                  radial-gradient(1200px 800px at 20% 35%, rgba(16, 152, 86, 0.2), transparent 65%), 
+                  radial-gradient(1400px 700px at 80% 10%, rgba(0, 82, 159, 0.15), transparent 65%); 
+      filter:saturate(1.3); transition: background 150ms linear; 
+    }
     .line-clamp-2{ display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-    .glass{ background: rgba(245, 245, 220, 0.04); border: 1px solid rgba(245, 245, 220, 0.12); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
-    .ring-gold{ box-shadow: 0 0 0 1px rgba(226, 216, 195, 0.2), 0 24px 70px rgba(0,0,0,0.6); }
+    .glass{ background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    .ring-gold{ box-shadow: 0 0 0 1px rgba(255, 215, 0, 0.2), 0 24px 70px rgba(0,0,0,0.6); }
     
-    /* Botones más grandes y legibles */
-    .btn-primary{ position:relative; overflow:hidden; border-radius:16px; border:1px solid rgba(226, 216, 195, 0.6); background: linear-gradient(135deg, #E2D8C3, #FFFDF7); color:#0A1128; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; font-size:14px; padding:14px 20px; transition: transform 160ms ease, filter 160ms ease; box-shadow: 0 4px 15px rgba(226, 216, 195, 0.15); }
+    /* Botones vibrantes del Mundial */
+    .btn-primary{ 
+      position:relative; overflow:hidden; border-radius:16px; 
+      border:2px solid #FFD700; 
+      background: linear-gradient(135deg, #109856, #FFD700, #00529F); 
+      color:#FFFFFF; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+      font-weight:900; letter-spacing:0.1em; text-transform:uppercase; font-size:14px; padding:14px 20px; transition: transform 160ms ease, filter 160ms ease; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); 
+    }
     .btn-primary::after{ content:""; position:absolute; inset:-2px; background: linear-gradient(120deg, transparent 40%, rgba(255,255,255,0.6), transparent 60%); transform: translateX(-120%); transition: transform 550ms ease; opacity:.8; }
     .btn-primary:hover{ filter: brightness(1.08); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(226, 216, 195, 0.25); }
     .btn-primary:hover::after{ transform: translateX(120%); }
@@ -100,23 +117,80 @@
     .animate-marquee {
       animation: scrollVIP 30s linear infinite;
     }
+    /* Fondo del Estadio para la portada */
+    .hero-grid {
+      background: linear-gradient(to bottom, rgba(11, 33, 21, 0.7), #0B2115), url('https://images.unsplash.com/photo-1518605368461-1e1e38ce81b0?auto=format&fit=crop&w=1600&q=80');
+      background-size: cover;
+      background-position: center;
+      border: 2px solid #FFD700;
+      box-shadow: 0 0 40px rgba(255, 215, 0, 0.2);
+    }
+
+    /* Efecto Holográfico (Barajita Panini) para las cartas */
+    .panini-shine {
+      position: relative;
+    }
+    .panini-shine::before {
+      content: "";
+      position: absolute;
+      top: 0; left: -150%; width: 100%; height: 100%;
+      background: linear-gradient(to right, transparent, rgba(255, 215, 0, 0.3), rgba(255, 255, 255, 0.7), rgba(255, 215, 0, 0.3), transparent);
+      transform: skewX(-25deg);
+      animation: sweep 4s infinite;
+      z-index: 20;
+      pointer-events: none;
+    }
+    @keyframes sweep {
+      0% { left: -150%; }
+      20% { left: 200%; }
+      100% { left: 200%; }
+    }
+
+    /* Animación de Balones y Copas Flotantes */
+    .world-cup-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; opacity: 0.15; }
+    .floating-item { position: absolute; font-size: 3rem; animation: floatUp 20s linear infinite; bottom: -10%; }
+    .f1 { left: 10%; animation-duration: 25s; animation-delay: 0s; }
+    .f2 { left: 30%; font-size: 5rem; animation-duration: 30s; animation-delay: 5s; }
+    .f3 { left: 50%; font-size: 4rem; animation-duration: 22s; animation-delay: 2s; }
+    .f4 { left: 70%; animation-duration: 28s; animation-delay: 8s; }
+    .f5 { left: 85%; animation-duration: 35s; animation-delay: 1s; }
+    .f6 { left: 20%; animation-duration: 32s; animation-delay: 12s; }
+    .f7 { left: 80%; animation-duration: 26s; animation-delay: 15s; }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-120vh) rotate(360deg); opacity: 0; }
+    }
   </style>
 
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.umd.js"></script>
   <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-  <script src="https://unpkg.com/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.6/babel.min.js"></script>
   
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <div class="divine-spotlight"></div>
   <div class="divine-noise"></div>
+  
+  <!-- Decoración Mundialista Flotante Constante -->
+  <div class="world-cup-bg">
+     <div class="floating-item f1">⚽</div>
+     <div class="floating-item f2">🏆</div>
+     <div class="floating-item f3">🏟️</div>
+     <div class="floating-item f4">⚽</div>
+     <div class="floating-item f5">🇲🇽</div>
+     <div class="floating-item f6">🇨🇦</div>
+     <div class="floating-item f7">🇺🇸</div>
+  </div>
+
   <div id="root"></div>
 
-  <script type="text/babel" data-presets="env,react">
+  <script type="text/babel" data-presets="react">
     const React = window.React;
     const { useEffect, useMemo, useRef, useState } = React;
 
@@ -164,10 +238,27 @@
     const motion = FM.motion || createMotionFallback();
     const AnimatePresence = FM.AnimatePresence || (({ children }) => React.createElement(React.Fragment, null, children));
 
-    // =========================
+   // =========================
     // Utils + Hooks
     // =========================
     const money = (n) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
+    
+    function fireWorldCupConfetti() {
+      const count = 200;
+      const defaults = {
+        origin: { y: 0.7 },
+        colors: ['#109856', '#FFD700', '#00529F', '#FFFFFF', '#E23946']
+      };
+      function fire(particleRatio, opts) {
+        window.confetti(Object.assign({}, defaults, opts, { particleCount: Math.floor(count * particleRatio) }));
+      }
+      fire(0.25, { spread: 26, startVelocity: 55 });
+      fire(0.2, { spread: 60 });
+      fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+      fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+      fire(0.1, { spread: 120, startVelocity: 45 });
+    }
+
     function useLockBodyScroll(locked) {
       useEffect(() => {
         if (!locked) return;
@@ -232,11 +323,11 @@
     // =========================
     // Data Inicial (Con ingredientIds e isPromo + REFRESCOS)
     // =========================
-    const DEFAULT_BURGERS = [
+        const DEFAULT_BURGERS = [
       { 
         id: "clasica-divinee", 
-        name: "Clásica Divinée", 
-        description: "La tradición elevada. Jugosa carne Smash en pan brioche sellado, jamón cheddar, huevo y tocino crujiente con el toque fresco de la casa.", 
+        name: "🇦🇷 La Albiceleste (Clásica)", 
+        description: "¡Campeona del mundo! Jugosa carne Smash en pan brioche sellado, jamón cheddar, huevo y tocino crujiente. Un 10 perfecto en tu paladar.", 
         price: 8.80, cost: 4.20, isPromo: false, showUpsell: true,
         img: "https://i.postimg.cc/bwqjqMf9/Gemini_Generated_Image_cj43xcj43xcj43xc.png", 
         ingredientIds: ["brioche", "smash", "cheddar", "bacon", "egg", "tocino", "papashilo", "lettuce", "tomato"],
@@ -245,8 +336,8 @@
       },
       { 
         id: "pollo-divino", 
-        name: "Pollo Divino", 
-        description: "Tierna y ligera. Filete de pollo seleccionado a la plancha sobre pan brioche, con el equilibrio perfecto de queso, jamón y huevo.", 
+        name: "🇧🇷 La Canarinha (Pollo)", 
+        description: "Puro Jogo Bonito. Tierna y rápida como un extremo brasileño. Filete de pollo a la plancha con queso, jamón y huevo.", 
         price: 8.50, cost: 3.90, isPromo: false, showUpsell: true,
         img: "https://i.postimg.cc/t49H9fH0/Gemini_Generated_Image_r93243r93243r932.png", 
         ingredientIds: ["brioche", "chickenGrilled", "cheddar", "bacon", "egg", "tocino", "papashilo", "lettuce", "tomato"],
@@ -255,8 +346,8 @@
       },
       { 
         id: "porc-divinee", 
-        name: "Porc Divinée", 
-        description: "Sabor ahumado y premium. Lomo de cerdo de alta selección con queso fundido y tocino en pan brioche artesanal.", 
+        name: "🇩🇪 El Tanque Alemán (Porc)", 
+        description: "Pura potencia y sabor ahumado. Lomo de cerdo de alta selección con queso fundido y tocino. ¡Una máquina de hacer goles!", 
         price: 9.50, cost: 4.80, isPromo: false, showUpsell: true,
         img: "https://i.postimg.cc/fRMhMFQK/Gemini_Generated_Image_d5qhrid5qhrid5qh.png", 
         ingredientIds: ["brioche", "lomoCerdo", "cheddar", "bacon", "egg", "tocino", "papashilo", "lettuce", "tomato"],
@@ -265,8 +356,8 @@
       },
       { 
         id: "divinee-mixta", 
-        name: "Divinée Mixta", 
-        description: "La dualidad perfecta. Fusión imponente de lomo de cerdo y lomito de res, diseñada para los que buscan potencia y sabor extremo.", 
+        name: "🇪🇸 La Furia Roja (Mixta)", 
+        description: "El toque maestro. Fusión imponente de lomo de cerdo y lomito de res, diseñada para dominar el campo de juego.", 
         price: 12.99, cost: 6.50, isPromo: false, showUpsell: true,
         img: "https://i.postimg.cc/8zTVT3gb/Gemini_Generated_Image_51ak0f51ak0f51ak.png", 
         ingredientIds: ["brioche", "angus180", "lomoCerdo", "cheddar", "bacon", "egg", "tocino", "papashilo", "lettuce", "tomato"],
@@ -275,8 +366,8 @@
       },
       { 
         id: "divinee-absoluta", 
-        name: "Divinée Absoluta", 
-        description: "La joya de la corona. Cuatro proteínas (Smash, Lomo, Pollo y Chorizo) unidas en una creación monumental sin límites.", 
+        name: "🏆 LA COPA DEL MUNDO (Absoluta)", 
+        description: "¡EL TROFEO MÁXIMO! Cuatro proteínas (Smash, Lomo, Pollo y Chorizo) unidas en una creación monumental para los verdaderos campeones.", 
         price: 16.99, cost: 8.50, isPromo: true, showUpsell: true,
         img: "https://i.postimg.cc/Z5JhJgzF/Gemini_Generated_Image_kjudi7kjudi7kjud.png", 
         ingredientIds: ["brioche", "smash", "lomoCerdo", "chickenGrilled", "chorizo", "cheddar", "bacon", "egg", "tocino", "papashilo", "lettuce", "tomato"],
@@ -485,31 +576,37 @@
     
     function ProductCard({ product, badge, onClick, onAdd, isDisabled, isPromoDesign }) {
       return (
-        <motion.div whileHover={!isDisabled ? { y: -6 } : {}} transition={{ type: "spring", stiffness: 260, damping: 22 }} className={`group overflow-hidden rounded-2xl border ${isDisabled ? 'border-red-500/30 bg-black/40' : (isPromoDesign ? 'border-divineGold/60 shadow-promoglow bg-divineGold/5' : 'border-divineLine bg-divineInk')} shadow-divine relative h-full`}>
+        <motion.div whileHover={!isDisabled ? { y: -6 } : {}} transition={{ type: "spring", stiffness: 260, damping: 22 }} className={`group overflow-hidden rounded-2xl border ${isDisabled ? 'border-red-500/30 bg-black/40' : (isPromoDesign ? 'border-[#FFD700] shadow-promoglow bg-[#FFD700]/10 panini-shine' : 'border-divineLine bg-divineInk')} shadow-divine relative h-full`}>
           <div onClick={isDisabled ? undefined : onClick} className={`flex flex-col h-full w-full text-left ${isDisabled ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}>
             <div className="relative aspect-[4/3] sm:aspect-[4/3] overflow-hidden card-premium shrink-0">
               <img src={product.img} alt={product.name} className={`h-full w-full object-cover transition duration-700 ${isDisabled ? 'grayscale' : 'group-hover:scale-[1.08]'}`} loading="lazy" decoding="async" fetchpriority="low" />
-              <div className={`absolute left-2 sm:left-3 top-2 sm:top-3 rounded-full border ${isPromoDesign ? 'border-divineGold/80 bg-divineGold text-[#0A1128]' : 'border-divineLine2 bg-[#060A17]/80 text-divineCream'} px-2 sm:px-3 py-1 sm:py-1.5 text-[9px] sm:text-xs tracking-widest sm:tracking-[0.2em] font-bold backdrop-blur`}>
-                {isPromoDesign ? '🌟 PROMO' : badge}
+              
+              {/* Sombra de lujo para integrar la imagen con el verde de la carta */}
+              {!isDisabled && (
+                 <div className="absolute inset-0 bg-gradient-to-t from-[#0B2115] via-transparent to-transparent opacity-90 pointer-events-none"></div>
+              )}
+
+              <div className={`absolute left-2 sm:left-3 top-2 sm:top-3 rounded-full border ${isPromoDesign ? 'border-[#FFD700] bg-[#FFD700] text-[#0A1128]' : 'border-[#FFD700]/50 bg-[#060A17]/80 text-white'} px-2 sm:px-3 py-1 sm:py-1.5 text-[9px] sm:text-xs tracking-widest sm:tracking-[0.2em] font-bold backdrop-blur z-10`}>
+                {isPromoDesign ? '🏆 FINALISTA' : badge}
               </div>
-              <div className="absolute right-2 sm:right-3 top-2 sm:top-3 rounded-full border border-divineLine2 bg-[#060A17]/80 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm tracking-wide sm:tracking-[0.1em] text-divineGold backdrop-blur font-bold">{money(product.price)}</div>
+              <div className="absolute right-2 sm:right-3 top-2 sm:top-3 rounded-full border border-[#FFD700] bg-[#0B2115]/90 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm tracking-wide sm:tracking-[0.1em] text-[#FFD700] backdrop-blur font-black z-10 shadow-[0_0_10px_rgba(255,215,0,0.5)]">{money(product.price)}</div>
               
               {isDisabled && (
                 <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center z-10">
-                  <span className="text-red-400 font-bold tracking-widest border-2 border-red-500/50 bg-black/90 px-3 sm:px-6 py-1.5 sm:py-3 rounded-xl transform -rotate-12 shadow-[0_0_15px_rgba(239,68,68,0.3)] text-sm sm:text-lg">AGOTADO</span>
+                  <span className="text-red-400 font-bold tracking-widest border-2 border-red-500/50 bg-black/90 px-3 sm:px-6 py-1.5 sm:py-3 rounded-xl transform -rotate-12 shadow-[0_0_15px_rgba(239,68,68,0.3)] text-sm sm:text-lg">TARJETA ROJA (AGOTADO)</span>
                 </div>
               )}
             </div>
-            <div className="p-3 sm:p-5 flex flex-col flex-1 justify-between bg-divineInk/50">
+            <div className="p-3 sm:p-5 flex flex-col flex-1 justify-between bg-[#0B2115]/80 relative z-10 border-t border-[#FFD700]/20">
               <div>
-                <div className="text-sm sm:text-lg font-bold leading-tight">{product.name}</div>
-                <div className="mt-1.5 sm:mt-2 text-[11px] sm:text-sm text-divineCream/80 line-clamp-2 leading-snug">{product.description}</div>
+                <div className="text-sm sm:text-lg font-black leading-tight text-white">{product.name}</div>
+                <div className="mt-1.5 sm:mt-2 text-[11px] sm:text-sm text-gray-300 line-clamp-2 leading-snug font-medium">{product.description}</div>
               </div>
               <div className="mt-3 sm:mt-5">
-                <button disabled={isDisabled} onClick={(e) => { e.stopPropagation(); onAdd?.(); }} className={`w-full rounded-xl border px-2 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-sm font-bold tracking-wider sm:tracking-[0.15em] transition flex items-center justify-center gap-1 sm:gap-2 ${isDisabled ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'btn-primary shadow-glow'}`} type="button">
+                <button disabled={isDisabled} onClick={(e) => { e.stopPropagation(); onAdd?.(); }} className={`w-full rounded-xl border px-2 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-sm font-black tracking-wider sm:tracking-[0.15em] transition flex items-center justify-center gap-1 sm:gap-2 ${isDisabled ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'btn-primary shadow-glow'}`} type="button">
                   {isDisabled ? 'AGOTADO' : (
                     <>
-                      <span>➕</span> <span className="hidden sm:inline">AGREGAR AL CARRITO</span><span className="sm:hidden">AGREGAR</span>
+                      <span className="text-lg">⚽</span> <span className="hidden sm:inline text-white">CONVOCAR AL EQUIPO</span><span className="sm:hidden text-white">CONVOCAR</span>
                     </>
                   )}
                 </button>
@@ -1169,9 +1266,13 @@
             await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, { method: 'POST', body: fd });
           }
         } catch (e) { console.log("Telegram falló"); }
+        
+        // NUEVO: Grito de Gol al procesar el pedido
+        window.dispatchEvent(new CustomEvent('play-goal'));
+        if (typeof fireWorldCupConfetti === "function") fireWorldCupConfetti(); // Tiramos confeti
+
         setOrderId(newOrderId); setStep(3); onClearCart(); setLoading(false);
       };
-
       const handleRemoveItem = (id) => onQty(id, 0);
 
       return (
@@ -3053,6 +3154,52 @@
     // =========================
     // App Base (Con Inventario Sincronizado en la Nube)
     // =========================
+
+    // =========================
+    // MODAL FANÁTICO (Selección de Equipo VIP)
+    // =========================
+    function FanModeModal({ onSelect }) {
+      // Lista de selecciones top para el Mundial (Ahora con Francia)
+      const teams = [
+        { id: 'mexico', flag: '🇲🇽', name: 'MÉXICO', bg: 'from-[#006847] to-[#CE1126]', text: 'text-white' },
+        { id: 'argentina', flag: '🇦🇷', name: 'ARGENTINA', bg: 'from-[#43A1D5] to-[#FFFFFF]', text: 'text-[#001226]' },
+        { id: 'brasil', flag: '🇧🇷', name: 'BRASIL', bg: 'from-[#009B3A] to-[#0B2115]', text: 'text-[#FFD700]' },
+        { id: 'colombia', flag: '🇨🇴', name: 'COLOMBIA', bg: 'from-[#FCD116] to-[#003893]', text: 'text-white' },
+        { id: 'usa', flag: '🇺🇸', name: 'USA', bg: 'from-[#002868] to-[#BF0A30]', text: 'text-white' },
+        { id: 'espana', flag: '🇪🇸', name: 'ESPAÑA', bg: 'from-[#AA151B] to-[#F1BF00]', text: 'text-[#FFD700]' },
+        { id: 'alemania', flag: '🇩🇪', name: 'ALEMANIA', bg: 'from-[#000000] to-[#FFCE00]', text: 'text-white' },
+        { id: 'francia', flag: '🇫🇷', name: 'FRANCIA', bg: 'from-[#002395] to-[#ED2939]', text: 'text-white' },
+        { id: 'neutral', flag: '🏆', name: 'NEUTRAL', bg: 'from-divineInk to-black', text: 'text-divineGold' }
+      ];
+
+      return (
+        <div className="fixed inset-0 z-[400] bg-[#0A1128]/95 backdrop-blur-2xl flex items-center justify-center p-4">
+          <div className="bg-[#060A17] border border-[#FFD700]/50 rounded-3xl p-6 md:p-10 max-w-4xl w-full text-center shadow-[0_0_80px_rgba(255,215,0,0.3)] relative overflow-hidden">
+            
+            {/* Animación de luces de estadio rotando en el fondo del modal */}
+            <div className="absolute -top-[50%] -left-[50%] w-[200%] h-[200%] bg-[conic-gradient(from_0deg,transparent_0_340deg,rgba(255,215,0,0.25)_360deg)] animate-[spin_4s_linear_infinite] pointer-events-none opacity-50"></div>
+            
+            <div className="relative z-10">
+              <h2 className="text-3xl md:text-5xl font-black text-white mb-2 tracking-tight drop-shadow-md">⚽ ELIGE TU SELECCIÓN</h2>
+              <p className="text-divineCream/80 mb-8 font-medium text-sm md:text-base">El estadio se pintará con tus colores y la hinchada cantará para ti.</p>
+              
+              {/* CAMBIO AQUÍ: grid-cols-3 para que las 9 opciones cuadren perfecto */}
+              <div className="grid grid-cols-3 gap-2 md:gap-5">
+                {teams.map(t => (
+                  <button key={t.id} onClick={() => onSelect(t.id)} className={`relative overflow-hidden p-3 md:p-6 rounded-2xl border-2 border-white/10 bg-gradient-to-br ${t.bg} hover:scale-105 hover:border-[#FFD700] hover:shadow-[0_0_20px_rgba(255,215,0,0.6)] transition-all duration-300 group`}>
+                    <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors"></div>
+                    <div className="text-4xl md:text-6xl mb-1 md:mb-2 drop-shadow-lg transform group-hover:-translate-y-1 transition-transform">{t.flag}</div>
+                    <div className={`font-black tracking-widest text-[9px] md:text-sm drop-shadow-md ${t.text}`}>{t.name}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+          </div>
+        </div>
+      );
+    }
+    
     function App() {
       useSpotlight();
       const refs = { promos: useRef(null), burgers: useRef(null), drinks: useRef(null), desserts: useRef(null), yogurt: useRef(null), atelier: useRef(null) };
@@ -3073,12 +3220,65 @@
       const [adminModalOpen, setAdminModalOpen] = useState(false);
       const [isAdminLogged, setIsAdminLogged] = useState(false);
       const [appLoaded, setAppLoaded] = useState(false);
+      // NUEVO: Efecto Mundialista al terminar de cargar
+      useEffect(() => {
+        if (appLoaded) {
+          // Pequeño retraso para que la pantalla se despeje antes de la explosión
+          setTimeout(fireWorldCupConfetti, 150); 
+        }
+      }, [appLoaded]);
       
       const [isStoreOpen, setIsStoreOpen] = useState(true);
       const [disabledItems, setDisabledItems] = useState([]);
 
       // Estado para Upsell
       const [showUpsell, setShowUpsell] = useState(false);
+      // ESTADO DEL TEMA Y MOTOR DE AUDIO INMERSIVO
+      const [fanTheme, setFanTheme] = useState(null); // null = modal abierto
+
+      useEffect(() => {
+        // SONIDOS CORREGIDOS: Audios reales de estadio, silbato y celebración
+        // TIP: Si quieres tus propios sonidos, cambia el enlace por tu archivo local, ej: "./assets/silbato.mp3"
+        
+        // Sonido de estadio de fondo continuo
+        const bg = new Audio("https://actions.google.com/sounds/v1/crowds/stadium_crowd_exterior.ogg"); 
+        bg.loop = true; bg.volume = 0.3; 
+        
+        // Silbato corto para cuando seleccionan la hamburguesa
+        const whistle = new Audio("https://actions.google.com/sounds/v1/sports/football_whistle.ogg"); 
+        whistle.volume = 0.6; 
+        
+        // Grito de gol/celebración cuando terminan el pedido
+        const goal = new Audio("https://actions.google.com/sounds/v1/crowds/sports_crowd_cheer.ogg"); 
+        goal.volume = 0.9;
+
+        const playBg = () => { bg.play().catch(()=>{}); };
+        const playWhistle = () => { whistle.currentTime = 0; whistle.play().catch(()=>{}); };
+        const playGoal = () => { goal.currentTime = 0; goal.play().catch(()=>{}); };
+
+        window.addEventListener('start-stadium', playBg);
+        window.addEventListener('play-whistle', playWhistle);
+        window.addEventListener('play-goal', playGoal);
+
+        return () => {
+          window.removeEventListener('start-stadium', playBg);
+          window.removeEventListener('play-whistle', playWhistle);
+          window.removeEventListener('play-goal', playGoal);
+          bg.pause();
+        };
+      }, []);
+
+      const themeStyles = {
+        mexico: `body { background: #003323 !important; } .btn-primary { background: linear-gradient(135deg, #006847, #CE1126) !important; border-color: #FFFFFF !important; color: #FFFFFF !important; } .divine-spotlight { background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(255, 255, 255, 0.15), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(206, 17, 38, 0.3), transparent 65%) !important; }`,
+        argentina: `body { background: #001226 !important; } .btn-primary { background: linear-gradient(135deg, #43A1D5, #FFFFFF) !important; border-color: #FFFFFF !important; color: #001226 !important; } .divine-spotlight { background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(255, 255, 255, 0.15), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(67, 161, 213, 0.3), transparent 65%) !important; }`,
+        brasil: `body { background: #0b2115 !important; } .btn-primary { background: linear-gradient(135deg, #009B3A, #FFD700) !important; border-color: #FFD700 !important; color: #FFFFFF !important; } .divine-spotlight { background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(255, 215, 0, 0.15), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(0, 155, 58, 0.2), transparent 65%) !important; }`,
+        colombia: `body { background: #1a1500 !important; } .btn-primary { background: linear-gradient(135deg, #FCD116, #003893) !important; border-color: #CE1126 !important; color: #FFFFFF !important; } .divine-spotlight { background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(252, 209, 22, 0.15), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(0, 56, 147, 0.3), transparent 65%) !important; }`,
+        usa: `body { background: #000a1a !important; } .btn-primary { background: linear-gradient(135deg, #002868, #BF0A30) !important; border-color: #FFFFFF !important; color: #FFFFFF !important; } .divine-spotlight { background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(255, 255, 255, 0.15), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(191, 10, 48, 0.3), transparent 65%) !important; }`,
+        espana: `body { background: #1a0304 !important; } .btn-primary { background: linear-gradient(135deg, #AA151B, #F1BF00) !important; border-color: #FFD700 !important; color: #FFFFFF !important; } .divine-spotlight { background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(241, 191, 0, 0.15), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(170, 21, 27, 0.3), transparent 65%) !important; }`,
+        alemania: `body { background: #000000 !important; } .btn-primary { background: linear-gradient(135deg, #000000, #FFCE00) !important; border-color: #DD0000 !important; color: #FFFFFF !important; } .divine-spotlight { background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(255, 206, 0, 0.15), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(221, 0, 0, 0.3), transparent 65%) !important; }`,
+        francia: `body { background: #000a1f !important; } .btn-primary { background: linear-gradient(135deg, #002395, #ED2939) !important; border-color: #FFFFFF !important; color: #FFFFFF !important; } .divine-spotlight { background: radial-gradient(800px 600px at var(--mx) var(--my), rgba(255, 255, 255, 0.15), transparent 60%), radial-gradient(1200px 800px at 20% 35%, rgba(237, 41, 57, 0.3), transparent 65%) !important; }`,
+        neutral: ``
+      };
       const [pendingItem, setPendingItem] = useState(null);
 
       const cartCount = useMemo(() => cartItems.reduce((acc, it) => acc + it.qty, 0), [cartItems]);
@@ -3095,7 +3295,17 @@
       useEffect(() => { localStorage.setItem('divinee_cart', JSON.stringify(cartItems)); }, [cartItems]);
 
       useEffect(() => {
-        fetch("https://ve.dolarapi.com/v1/dolares/oficial").then(res => res.json()).then(data => setBcvRate(data.promedio)).catch(err => setBcvRate(60.00)); 
+        fetch("https://ve.dolarapi.com/v1/dolares/oficial")
+          .then(res => res.json())
+          .then(data => {
+            // Aquí le sumamos los 15 puntos directo al promedio oficial
+            const tasaConMargen = data.promedio + 15;
+            setBcvRate(tasaConMargen);
+          })
+          .catch(err => {
+            // Tasa de emergencia por si la API se cae (tus 60 base + 15 de margen)
+            setBcvRate(75.00); 
+          }); 
         
         const fetchGlobalData = async () => {
           if (supabaseClient) {
@@ -3206,9 +3416,12 @@
 
       function scrollTo(key) { refs[key]?.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }
       
-      function handleInitialAddToCart(item, isBurger = true) {
+        function handleInitialAddToCart(item, isBurger = true) {
         if (!isStoreOpen) { window.showToast("CERRADO POR HOY 🚫", '🚫'); return; }
         if (disabledItems.includes(item.id)) { window.showToast("Este producto está agotado 🚫", '🚫'); return; }
+
+        // NUEVO: Suena el silbato al seleccionar un jugador
+        window.dispatchEvent(new CustomEvent('play-whistle'));
 
         if (isBurger && item.showUpsell !== false) {
           // Retraso para evitar el colapso entre cerrar ventana de producto y abrir upsell
@@ -3244,9 +3457,24 @@
 
       const wsPhone = localCatalog?.settings?.whatsapp || "584126835635";
 
-      return (
+        return (
         <div className="min-h-screen relative z-[1]">
           
+          {/* INYECCIÓN DEL TEMA DINÁMICO */}
+          {fanTheme && themeStyles[fanTheme] && (
+            <style dangerouslySetInnerHTML={{ __html: themeStyles[fanTheme] }} />
+          )}
+
+          {/* PANTALLA DE SELECCIÓN DE EQUIPO Y AUDIO */}
+          <AnimatePresence>
+            {!fanTheme && appLoaded && (
+              <FanModeModal onSelect={(team) => {
+                setFanTheme(team);
+                window.dispatchEvent(new CustomEvent('start-stadium'));
+              }} />
+            )}
+          </AnimatePresence>
+
           <AnimatePresence>
             {!isStoreOpen && (
               <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="bg-red-500/90 text-white text-center py-3 text-xs md:text-sm font-bold tracking-widest fixed top-0 w-full z-[300] backdrop-blur shadow-glow">
@@ -3269,8 +3497,12 @@
                 </div>
                 <div className="relative z-10">
                   <div className="flex justify-between items-start"><p className="mb-4 text-sm font-bold tracking-[0.35em] text-divineGold/90">{BRAND_NAME.toUpperCase()} • GOURMET BAR</p>{bcvRate && <div className="text-xs font-bold tracking-[0.28em] text-divineCream/60 border-2 border-divineLine2/50 rounded-full px-4 py-1.5 bg-[#060A17]/80 backdrop-blur shadow-inner">TASA BCV: {bcvRate} Bs</div>}</div>
-                  <h1 className="text-4xl font-extrabold leading-tight md:text-6xl"><span className="bg-gradient-to-r from-divineCream via-divineCream to-divineGold bg-clip-text text-transparent">Hamburguesas, postres y yogurt griego</span> con estética de lujo.</h1>
-                  <p className="mt-4 max-w-2xl text-base text-divineCream/80 md:text-lg font-medium">Explora el menú y arma tu burger con un configurador premium.</p>
+                  <h1 className="text-4xl font-extrabold leading-tight md:text-6xl">
+  <span className="bg-gradient-to-r from-[#FFD700] via-[#FFFFFF] to-[#109856] bg-clip-text text-transparent drop-shadow-md">
+    ⚽ FIESTA MUNDIALISTA 2026 ⚽
+  </span>
+</h1>
+<p className="mt-4 max-w-2xl text-base text-white font-bold md:text-lg">🇲🇽 🇨🇦 🇺🇸 ¡La Copa se vive aquí! Pide a tu selección favorita, prueba nuestro helado de yogurt griego y que empiece a rodar el balón.</p>
                   <div className="mt-8 flex flex-col sm:flex-row flex-wrap gap-4">
                     <button className="btn-primary w-full sm:w-auto py-4 px-8 text-sm" onClick={() => scrollTo(promos.length > 0 ? "promos" : "burgers")} type="button">📜 EXPLORAR MENÚ</button>
                     <button className="btn-ghost w-full sm:w-auto py-4 px-8 text-sm" onClick={() => window.dispatchEvent(new Event('open-tutorial'))} type="button">❓ ¿CÓMO PEDIR?</button>
@@ -3283,24 +3515,24 @@
             <div className="mb-12 md:mb-20 overflow-hidden relative border-y border-divineLine2 bg-black/40 py-3 shadow-inner">
               <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-divineBg to-transparent z-10 pointer-events-none"></div>
               <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-divineBg to-transparent z-10 pointer-events-none"></div>
-              <div className="animate-marquee flex w-[200%] gap-12 whitespace-nowrap items-center text-sm font-bold tracking-wide text-divineCream/70">
-                <span className="flex items-center gap-2"><span className="text-divineGold text-lg tracking-tighter">★★★★★</span> "La mejor smash que he probado en Pueblo Llano." <span className="text-divineCream/40">- Carlos M.</span></span>
-                <span className="text-divineGold/30">✦</span>
-                <span className="flex items-center gap-2"><span className="text-divineGold text-lg tracking-tighter">★★★★★</span> "El empaque y la calidad son nivel Caracas." <span className="text-divineCream/40">- Sofía P.</span></span>
-                <span className="text-divineGold/30">✦</span>
-                <span className="flex items-center gap-2"><span className="text-divineGold text-lg tracking-tighter">★★★★★</span> "La Divinée Absoluta es una locura total." <span className="text-divineCream/40">- Luis R.</span></span>
-                <span className="text-divineGold/30">✦</span>
-                <span className="flex items-center gap-2"><span className="text-divineGold text-lg tracking-tighter">★★★★★</span> "Excelente atención y llegó súper rápido." <span className="text-divineCream/40">- Ana G.</span></span>
-                <span className="text-divineGold/30">✦</span>
+              <div className="animate-marquee flex w-[200%] gap-12 whitespace-nowrap items-center text-sm font-bold tracking-wide text-white">
+                <span className="flex items-center gap-2"><span className="text-[#FFD700] text-lg tracking-tighter">★★★★★</span> "¡Un golazo directo al paladar! Nivel mundial." <span className="text-white/60">- Carlos M.</span></span>
+                <span className="text-[#FFD700] text-xl px-4">⚽🏆⚽</span>
+                <span className="flex items-center gap-2"><span className="text-[#FFD700] text-lg tracking-tighter">★★★★★</span> "El empaque y la calidad juegan en la liga de campeones." <span className="text-white/60">- Sofía P.</span></span>
+                <span className="text-[#FFD700] text-xl px-4">⚽🏆⚽</span>
+                <span className="flex items-center gap-2"><span className="text-[#FFD700] text-lg tracking-tighter">★★★★★</span> "La Divinée Absoluta es la MVP indiscutible del torneo." <span className="text-white/60">- Luis R.</span></span>
+                <span className="text-[#FFD700] text-xl px-4">⚽🏆⚽</span>
+                <span className="flex items-center gap-2"><span className="text-[#FFD700] text-lg tracking-tighter">★★★★★</span> "Delivery más rápido que un contragolpe." <span className="text-white/60">- Ana G.</span></span>
+                <span className="text-[#FFD700] text-xl px-4">⚽🏆⚽</span>
                 
-                {/* Repetimos el bloque para el bucle infinito */}
-                <span className="flex items-center gap-2"><span className="text-divineGold text-lg tracking-tighter">★★★★★</span> "La mejor smash que he probado en Pueblo Llano." <span className="text-divineCream/40">- Carlos M.</span></span>
-                <span className="text-divineGold/30">✦</span>
-                <span className="flex items-center gap-2"><span className="text-divineGold text-lg tracking-tighter">★★★★★</span> "El empaque y la calidad son nivel Caracas." <span className="text-divineCream/40">- Sofía P.</span></span>
-                <span className="text-divineGold/30">✦</span>
-                <span className="flex items-center gap-2"><span className="text-divineGold text-lg tracking-tighter">★★★★★</span> "La Divinée Absoluta es una locura total." <span className="text-divineCream/40">- Luis R.</span></span>
-                <span className="text-divineGold/30">✦</span>
-                <span className="flex items-center gap-2"><span className="text-divineGold text-lg tracking-tighter">★★★★★</span> "Excelente atención y llegó súper rápido." <span className="text-divineCream/40">- Ana G.</span></span>
+                {/* Bucle infinito */}
+                <span className="flex items-center gap-2"><span className="text-[#FFD700] text-lg tracking-tighter">★★★★★</span> "¡Un golazo directo al paladar! Nivel mundial." <span className="text-white/60">- Carlos M.</span></span>
+                <span className="text-[#FFD700] text-xl px-4">⚽🏆⚽</span>
+                <span className="flex items-center gap-2"><span className="text-[#FFD700] text-lg tracking-tighter">★★★★★</span> "El empaque y la calidad juegan en la liga de campeones." <span className="text-white/60">- Sofía P.</span></span>
+                <span className="text-[#FFD700] text-xl px-4">⚽🏆⚽</span>
+                <span className="flex items-center gap-2"><span className="text-[#FFD700] text-lg tracking-tighter">★★★★★</span> "La Divinée Absoluta es la MVP indiscutible del torneo." <span className="text-white/60">- Luis R.</span></span>
+                <span className="text-[#FFD700] text-xl px-4">⚽🏆⚽</span>
+                <span className="flex items-center gap-2"><span className="text-[#FFD700] text-lg tracking-tighter">★★★★★</span> "Delivery más rápido que un contragolpe." <span className="text-white/60">- Ana G.</span></span>
               </div>
             </div>
             
