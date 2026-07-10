@@ -3199,6 +3199,33 @@ const supabaseClient = createClient(supabaseUrl, supabaseKey);
         </div>
       );
     }
+    function HopeBanner() {
+      const [visible, setVisible] = useState(true);
+      if (!visible) return null;
+      
+      return (
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          className="relative mx-auto max-w-4xl px-4 mt-6 z-10"
+        >
+          <div className="bg-[#060A17]/80 backdrop-blur-md border border-divineGold/50 rounded-2xl p-5 shadow-promoglow flex flex-col sm:flex-row items-center justify-between gap-4">
+             <div className="flex items-start gap-4">
+                <div className="text-3xl drop-shadow-md">🕊️</div>
+                <div>
+                  <h4 className="text-sm font-bold tracking-[0.2em] text-divineGold uppercase">Fuerza, Pueblo Llano</h4>
+                  <p className="text-sm text-divineCream/90 mt-1 leading-relaxed">
+                    La tierra nos sacudió, pero nuestras raíces son más fuertes. Hoy más que nunca seguimos <span className="font-bold text-divineGold">encendiendo</span> nuestras planchas para llevarles un pequeño momento de tranquilidad, sabor y calidez en medio del frío. Estamos juntos en esto.
+                  </p>
+                </div>
+             </div>
+             <button onClick={() => setVisible(false)} className="shrink-0 btn-ghost text-xs py-2 px-4 border-divineLine2 hover:text-divineGold hover:border-divineGold">
+               ✕ CERRAR
+             </button>
+          </div>
+        </motion.div>
+      );
+    }
     
     function App() {
       useSpotlight();
@@ -3494,7 +3521,10 @@ const supabaseClient = createClient(supabaseUrl, supabaseKey);
           <Header onNavigate={scrollTo} onOpenCart={() => setCartOpen(true)} cartCount={cartCount} onOpenAdmin={() => setAdminModalOpen(true)} />
           
           <main className="mx-auto max-w-6xl px-4 pb-36 pt-28 md:pt-28 md:px-6">
-            <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }} className="mb-10 md:mb-16">
+            
+            <HopeBanner />
+            
+            <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }} className="mb-10 md:mb-16 mt-6">
               <div className="rounded-3xl hero-grid shadow-divine p-6 md:p-12 relative overflow-hidden border-2 border-divineLine2">
                 <div className="absolute inset-0 pointer-events-none">
                   {[...Array(8)].map((_, i) => (
