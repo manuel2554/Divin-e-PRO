@@ -3134,26 +3134,6 @@ const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
       // Estado para Upsell
       const [showUpsell, setShowUpsell] = useState(false);
-      // ESTADO DEL TEMA Y MOTOR DE AUDIO INMERSIVO
-
-      useEffect(() => {
-        
-        const playWhistle = () => { whistle.currentTime = 0; whistle.play().catch(()=>{}); };
-        const playGoal = () => { goal.currentTime = 0; goal.play().catch(()=>{}); };
-
-        window.addEventListener('start-stadium', playBg);
-        window.addEventListener('play-whistle', playWhistle);
-        window.addEventListener('play-goal', playGoal);
-
-        return () => {
-          window.removeEventListener('start-stadium', playBg);
-          window.removeEventListener('play-whistle', playWhistle);
-          window.removeEventListener('play-goal', playGoal);
-          bg.pause();
-        };
-      }, []);
-
-      };
       const [pendingItem, setPendingItem] = useState(null);
 
       const cartCount = useMemo(() => cartItems.reduce((acc, it) => acc + it.qty, 0), [cartItems]);
@@ -3173,12 +3153,10 @@ const supabaseClient = createClient(supabaseUrl, supabaseKey);
         fetch("https://ve.dolarapi.com/v1/dolares/oficial")
           .then(res => res.json())
           .then(data => {
-            // Aquí le sumamos los 15 puntos directo al promedio oficial
             const tasaConMargen = data.promedio + 15;
             setBcvRate(tasaConMargen);
           })
           .catch(err => {
-            // Tasa de emergencia por si la API se cae (tus 60 base + 15 de margen)
             setBcvRate(75.00); 
           }); 
         
@@ -3186,7 +3164,6 @@ const supabaseClient = createClient(supabaseUrl, supabaseKey);
           if (supabaseClient) {
             const { data } = await supabaseClient.from('store_settings').select('is_open, catalog_data, settings_v2').eq('id', 'divinee').single();
             if (data) {
-              // Lógica de Horario Inteligente
               const config = data.settings_v2?.horario;
               if (config?.activo) {
                 const ahora = new Date();
@@ -3204,7 +3181,6 @@ const supabaseClient = createClient(supabaseUrl, supabaseKey);
                 if (data.catalog_data.catalog) {
                    const loadedCatalog = data.catalog_data.catalog;
                    if (!loadedCatalog.settings) loadedCatalog.settings = DEFAULT_CATALOG.settings;
-                   // Inyectamos los settings_v2 para que estén disponibles en toda la app
                    loadedCatalog.settings_v2 = data.settings_v2;
                    setLocalCatalog(loadedCatalog);
                 }
@@ -3224,18 +3200,15 @@ const supabaseClient = createClient(supabaseUrl, supabaseKey);
         setLocalBurgers(newBurgers); setLocalDesserts(newDesserts); setLocalDrinks(newDrinks); setLocalCatalog(newCatalog);
         
         if (supabaseClient) {
-          // Agregamos .select() al final para obligar a Supabase a decirnos si realmente modificó algo
           const { data, error } = await supabaseClient.from('store_settings').update({
             catalog_data: { burgers: newBurgers, desserts: newDesserts, drinks: newDrinks, catalog: newCatalog }
           }).eq('id', 'divinee').select();
           
           if (error) {
-            // Esto hará saltar una ventana en tu pantalla con el error real
             alert("⚠️ ERROR DE SUPABASE: " + error.message + " \nDetalles: " + error.details);
             console.error("Error completo de Supabase:", error);
             window.showToast("Error guardando en la nube", "⚠️");
           } else if (!data || data.length === 0) {
-            // Esto nos avisa si la tabla está vacía (lo que revisamos en el Paso 1)
             alert("⚠️ ERROR LOGICO: La actualización se envió, pero no se encontró la fila con id 'divinee' en la base de datos.");
           } else {
             window.showToast("Menú sincronizado en la nube", "☁️");
@@ -3297,13 +3270,11 @@ const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
       function scrollTo(key) { refs[key]?.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }
       
-        function handleInitialAddToCart(item, isBurger = true) {
+      function handleInitialAddToCart(item, isBurger = true) {
         if (!isStoreOpen) { window.showToast("CERRADO POR HOY 🚫", '🚫'); return; }
         if (disabledItems.includes(item.id)) { window.showToast("Este producto está agotado 🚫", '🚫'); return; }
 
-
         if (isBurger && item.showUpsell !== false) {
-          // Retraso para evitar el colapso entre cerrar ventana de producto y abrir upsell
           setTimeout(() => {
             setPendingItem(item);
             setShowUpsell(true);
@@ -3336,11 +3307,9 @@ const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
       const wsPhone = localCatalog?.settings?.whatsapp || "584126835635";
 
-        return (
+      return (
         <div className="min-h-screen relative z-[1]">
           
-          {/* INYECCIÓN DEL TEMA DINÁMICO */}
-
           <AnimatePresence>
             {!isStoreOpen && (
               <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="bg-red-500/90 text-white text-center py-3 text-xs md:text-sm font-bold tracking-widest fixed top-0 w-full z-[300] backdrop-blur shadow-glow">
