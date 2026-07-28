@@ -3121,13 +3121,6 @@ const supabaseClient = createClient(supabaseUrl, supabaseKey);
       const [adminModalOpen, setAdminModalOpen] = useState(false);
       const [isAdminLogged, setIsAdminLogged] = useState(false);
       const [appLoaded, setAppLoaded] = useState(false);
-      // NUEVO: Efecto Mundialista al terminar de cargar
-      useEffect(() => {
-        if (appLoaded) {
-          // Pequeño retraso para que la pantalla se despeje antes de la explosión
-          setTimeout(fireWorldCupConfetti, 150); 
-        }
-      }, [appLoaded]);
       
       const [isStoreOpen, setIsStoreOpen] = useState(true);
       const [disabledItems, setDisabledItems] = useState([]);
