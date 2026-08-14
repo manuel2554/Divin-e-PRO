@@ -106,19 +106,20 @@
     .cursor-dot { position: fixed; top: 0; left: 0; width: 6px; height: 6px; background: #E2D8C3; border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%, -50%); transition: transform 0.1s; }
     .cursor-outline { position: fixed; top: 0; left: 0; width: 36px; height: 36px; border: 1px solid rgba(226, 216, 195, 0.6); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%, -50%); transition: width 0.2s, height 0.2s, background-color 0.2s; }
     
-    /* Efecto de Texto Gigante con Máscara */
-    .text-mask-hero {
-      background: url('https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=1200&q=80') center/cover;
-      -webkit-background-clip: text;
-      color: transparent;
-      background-clip: text;
+    /* --- ANIMACIONES DE ALTA GAMA (ESTILO APPLE) --- */
+    @keyframes float-cinematic {
+      0% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-12px) rotate(1deg); }
+      100% { transform: translateY(0px) rotate(0deg); }
     }
+    .animate-float { animation: float-cinematic 6s ease-in-out infinite; }
     
-    /* Hero Glow Mejorado */
-    .hero-glow-bg {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      width: 80%; height: 80%; background: radial-gradient(circle, rgba(226, 216, 195, 0.15) 0%, transparent 70%);
-      filter: blur(80px); pointer-events: none;
+    .glass-pill {
+      background: rgba(6, 10, 23, 0.6);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(226, 216, 195, 0.15);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.1);
     }
   </style>
 
@@ -3367,39 +3368,54 @@ const supabaseClient = createClient(supabaseUrl, supabaseKey);
             
             <HopeBanner />
             
-            <motion.section initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.2, 0.8, 0.2, 1] }} className="mb-12 md:mb-24 mt-6">
-              <div className="rounded-[2.5rem] bg-[#060A17]/80 backdrop-blur-xl shadow-[0_30px_100px_rgba(0,0,0,0.8)] p-8 md:p-20 relative overflow-hidden border border-divineLine2/40 flex flex-col items-center justify-center text-center min-h-[65vh]">
-                
-                {/* Luces de fondo premium */}
-                <div className="hero-glow-bg"></div>
-                <div className="absolute -top-20 -right-20 w-64 h-64 bg-divineGold/10 rounded-full blur-[100px]"></div>
-                
-                <div className="relative z-10 w-full flex flex-col items-center">
-                  <div className="flex items-center gap-3 mb-6">
-                    <span className="h-[1px] w-8 md:w-16 bg-gradient-to-r from-transparent to-divineGold"></span>
-                    <p className="text-xs md:text-sm font-bold tracking-[0.4em] text-divineGold uppercase">La Evolución del Sabor</p>
-                    <span className="h-[1px] w-8 md:w-16 bg-gradient-to-l from-transparent to-divineGold"></span>
-                  </div>
-                  
-                  {/* Letras Gigantes con Máscara */}
-                  <h1 className="text-[5rem] md:text-[10rem] font-black leading-none tracking-tighter text-mask-hero drop-shadow-2xl mb-4">
-                    DIVINÉE
-                  </h1>
-                  
-                  <p className="mt-2 max-w-2xl text-lg md:text-2xl text-divineCream/90 font-medium leading-relaxed">
-                    Hamburguesas exclusivas a la plancha, postres de élite y una experiencia gastronómica sin igual.
-                  </p>
-                  
-                  <div className="mt-12 flex flex-col sm:flex-row justify-center gap-5 w-full sm:w-auto">
-                    <button className="btn-primary py-5 px-12 text-sm md:text-base rounded-full shadow-[0_0_30px_rgba(226,216,195,0.25)] flex items-center justify-center gap-2 hover:scale-105" onClick={() => scrollTo(promos.length > 0 ? "promos" : "burgers")} type="button">
-                      📜 DESCUBRIR MENÚ
-                    </button>
-                    <button className="btn-ghost py-5 px-12 text-sm md:text-base rounded-full border-divineGold/40 hover:bg-divineGold/10 flex items-center justify-center gap-2 hover:scale-105" onClick={() => window.dispatchEvent(new Event('open-tutorial'))} type="button">
-                      ❓ ¿CÓMO PEDIR?
-                    </button>
-                  </div>
-                </div>
-              </div>
+            {/* HERO CINEMATOGRÁFICO Y LIMPIO */}
+            <motion.section className="relative min-h-[85vh] flex flex-col items-center justify-center mt-0 pt-10 md:pt-20 overflow-hidden mb-16 md:mb-24">
+              
+              {/* Luz de estudio de fondo (Sutil y elegante) */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] h-[90vw] md:w-[40vw] md:h-[40vw] bg-divineGold/10 rounded-full blur-[100px] pointer-events-none"></div>
+              
+              {/* Etiqueta superior */}
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.8 }} className="glass-pill px-6 py-2 rounded-full mb-4 z-10">
+                <span className="text-[10px] md:text-xs font-bold tracking-[0.4em] text-divineGold uppercase">La Experiencia Definitiva</span>
+              </motion.div>
+              
+              {/* Tipografía Gigante, Sólida y Legible */}
+              <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.8 }} className="text-[16vw] sm:text-[8rem] md:text-[12rem] lg:text-[15rem] font-black leading-[0.8] tracking-tighter text-divineCream drop-shadow-2xl z-10 text-center">
+                DIVINÉE
+              </motion.h1>
+              
+              {/* Composición del Producto Flotante */}
+              <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4, duration: 1.2, ease: [0.2, 0.8, 0.2, 1] }} className="relative w-full max-w-3xl -mt-12 md:-mt-32 z-20 flex justify-center animate-float">
+                 
+                 {/* Imagen de la Divinée Mixta recortada (Uso tu propio link) */}
+                 <img src="https://i.postimg.cc/8zTVT3gb/Gemini_Generated_Image_51ak0f51ak0f51ak.png" alt="Hamburguesa Divinée" className="w-[85%] md:w-full object-contain drop-shadow-[0_40px_60px_rgba(0,0,0,0.8)]" />
+                 
+                 {/* UI Flotante Izquierda (Bento Specs) */}
+                 <div className="absolute top-1/4 left-0 md:-left-8 glass-pill p-3 md:p-4 rounded-2xl animate-float hidden sm:block" style={{ animationDelay: '0.5s' }}>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-divineGold animate-pulse"></div>
+                      <div className="text-[10px] md:text-xs font-bold text-divineCream/60 tracking-widest">COCCIÓN</div>
+                    </div>
+                    <div className="text-sm md:text-base text-divineGold font-black mt-1">A LA PLANCHA</div>
+                 </div>
+
+                 {/* UI Flotante Derecha (Bento Specs) */}
+                 <div className="absolute bottom-1/4 right-0 md:-right-8 glass-pill p-3 md:p-4 rounded-2xl animate-float hidden sm:block" style={{ animationDelay: '1.2s' }}>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></div>
+                      <div className="text-[10px] md:text-xs font-bold text-divineCream/60 tracking-widest">CALIDAD</div>
+                    </div>
+                    <div className="text-sm md:text-base text-divineCream font-black mt-1">100% LOMITO</div>
+                 </div>
+              </motion.div>
+
+              {/* Botones de acción */}
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 0.8 }} className="relative z-30 mt-6 md:-mt-10 flex flex-col sm:flex-row gap-4 w-full px-6 sm:w-auto">
+                 <button className="btn-primary py-4 px-12 text-sm md:text-base shadow-glow flex items-center justify-center gap-2 hover:scale-105 transition-transform" onClick={() => scrollTo(promos.length > 0 ? "promos" : "burgers")}>
+                   ORDENAR AHORA
+                 </button>
+              </motion.div>
+              
             </motion.section>
 
             {/* PRUEBA SOCIAL DE LUJO (Marquee de Reviews) */}
