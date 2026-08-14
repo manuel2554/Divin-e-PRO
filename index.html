@@ -3368,54 +3368,71 @@ const supabaseClient = createClient(supabaseUrl, supabaseKey);
             
             <HopeBanner />
             
-            {/* HERO CINEMATOGRÁFICO Y LIMPIO */}
-            <motion.section className="relative min-h-[85vh] flex flex-col items-center justify-center mt-0 pt-10 md:pt-20 overflow-hidden mb-16 md:mb-24">
-              
-              {/* Luz de estudio de fondo (Sutil y elegante) */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] h-[90vw] md:w-[40vw] md:h-[40vw] bg-divineGold/10 rounded-full blur-[100px] pointer-events-none"></div>
-              
-              {/* Etiqueta superior */}
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.8 }} className="glass-pill px-6 py-2 rounded-full mb-4 z-10">
-                <span className="text-[10px] md:text-xs font-bold tracking-[0.4em] text-divineGold uppercase">La Experiencia Definitiva</span>
-              </motion.div>
-              
-              {/* Tipografía Gigante, Sólida y Legible */}
-              <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.8 }} className="text-[16vw] sm:text-[8rem] md:text-[12rem] lg:text-[15rem] font-black leading-[0.8] tracking-tighter text-divineCream drop-shadow-2xl z-10 text-center">
-                DIVINÉE
-              </motion.h1>
-              
-              {/* Composición del Producto Flotante */}
-              <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.4, duration: 1.2, ease: [0.2, 0.8, 0.2, 1] }} className="relative w-full max-w-3xl -mt-12 md:-mt-32 z-20 flex justify-center animate-float">
-                 
-                 {/* Imagen de la Divinée Mixta recortada (Uso tu propio link) */}
-                 <img src="https://i.postimg.cc/8zTVT3gb/Gemini_Generated_Image_51ak0f51ak0f51ak.png" alt="Hamburguesa Divinée" className="w-[85%] md:w-full object-contain drop-shadow-[0_40px_60px_rgba(0,0,0,0.8)]" />
-                 
-                 {/* UI Flotante Izquierda (Bento Specs) */}
-                 <div className="absolute top-1/4 left-0 md:-left-8 glass-pill p-3 md:p-4 rounded-2xl animate-float hidden sm:block" style={{ animationDelay: '0.5s' }}>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-divineGold animate-pulse"></div>
-                      <div className="text-[10px] md:text-xs font-bold text-divineCream/60 tracking-widest">COCCIÓN</div>
+            {/* NUEVO HERO BENTO - DISEÑO ULTRA PREMIUM PARA FOTOS NORMALES */}
+            <motion.section initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="mt-6 md:mt-12 mb-16 md:mb-24">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 min-h-[70vh]">
+                
+                {/* CAJA IZQUIERDA - TEXTO PRINCIPAL (Ocupa 7 columnas) */}
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.1 }} className="lg:col-span-7 bg-[#060A17] border border-divineLine2 rounded-[2rem] p-8 md:p-16 flex flex-col justify-center relative overflow-hidden shadow-divine">
+                  {/* Resplandor de fondo sutil */}
+                  <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-divineGold/10 rounded-full blur-[80px] pointer-events-none transform translate-x-1/3 -translate-y-1/3"></div>
+                  
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-3 mb-6">
+                      <span className="text-xs md:text-sm font-bold tracking-[0.4em] text-divineGold uppercase">Gourmet Bar</span>
+                      <span className="h-[1px] flex-1 max-w-[100px] bg-gradient-to-r from-divineGold to-transparent"></span>
                     </div>
-                    <div className="text-sm md:text-base text-divineGold font-black mt-1">A LA PLANCHA</div>
-                 </div>
-
-                 {/* UI Flotante Derecha (Bento Specs) */}
-                 <div className="absolute bottom-1/4 right-0 md:-right-8 glass-pill p-3 md:p-4 rounded-2xl animate-float hidden sm:block" style={{ animationDelay: '1.2s' }}>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></div>
-                      <div className="text-[10px] md:text-xs font-bold text-divineCream/60 tracking-widest">CALIDAD</div>
+                    
+                    <h1 className="text-5xl sm:text-6xl md:text-8xl font-black leading-[0.9] tracking-tighter text-divineCream mb-6">
+                      DIVINÉE<br/>
+                      <span className="text-divineGold">ABSOLUTA.</span>
+                    </h1>
+                    
+                    <p className="max-w-md text-lg text-divineCream/70 font-medium leading-relaxed mb-10">
+                      Ingredientes premium, cocción a la plancha y una atención al detalle que redefine lo que es una buena hamburguesa.
+                    </p>
+                    
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <button className="btn-primary py-4 px-10 text-sm md:text-base shadow-[0_10px_30px_rgba(226,216,195,0.2)] flex items-center justify-center gap-2 hover:scale-105" onClick={() => scrollTo(promos.length > 0 ? "promos" : "burgers")}>
+                        ORDENAR AHORA
+                      </button>
+                      <button className="btn-ghost py-4 px-10 text-sm md:text-base border-divineLine2 hover:border-divineGold hover:text-divineGold flex items-center justify-center gap-2" onClick={() => window.dispatchEvent(new Event('open-tutorial'))}>
+                        VER CÓMO PEDIR
+                      </button>
                     </div>
-                    <div className="text-sm md:text-base text-divineCream font-black mt-1">100% LOMITO</div>
-                 </div>
-              </motion.div>
+                  </div>
+                </motion.div>
 
-              {/* Botones de acción */}
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 0.8 }} className="relative z-30 mt-6 md:-mt-10 flex flex-col sm:flex-row gap-4 w-full px-6 sm:w-auto">
-                 <button className="btn-primary py-4 px-12 text-sm md:text-base shadow-glow flex items-center justify-center gap-2 hover:scale-105 transition-transform" onClick={() => scrollTo(promos.length > 0 ? "promos" : "burgers")}>
-                   ORDENAR AHORA
-                 </button>
-              </motion.div>
-              
+                {/* CAJA DERECHA - IMAGEN Y ETIQUETAS (Ocupa 5 columnas) */}
+                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.3 }} className="lg:col-span-5 relative rounded-[2rem] border border-divineLine2 overflow-hidden group shadow-divine min-h-[400px] lg:min-h-full">
+                  
+                  {/* Tu imagen actual (ahora encajará perfecto así tenga fondo) */}
+                  <img src="https://i.postimg.cc/8zTVT3gb/Gemini_Generated_Image_51ak0f51ak0f51ak.png" alt="Hamburguesa Divinée" className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110" />
+                  
+                  {/* Sombra interna para que el texto resalte siempre */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A1128] via-[#0A1128]/20 to-transparent"></div>
+                  
+                  {/* Etiquetas estilo Cristal (Glassmorphism) flotando sobre la foto */}
+                  <div className="absolute bottom-6 left-6 right-6 flex justify-between items-end gap-2">
+                     <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-lg px-4 py-3 rounded-2xl w-full">
+                       <div className="flex items-center gap-2 mb-1">
+                          <div className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></div>
+                          <div className="text-[9px] font-bold text-divineCream/60 tracking-widest uppercase">Calidad</div>
+                       </div>
+                       <div className="text-sm font-black text-white">100% Lomito</div>
+                     </div>
+                     
+                     <div className="bg-divineGold/10 backdrop-blur-md border border-divineGold/30 shadow-lg px-4 py-3 rounded-2xl w-full">
+                       <div className="flex items-center gap-2 mb-1">
+                          <div className="w-1.5 h-1.5 rounded-full bg-divineGold animate-pulse"></div>
+                          <div className="text-[9px] font-bold text-divineGold/70 tracking-widest uppercase">Cocción</div>
+                       </div>
+                       <div className="text-sm font-black text-divineGold">A la Plancha</div>
+                     </div>
+                  </div>
+                </motion.div>
+
+              </div>
             </motion.section>
 
             {/* PRUEBA SOCIAL DE LUJO (Marquee de Reviews) */}
